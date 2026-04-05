@@ -65,7 +65,6 @@ export function ContactSection() {
 
             <div className="space-y-4">
               {contactInfo.map((item) => {
-                const Icon = !item.isImage && item.icon;
                 return (
                   <Card
                     key={item.label}
@@ -86,13 +85,16 @@ export function ContactSection() {
                               className="w-full h-full object-cover"
                             />
                           </div>
-                        ) : (
+                        ) : item.icon ? (
                           <div
                             className={`p-3 rounded-lg bg-gradient-to-br ${item.color}`}
                           >
-                            <Icon className="h-5 w-5 text-white" />
+                            {(() => {
+                              const Icon = item.icon;
+                              return <Icon className="h-5 w-5 text-white" />;
+                            })()}
                           </div>
-                        )}
+                        ) : null}
                         <div>
                           <p className="text-sm text-muted-foreground">{item.label}</p>
                           {item.value && (
