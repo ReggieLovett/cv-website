@@ -11,9 +11,9 @@ import type { LucideIcon } from 'lucide-react';
 interface ContactItem {
   label: string;
   href: string;
-  icon?: LucideIcon;
-  value?: string;
   color?: string;
+  value?: string;
+  icon?: LucideIcon;
   image?: string;
   isImage?: boolean;
 }
@@ -76,11 +76,8 @@ export function ContactSection() {
 
             <div className="space-y-4">
               {contactInfo.map((item) => {
-                const renderIcon = () => {
-                  if (!item.icon) return null;
-                  const Icon = item.icon;
-                  return <Icon className="h-5 w-5 text-white" />;
-                };
+                const isImageItem = item.isImage === true && !!item.image;
+                const isIconItem = item.isImage !== true && !!item.icon;
 
                 return (
                   <Card
@@ -94,7 +91,7 @@ export function ContactSection() {
                         rel="noopener noreferrer"
                         className="flex items-center space-x-4 group"
                       >
-                        {item.isImage && item.image ? (
+                        {isImageItem && (
                           <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-primary/20 flex-shrink-0">
                             <img 
                               src={item.image} 
@@ -102,13 +99,17 @@ export function ContactSection() {
                               className="w-full h-full object-cover"
                             />
                           </div>
-                        ) : !item.isImage && item.icon ? (
+                        )}
+                        {isIconItem && item.icon && (
                           <div
-                            className={`p-3 rounded-lg bg-gradient-to-br ${item.color || ''}`}
+                            className={`p-3 rounded-lg bg-gradient-to-br ${item.color || 'from-blue-500 to-cyan-500'}`}
                           >
-                            {renderIcon()}
+                            {(() => {
+                              const Icon = item.icon;
+                              return <Icon className="h-5 w-5 text-white" />;
+                            })()}
                           </div>
-                        ) : null}
+                        )}
                         <div>
                           <p className="text-sm text-muted-foreground">{item.label}</p>
                           {item.value && (
