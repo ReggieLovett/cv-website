@@ -6,6 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
+import type { LucideIcon } from 'lucide-react';
+
+interface ContactItem {
+  label: string;
+  href: string;
+  icon?: LucideIcon;
+  value?: string;
+  color?: string;
+  image?: string;
+  isImage?: boolean;
+}
 
 export function ContactSection() {
   const [formData, setFormData] = useState({
@@ -19,7 +30,7 @@ export function ContactSection() {
     console.log('Form submitted:', formData);
   };
 
-  const contactInfo = [
+  const contactInfo: ContactItem[] = [
     {
       icon: Mail,
       label: 'Email',
