@@ -32,7 +32,7 @@ export function HeroSection() {
         </h1>
 
         <p className="text-xl sm:text-2xl text-muted-foreground mb-4 animate-fade-in-up animation-delay-100">
-          BSIT Student | Aspiring Developer
+          BSIT Student at St. Paul University Philippines | Aspiring Developer
         </p>
 
         <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed animate-fade-in-up animation-delay-200">

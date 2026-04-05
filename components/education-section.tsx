@@ -31,7 +31,7 @@ export function EducationSection() {
                 Bachelor of Science in Information Technology
               </h3>
               <p className="text-muted-foreground font-medium">
-                2nd Year Student
+                St. Paul University Philippines, Tuguegarao | 2nd Year Student
               </p>
             </CardHeader>
             <CardContent>
