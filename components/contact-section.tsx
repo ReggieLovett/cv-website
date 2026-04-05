@@ -33,7 +33,7 @@ export function ContactSection() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://formspree.io/f/myzywzjk', {
+      const response = await fetch('https://formspree.io/f/xvzvvjvo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
