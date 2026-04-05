@@ -34,6 +34,13 @@ export function ContactSection() {
       href: 'https://github.com/ReggieLovett',
       color: 'from-gray-700 to-gray-900',
     },
+    {
+      image: '/superman.jpg',
+      label: 'Hope Core',
+      isImage: true,
+      href: 'https://youtu.be/wxX6j3y0vaM?si=Q0siCI3kp430fLqf',
+      color: 'from-red-500 to-blue-500',
+    },
   ];
 
   return (
@@ -58,11 +65,11 @@ export function ContactSection() {
 
             <div className="space-y-4">
               {contactInfo.map((item) => {
-                const Icon = item.icon;
+                const Icon = !item.isImage && item.icon;
                 return (
                   <Card
                     key={item.label}
-                    className="hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+                    className="hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                   >
                     <CardContent className="p-4">
                       <a
@@ -71,16 +78,28 @@ export function ContactSection() {
                         rel="noopener noreferrer"
                         className="flex items-center space-x-4 group"
                       >
-                        <div
-                          className={`p-3 rounded-lg bg-gradient-to-br ${item.color}`}
-                        >
-                          <Icon className="h-5 w-5 text-white" />
-                        </div>
+                        {item.isImage ? (
+                          <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-primary/20 flex-shrink-0">
+                            <img 
+                              src={item.image} 
+                              alt={item.label}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className={`p-3 rounded-lg bg-gradient-to-br ${item.color}`}
+                          >
+                            <Icon className="h-5 w-5 text-white" />
+                          </div>
+                        )}
                         <div>
                           <p className="text-sm text-muted-foreground">{item.label}</p>
-                          <p className="font-medium group-hover:text-primary transition-colors">
-                            {item.value}
-                          </p>
+                          {item.value && (
+                            <p className="font-medium group-hover:text-primary transition-colors">
+                              {item.value}
+                            </p>
+                          )}
                         </div>
                       </a>
                     </CardContent>
