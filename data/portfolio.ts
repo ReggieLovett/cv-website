@@ -214,7 +214,7 @@ export const certificates = [
     issuer: 'Institute of Technology and Engineering (ITE)',
     date: '2026',
     credentialId: 'ITE-REG-2026',
-    image: '/certificates/ITE-REF-20250326-48 - Certificate of Participation - Regional ITE Convention 2025-1.png',
+    image: '/certificates/ite-regional-2025.png',
     verificationUrl: '',
   },
 ];
