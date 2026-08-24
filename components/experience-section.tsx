@@ -15,15 +15,6 @@ const experiences = [
     icon: Users,
   },
   {
-    title: 'UNESCO Summit Participant',
-    type: 'Academic Engagement',
-    period: 'Recent',
-    description:
-      'Participated in a UNESCO Summit, engaging with global perspectives on education and sustainable development. Contributed to meaningful discussions and gained insights into international educational initiatives and collaborative learning opportunities.',
-    technologies: ['Global Perspectives', 'Education', 'Sustainability', 'Networking'],
-    icon: Briefcase,
-  },
-  {
     title: 'DepEd Summit Speaker',
     type: 'Public Speaking',
     period: 'Recent',

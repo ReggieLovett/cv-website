@@ -20,7 +20,7 @@ export function HeroSection() {
       <div className="max-w-4xl mx-auto text-center">
         <div className="mb-8 inline-block animate-fade-in">
           <Avatar className="w-32 h-32 mx-auto border-4 border-primary/20 shadow-lg">
-            <AvatarImage src="/profile.jpg" />
+            <AvatarImage src="/new profile.jpg" />
             <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
               RL
             </AvatarFallback>

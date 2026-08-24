@@ -50,9 +50,12 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           <button
             onClick={() => scrollToSection('home')}
-            className="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+            className="flex items-center gap-3 text-xl font-bold hover:opacity-80 transition-opacity"
           >
-            Portfolio
+            <img src="/Lovett_logo-removebg-preview.png" alt="Reggie Portfolio logo" className="h-9 w-9 rounded-lg object-cover" />
+            <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              Reggie Portfolio
+            </span>
           </button>
 
           <div className="hidden md:flex items-center space-x-8">

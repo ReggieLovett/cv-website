@@ -6,20 +6,29 @@ import { Providers } from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Your Name - Portfolio',
-  description: 'BSIT Student & Aspiring Web Developer - Portfolio showcasing projects, skills, and experience',
+  title: 'Reggie Portfolio',
+  description: 'Portfolio website for Reggie Lovett, showcasing projects, skills, and experience.',
+  icons: {
+    icon: '/Lovett_logo-removebg-preview.png',
+    shortcut: '/Lovett_logo-removebg-preview.png',
+    apple: '/Lovett_logo-removebg-preview.png',
+  },
   openGraph: {
+    title: 'Reggie Portfolio',
+    description: 'Portfolio website for Reggie Lovett, showcasing projects, skills, and experience.',
     images: [
       {
-        url: 'https://bolt.new/static/og_default.png',
+        url: '/Lovett_logo-removebg-preview.png',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
+    title: 'Reggie Portfolio',
+    description: 'Portfolio website for Reggie Lovett, showcasing projects, skills, and experience.',
     images: [
       {
-        url: 'https://bolt.new/static/og_default.png',
+        url: '/Lovett_logo-removebg-preview.png',
       },
     ],
   },

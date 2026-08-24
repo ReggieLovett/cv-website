@@ -1,0 +1,34 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ringStroke" x1="180" y1="180" x2="860" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E2E8F0"/>
+      <stop offset="1" stop-color="#94A3B8"/>
+    </linearGradient>
+    <linearGradient id="whiteGlow" x1="240" y1="220" x2="760" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FBFF"/>
+      <stop offset="1" stop-color="#D7E1F0"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="512" cy="512" r="420" fill="#0D2345"/>
+  <circle cx="512" cy="512" r="404" stroke="url(#ringStroke)" stroke-width="18"/>
+
+  <path d="M245 342C316 230 438 170 564 174C699 177 793 247 858 362" stroke="url(#ringStroke)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M272 670C353 764 456 808 564 804C700 800 798 734 854 625" stroke="url(#ringStroke)" stroke-width="18" stroke-linecap="round"/>
+
+  <circle cx="512" cy="162" r="12" fill="#F8FBFF"/>
+  <path d="M512 112V140" stroke="#F8FBFF" stroke-width="7" stroke-linecap="round"/>
+  <path d="M462 162H562" stroke="#F8FBFF" stroke-width="7" stroke-linecap="round"/>
+  <path d="M482 132L542 192" stroke="#F8FBFF" stroke-width="7" stroke-linecap="round"/>
+  <path d="M542 132L482 192" stroke="#F8FBFF" stroke-width="7" stroke-linecap="round"/>
+
+  <path d="M314 705V310H466C558 310 632 366 632 448C632 530 556 588 468 588H384V705H314ZM384 522H456C502 522 534 500 534 448C534 395 502 372 456 372H384V522Z" fill="url(#whiteGlow)"/>
+  <path d="M600 705V310H698V705H600Z" fill="url(#whiteGlow)"/>
+  <path d="M480 310L754 705H656L570 565H472L407 705H314L480 310Z" fill="url(#whiteGlow)"/>
+
+  <path d="M304 500L468 706" stroke="#E53935" stroke-width="26" stroke-linecap="round"/>
+  <path d="M306 520L456 706" stroke="#D8DDE6" stroke-width="10" stroke-linecap="round" opacity="0.9"/>
+
+  <path d="M276 730H748" stroke="url(#ringStroke)" stroke-width="12" stroke-linecap="round" opacity="0.95"/>
+  <text x="512" y="870" text-anchor="middle" fill="#F4F7FB" font-size="102" font-family="Arial, Helvetica, sans-serif" font-weight="700" letter-spacing="8">DATOH</text>
+</svg>
