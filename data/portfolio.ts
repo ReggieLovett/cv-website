@@ -209,6 +209,14 @@ export const certificates = [
     image: '/certificates/jpcs member cert.png',
     verificationUrl: '',
   },
+  {
+    title: 'ITE Regional Summit',
+    issuer: 'Institute of Technology and Engineering (ITE)',
+    date: '2026',
+    credentialId: 'ITE-REG-2026',
+    image: '/certificates/ITE-REF-20250326-48 - Certificate of Participation - Regional ITE Convention 2025-1.png',
+    verificationUrl: '',
+  },
 ];
 
 export const experience = [

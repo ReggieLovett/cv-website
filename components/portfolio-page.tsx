@@ -885,7 +885,7 @@ function certificateModal(index: number, setSelectedCertificate: (value: number 
         <div className="rounded-[12px] overflow-hidden border border-white/10 bg-white/5 p-4">
           {certificate.image ? (
             <div className="relative h-64 w-full">
-              <Image src={certificate.image} alt={certificate.title || 'certificate'} fill className="object-contain" />
+              <img src={certificate.image} alt={certificate.title || 'certificate'} className="h-full w-full object-contain" />
             </div>
           ) : (
             <div className="rounded-[24px] border border-dashed border-cyan-400/30 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.15),transparent_30%),linear-gradient(135deg,#0f172a,#0a1320)] p-8 text-center text-xs uppercase tracking-[0.25em] text-cyan-200">
