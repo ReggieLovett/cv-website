@@ -8,17 +8,17 @@ export function Footer() {
   const socialLinks = [
     {
       icon: Github,
-      href: 'https://github.com',
+      href: 'https://github.com/ReggieLovett',
       label: 'GitHub',
     },
     {
       icon: Linkedin,
-      href: 'https://linkedin.com',
+      href: 'https://www.linkedin.com/in/reggielovett/',
       label: 'LinkedIn',
     },
     {
       icon: Mail,
-      href: 'mailto:your.email@example.com',
+      href: 'mailto:reggielovett143@gmail.com',
       label: 'Email',
     },
   ];
@@ -47,7 +47,7 @@ export function Footer() {
 
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <p>
-              © {currentYear} Your Name. All rights reserved.
+              © {currentYear} Reggie Lovett. All rights reserved.
             </p>
           </div>
 

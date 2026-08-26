@@ -373,7 +373,7 @@ export function PortfolioPage() {
             <div className="grid gap-6 lg:grid-cols-3">
               <MissionDashCard label="CURRENT FOCUS" value="Artificial Intelligence" />
               <MissionDashCard label="LATEST PROJECT" value={latestProject.title} />
-              <MissionDashCard label="LATEST ACHIEVEMENT" value={latestAchievement.title || '[ADD INFORMATION]'} />
+              <MissionDashCard label="LATEST ACHIEVEMENT" value={latestAchievement.title || 'Latest milestone'} />
             </div>
           </div>
         </section>
@@ -395,7 +395,7 @@ export function PortfolioPage() {
                         <h3 className="mt-3 text-2xl font-bold text-white">{item.title}</h3>
                         <div className="mt-2 text-sm text-slate-300">{item.organization}</div>
                       </div>
-                      <Badge className="w-fit border-cyan-400/30 bg-cyan-400/10 text-cyan-200">{item.date || '[ADD INFORMATION]'}</Badge>
+                      <Badge className="w-fit border-cyan-400/30 bg-cyan-400/10 text-cyan-200">{item.date || 'Date unavailable'}</Badge>
                     </div>
                     <p className="mt-6 max-w-3xl text-base leading-7 text-slate-300">{item.description}</p>
                     <div className="mt-6 flex flex-wrap gap-2">
@@ -431,7 +431,7 @@ export function PortfolioPage() {
                         {item.school && <p className="mt-1 text-sm text-slate-300">{item.school}</p>}
                       </div>
                       <div className="rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-[10px] uppercase tracking-[0.25em] text-cyan-200">
-                        {item.year || '[ADD INFORMATION]'}
+                        {item.year || 'Year unavailable'}
                       </div>
                     </div>
 
@@ -469,12 +469,12 @@ export function PortfolioPage() {
                       <Badge className="border-cyan-400/30 bg-cyan-400/10 text-cyan-200">{achievement.category}</Badge>
                       <Award className="h-5 w-5 text-cyan-300" />
                     </div>
-                    <h3 className="mt-4 text-xl font-bold text-white">{achievement.title || '[ADD INFORMATION]'}</h3>
+                    <h3 className="mt-4 text-xl font-bold text-white">{achievement.title || 'Achievement'}</h3>
                   </CardHeader>
                   <CardContent className="space-y-3 text-sm text-slate-300">
-                    <div>{achievement.organization || '[ADD INFORMATION]'}</div>
-                    <div className="text-slate-200">{achievement.date || '[ADD INFORMATION]'}</div>
-                    <p className="leading-6 text-slate-300">{achievement.description || '[ADD INFORMATION]'}</p>
+                    <div>{achievement.organization || 'Organization unavailable'}</div>
+                    <div className="text-slate-200">{achievement.date || 'Date unavailable'}</div>
+                    <p className="leading-6 text-slate-300">{achievement.description || 'Description unavailable'}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -494,14 +494,14 @@ export function PortfolioPage() {
                 <Card key={`${certificate.title}-${index}`} className="group overflow-hidden border-white/10 bg-white/5">
                   <div className="h-48 border-b border-white/10 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.2),transparent_40%),linear-gradient(135deg,#0f172a,#0a1320)] p-6">
                     <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-cyan-300/30 bg-slate-900/50 text-center text-xs uppercase tracking-[0.25em] text-cyan-200">
-                      {certificate.title || '[ADD INFORMATION]'}
+                      {certificate.title || 'Certificate'}
                     </div>
                   </div>
                   <CardContent className="p-5">
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{certificate.issuer || '[ADD INFORMATION]'}</div>
-                    <h3 className="mt-3 text-xl font-bold text-white">{certificate.title || '[ADD INFORMATION]'}</h3>
-                    <div className="mt-3 text-sm text-slate-300">{certificate.date || '[ADD INFORMATION]'}</div>
-                    <div className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-400">{certificate.credentialId || '[ADD INFORMATION]'}</div>
+                    <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{certificate.issuer || 'Issuer unavailable'}</div>
+                    <h3 className="mt-3 text-xl font-bold text-white">{certificate.title || 'Certificate'}</h3>
+                    <div className="mt-3 text-sm text-slate-300">{certificate.date || 'Date unavailable'}</div>
+                    <div className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-400">{certificate.credentialId || 'Credential unavailable'}</div>
                     <Button
                       variant="outline"
                       className="mt-5 w-full border-cyan-400/30 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10"
@@ -538,7 +538,7 @@ export function PortfolioPage() {
                       </div>
                     </div>
                     <p className="mt-6 text-base leading-7 text-slate-300">{organization.description}</p>
-                    <div className="mt-6 text-sm uppercase tracking-[0.18em] text-slate-400">{organization.year || '[ADD INFORMATION]'}</div>
+                    <div className="mt-6 text-sm uppercase tracking-[0.18em] text-slate-400">{organization.year || 'Year unavailable'}</div>
                   </CardContent>
                 </Card>
               ))}
@@ -586,8 +586,8 @@ export function PortfolioPage() {
 
                 <div className="mt-8 space-y-4">
                   <ContactRow icon={<Mail className="h-5 w-5 text-cyan-300" />} label="Email" value={contactInfo.email} href={`mailto:${contactInfo.email}`} />
-                  <ContactRow icon={<Github className="h-5 w-5 text-cyan-300" />} label="GitHub" value={contactInfo.github} href={contactInfo.github === 'YOUR_GITHUB' ? '#' : contactInfo.github} />
-                  <ContactRow icon={<Briefcase className="h-5 w-5 text-cyan-300" />} label="LinkedIn" value={contactInfo.linkedin} href={contactInfo.linkedin === 'YOUR_LINKEDIN' ? '#' : contactInfo.linkedin} />
+                  <ContactRow icon={<Github className="h-5 w-5 text-cyan-300" />} label="GitHub" value={contactInfo.github} href={contactInfo.github} />
+                  <ContactRow icon={<Briefcase className="h-5 w-5 text-cyan-300" />} label="LinkedIn" value={contactInfo.linkedin} href={contactInfo.linkedin} />
                   <a
                     href="https://youtu.be/wxX6j3y0vaM?si=Q0siCI3kp430fLqf"
                     target="_blank"
@@ -672,7 +672,7 @@ export function PortfolioPage() {
                   </div>
 
                   <div className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm uppercase tracking-[0.15em] text-cyan-200">
-                    {education.expectedGraduation || '[ADD INFORMATION]'}
+                    {education.expectedGraduation || 'Expected graduation unavailable'}
                   </div>
                 </div>
 
@@ -720,10 +720,10 @@ export function PortfolioPage() {
                     <div className={`md:w-[calc(50%-2rem)] ${index % 2 === 0 ? 'md:mr-8' : 'md:ml-8'}`}>
                       <Card className="border-white/10 bg-white/5">
                         <CardContent className="p-5">
-                          <div className="text-[10px] uppercase tracking-[0.2em] text-cyan-300">{item.year || '[ADD INFORMATION]'}</div>
+                          <div className="text-[10px] uppercase tracking-[0.2em] text-cyan-300">{item.year || 'Year unavailable'}</div>
                           <h3 className="mt-2 text-xl font-bold text-white">{item.title}</h3>
                           <div className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-400">{item.category}</div>
-                          <p className="mt-3 text-sm leading-6 text-slate-300">{item.description || '[ADD INFORMATION]'}</p>
+                          <p className="mt-3 text-sm leading-6 text-slate-300">{item.description || 'Details unavailable'}</p>
                         </CardContent>
                       </Card>
                     </div>
@@ -747,8 +747,8 @@ export function PortfolioPage() {
               ))}
             </div>
             <div className="flex items-center gap-4 text-slate-300">
-              <a href={contactInfo.linkedin === 'YOUR_LINKEDIN' ? '#' : contactInfo.linkedin} className="hover:text-white"><Globe className="h-5 w-5" /></a>
-              <a href={contactInfo.github === 'YOUR_GITHUB' ? '#' : contactInfo.github} className="hover:text-white"><Github className="h-5 w-5" /></a>
+              <a href={contactInfo.linkedin} className="hover:text-white"><Globe className="h-5 w-5" /></a>
+              <a href={contactInfo.github} className="hover:text-white"><Github className="h-5 w-5" /></a>
               <a href={`mailto:${contactInfo.email}`} className="hover:text-white"><Mail className="h-5 w-5" /></a>
             </div>
           </div>
@@ -875,7 +875,7 @@ function certificateModal(index: number, setSelectedCertificate: (value: number 
         <div className="mb-5 flex items-center justify-between">
           <div>
             <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300">CERTIFICATE</div>
-            <h3 className="mt-2 text-3xl font-bold text-white">{certificate.title || '[ADD INFORMATION]'}</h3>
+            <h3 className="mt-2 text-3xl font-bold text-white">{certificate.title || 'Certificate'}</h3>
           </div>
           <button onClick={() => setSelectedCertificate(null)} className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-200 hover:bg-white/10">
             <X className="h-4 w-4" />
@@ -889,16 +889,16 @@ function certificateModal(index: number, setSelectedCertificate: (value: number 
             </div>
           ) : (
             <div className="rounded-[24px] border border-dashed border-cyan-400/30 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.15),transparent_30%),linear-gradient(135deg,#0f172a,#0a1320)] p-8 text-center text-xs uppercase tracking-[0.25em] text-cyan-200">
-              {certificate.title || '[ADD INFORMATION]'}
+              {certificate.title || 'Certificate'}
             </div>
           )}
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 text-sm text-slate-300">
-          <div><span className="text-slate-400">Issuer:</span> {certificate.issuer || '[ADD INFORMATION]'}</div>
-          <div><span className="text-slate-400">Date:</span> {certificate.date || '[ADD INFORMATION]'}</div>
-          <div><span className="text-slate-400">Credential ID:</span> {certificate.credentialId || '[ADD INFORMATION]'}</div>
-          <div><span className="text-slate-400">Verification:</span> {certificate.verificationUrl ? 'Available' : '[ADD INFORMATION]'}</div>
+          <div><span className="text-slate-400">Issuer:</span> {certificate.issuer || 'Unavailable'}</div>
+          <div><span className="text-slate-400">Date:</span> {certificate.date || 'Unavailable'}</div>
+          <div><span className="text-slate-400">Credential ID:</span> {certificate.credentialId || 'Unavailable'}</div>
+          <div><span className="text-slate-400">Verification:</span> {certificate.verificationUrl ? 'Available' : 'Not provided'}</div>
         </div>
 
         {certificate.verificationUrl && (
