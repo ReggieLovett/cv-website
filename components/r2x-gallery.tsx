@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { r2xGallery } from '../data/portfolio';
 
 export function R2XGallery() {
@@ -17,15 +16,28 @@ export function R2XGallery() {
           {r2xGallery.map((item) => (
             <div key={item.id} className="rounded-xl overflow-hidden border border-white/10 bg-white/5 transition-shadow hover:shadow-lg">
               <div className="relative aspect-[4/3] w-full">
-                <Image src={item.image} alt={item.alt} fill className="object-cover" />
+                <Image
+                  src={item.image}
+                  alt={item.alt}
+                  fill
+                  loading="lazy"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover"
+                />
               </div>
               <div className="p-4">
                 <div className="text-sm uppercase tracking-[0.12em] text-cyan-300">{item.category}</div>
                 <h3 className="mt-2 text-lg font-bold text-white">{item.title}</h3>
                 <div className="mt-3">
-                  <Link href={item.image} target="_blank" className="text-sm text-cyan-200 hover:underline">
+                  <a
+                    href={item.image}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-cyan-200 hover:underline"
+                  >
                     View full image
-                  </Link>
+                    <span className="sr-only"> — {item.title}</span>
+                  </a>
                 </div>
               </div>
             </div>

@@ -1,28 +1,19 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   Award,
-  Briefcase,
-  Building2,
   Check,
-  ChevronRight,
   ExternalLink,
   Github,
   GraduationCap,
-  Globe,
+  Linkedin,
   Mail,
-  MapPin,
   Menu,
-  MessageSquareText,
-  Moon,
-  Network,
   Target,
   X,
 } from 'lucide-react';
-import Image from 'next/image';
-import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -39,7 +30,6 @@ import {
   organizations,
   profile,
   projects,
-  publicSpeaking,
   skillGroups,
   timeline,
 } from '../data/portfolio';
@@ -48,45 +38,50 @@ import { R2XGallery } from './r2x-gallery';
 const filterOptions = ['ALL', 'AI', 'WEB DEVELOPMENT', 'DATABASE', 'HCI / UX', 'SOFTWARE', 'OTHER'] as const;
 
 export function PortfolioPage() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<(typeof filterOptions)[number]>('ALL');
-  const [activeSection, setActiveSection] = useState('HOME');
+  const [activeSection, setActiveSection] = useState<string>('HOME');
   const [selectedCertificate, setSelectedCertificate] = useState<number | null>(null);
 
   useEffect(() => {
-    setMounted(true);
-    const sectionIds = navItems.map((item) => item.toLowerCase());
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    const sections = navItems
+      .map((item) => document.getElementById(item.toLowerCase()))
+      .filter((section): section is HTMLElement => section !== null);
 
-        if (visible?.target?.id) {
-          const targetId = visible.target.id.toUpperCase();
-          if (targetId === 'HOME') setActiveSection('HOME');
-          else if (targetId === 'ABOUT') setActiveSection('ABOUT');
-          else if (targetId === 'PROJECTS') setActiveSection('PROJECTS');
-          else if (targetId === 'EXPERIENCE') setActiveSection('EXPERIENCE');
-          else if (targetId === 'LEADERSHIP') setActiveSection('LEADERSHIP');
-          else if (targetId === 'ACHIEVEMENTS') setActiveSection('ACHIEVEMENTS');
-          else if (targetId === 'CERTIFICATES') setActiveSection('CERTIFICATES');
-          else if (targetId === 'ORGANIZATIONS') setActiveSection('ORGANIZATIONS');
-          else if (targetId === 'SKILLS') setActiveSection('SKILLS');
-          else if (targetId === 'CONTACT') setActiveSection('CONTACT');
-        }
-      },
-      { threshold: 0.3 },
-    );
+    if (sections.length === 0) return;
 
-    sectionIds.forEach((id) => {
-      const section = document.getElementById(id);
-      if (section) observer.observe(section);
-    });
+    // Sections are taller than the viewport, so IntersectionObserver ratios are not
+    // comparable between them. Measure directly instead: the active section is the last
+    // one whose top has scrolled past the sticky header.
+    const HEADER_OFFSET = 96;
+    let frame = 0;
 
-    return () => observer.disconnect();
+    const update = () => {
+      frame = 0;
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      const current = atBottom
+        ? sections[sections.length - 1]
+        : sections.reduce(
+            (found, section) => (section.getBoundingClientRect().top <= HEADER_OFFSET ? section : found),
+            sections[0],
+          );
+
+      setActiveSection(current.id.toUpperCase());
+    };
+
+    const schedule = () => {
+      if (frame === 0) frame = window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule, { passive: true });
+
+    return () => {
+      if (frame !== 0) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+    };
   }, []);
 
   const filteredProjects = useMemo(() => {
@@ -96,17 +91,11 @@ export function PortfolioPage() {
 
   const latestProject = projects[0];
   const latestAchievement = achievements[0];
-  const latestCertificate = certificates[0];
 
-  const scrollToSection = (id: string) => {
-    const section = document.getElementById(id.toLowerCase());
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setMobileNavOpen(false);
-    }
-  };
-
-  if (!mounted) return null;
+  const scrollToSection = useCallback((id: string) => {
+    document.getElementById(id.toLowerCase())?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setMobileNavOpen(false);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#050b14] text-slate-100">
@@ -119,22 +108,30 @@ export function PortfolioPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <button
             onClick={() => scrollToSection('home')}
-            className="flex items-center gap-3 text-left"
+            className="flex shrink-0 items-center gap-3 text-left"
           >
-              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-cyan-400/40 bg-[#0d2345] shadow-[0_0_24px_rgba(34,211,238,0.2)]">
-              <img src="/Lovett_logo-removebg-preview.png" alt="Reggie Portfolio logo" className="h-full w-full object-cover" />
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-cyan-400/40 bg-[#0d2345] shadow-[0_0_24px_rgba(34,211,238,0.2)]">
+              <img
+                src="/Lovett_logo-removebg-preview.png"
+                alt=""
+                width={44}
+                height={44}
+                className="h-full w-full object-cover"
+              />
             </div>
-            <div>
+            <div className="hidden whitespace-nowrap sm:block">
               <div className="text-xs uppercase tracking-[0.25em] text-slate-400">RL // DAToh</div>
               <div className="text-sm font-semibold text-white">Reggie Portfolio</div>
             </div>
           </button>
 
-          <nav className="hidden items-center gap-6 lg:flex">
+          {/* Ten wide-tracked nav items need ~1100px, so the inline nav only appears at xl. */}
+          <nav aria-label="Primary" className="hidden items-center gap-3 xl:flex xl:gap-4">
             {navItems.map((item) => (
               <button
                 key={item}
                 onClick={() => scrollToSection(item.toLowerCase())}
+                aria-current={activeSection === item ? 'true' : undefined}
                 className={`text-[11px] font-medium uppercase tracking-[0.2em] transition-colors ${
                   activeSection === item ? 'text-cyan-300' : 'text-slate-300 hover:text-white'
                 }`}
@@ -144,38 +141,25 @@ export function PortfolioPage() {
             ))}
           </nav>
 
-          <div className="hidden items-center gap-3 lg:flex">
+          {/* Redundant with the hero CTA — only shown once the 10-item nav has room to spare. */}
+          <div className="hidden items-center gap-3 2xl:flex">
             <Button
               variant="outline"
-              className="border-cyan-400/40 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10"
+              className="whitespace-nowrap border-cyan-400/40 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10"
               onClick={() => scrollToSection('projects')}
             >
               EXPLORE MY WORK
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              aria-label="Toggle color theme"
-            >
-              {theme === 'dark' ? <Moon className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
           </div>
 
-          <div className="flex items-center gap-2 lg:hidden">
+          <div className="flex items-center gap-2 xl:hidden">
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              aria-label="Toggle color theme"
-            >
-              {theme === 'dark' ? <Moon className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Open menu"
-              onClick={() => setMobileNavOpen(!mobileNavOpen)}
+              aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileNavOpen}
+              aria-controls="mobile-nav"
+              onClick={() => setMobileNavOpen((open) => !open)}
             >
               {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -183,12 +167,13 @@ export function PortfolioPage() {
         </div>
 
         {mobileNavOpen && (
-          <div className="border-t border-white/10 bg-[#050b14] lg:hidden">
+          <nav id="mobile-nav" aria-label="Primary" className="border-t border-white/10 bg-[#050b14] xl:hidden">
             <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 sm:px-6">
               {navItems.map((item) => (
                 <button
                   key={item}
                   onClick={() => scrollToSection(item.toLowerCase())}
+                  aria-current={activeSection === item ? 'true' : undefined}
                   className={`rounded-md px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.2em] ${
                     activeSection === item ? 'bg-cyan-400/10 text-cyan-300' : 'text-slate-300'
                   }`}
@@ -197,7 +182,7 @@ export function PortfolioPage() {
                 </button>
               ))}
             </div>
-          </div>
+          </nav>
         )}
       </header>
 
@@ -299,7 +284,13 @@ export function PortfolioPage() {
           <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
             <div className="flex items-center justify-center">
               <div className="relative h-[420px] w-full overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,rgba(15,23,42,1),rgba(10,17,34,1))]">
-                <img src="/new profile.jpg" alt="Reggie Lovett portrait" className="h-full w-full object-cover opacity-90 grayscale" />
+                <img
+                  src="/new profile.jpg"
+                  alt={`Portrait of ${profile.name}`}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover opacity-90 grayscale"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#020817] via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-cyan-400/20 bg-slate-950/70 p-4 backdrop-blur-sm">
                   <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300">PROFILE // RL</div>
@@ -493,9 +484,19 @@ export function PortfolioPage() {
               {certificates.map((certificate, index) => (
                 <Card key={`${certificate.title}-${index}`} className="group overflow-hidden border-white/10 bg-white/5">
                   <div className="h-48 border-b border-white/10 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.2),transparent_40%),linear-gradient(135deg,#0f172a,#0a1320)] p-6">
-                    <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-cyan-300/30 bg-slate-900/50 text-center text-xs uppercase tracking-[0.25em] text-cyan-200">
-                      {certificate.title || 'Certificate'}
-                    </div>
+                    {certificate.image ? (
+                      <img
+                        src={certificate.image}
+                        alt={`${certificate.title} certificate`}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full rounded-2xl object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-cyan-300/30 bg-slate-900/50 text-center text-xs uppercase tracking-[0.25em] text-cyan-200">
+                        {certificate.title || 'Certificate'}
+                      </div>
+                    )}
                   </div>
                   <CardContent className="p-5">
                     <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{certificate.issuer || 'Issuer unavailable'}</div>
@@ -579,23 +580,23 @@ export function PortfolioPage() {
             <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
               <div>
                 <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">CONTACT MISSION CONTROL</div>
-                <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">LET'S BUILD WHAT'S NEXT.</h2>
+                <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">LET&rsquo;S BUILD WHAT&rsquo;S NEXT.</h2>
                 <p className="mt-6 max-w-xl text-base leading-7 text-slate-300">
                   I’m open to collaboration, internships, project opportunities, and conversations around AI, software development, and technology leadership.
                 </p>
 
                 <div className="mt-8 space-y-4">
                   <ContactRow icon={<Mail className="h-5 w-5 text-cyan-300" />} label="Email" value={contactInfo.email} href={`mailto:${contactInfo.email}`} />
-                  <ContactRow icon={<Github className="h-5 w-5 text-cyan-300" />} label="GitHub" value={contactInfo.github} href={contactInfo.github} />
-                  <ContactRow icon={<Briefcase className="h-5 w-5 text-cyan-300" />} label="LinkedIn" value={contactInfo.linkedin} href={contactInfo.linkedin} />
+                  <ContactRow icon={<Github className="h-5 w-5 text-cyan-300" />} label="GitHub" value="@ReggieLovett" href={contactInfo.github} external />
+                  <ContactRow icon={<Linkedin className="h-5 w-5 text-cyan-300" />} label="LinkedIn" value="in/reggielovett" href={contactInfo.linkedin} external />
                   <a
                     href="https://youtu.be/wxX6j3y0vaM?si=Q0siCI3kp430fLqf"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="flex items-center gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-4 transition-colors hover:border-cyan-400/30 hover:bg-slate-950/90"
                   >
                     <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-cyan-400/30 bg-cyan-400/10">
-                      <img src="/superman.jpg" alt="Hope Core" className="h-full w-full object-cover" />
+                      <img src="/superman.jpg" alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     </div>
                     <div>
                       <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Hope Core</div>
@@ -747,16 +748,26 @@ export function PortfolioPage() {
               ))}
             </div>
             <div className="flex items-center gap-4 text-slate-300">
-              <a href={contactInfo.linkedin} className="hover:text-white"><Globe className="h-5 w-5" /></a>
-              <a href={contactInfo.github} className="hover:text-white"><Github className="h-5 w-5" /></a>
-              <a href={`mailto:${contactInfo.email}`} className="hover:text-white"><Mail className="h-5 w-5" /></a>
+              <a href={contactInfo.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile" className="hover:text-white">
+                <Linkedin className="h-5 w-5" />
+              </a>
+              <a href={contactInfo.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" className="hover:text-white">
+                <Github className="h-5 w-5" />
+              </a>
+              <a href={`mailto:${contactInfo.email}`} aria-label="Send an email" className="hover:text-white">
+                <Mail className="h-5 w-5" />
+              </a>
             </div>
           </div>
-          <div className="mx-auto mt-8 max-w-7xl px-4 text-center text-sm text-slate-400 sm:px-6 lg:px-8">© 2026 Reggie Lovett</div>
+          <div className="mx-auto mt-8 max-w-7xl px-4 text-center text-sm text-slate-400 sm:px-6 lg:px-8">
+            © {new Date().getFullYear()} {profile.name}
+          </div>
         </footer>
       </main>
 
-      {selectedCertificate !== null && certificateModal(selectedCertificate, setSelectedCertificate)}
+      {selectedCertificate !== null && (
+        <CertificateModal index={selectedCertificate} onClose={() => setSelectedCertificate(null)} />
+      )}
     </div>
   );
 }
@@ -787,6 +798,8 @@ function ProjectCard({ project }: { project: (typeof projects)[number] }) {
           <img
             src={project.details.screenshots[0]}
             alt={`${project.title} preview`}
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 h-full w-full object-cover opacity-90"
           />
         ) : (
@@ -822,35 +835,55 @@ function ProjectCard({ project }: { project: (typeof projects)[number] }) {
         </div>
 
         <div className="mt-6 flex gap-3">
-          <Button
-            variant="outline"
-            className="flex-1 border-cyan-400/30 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10"
-            onClick={() => {
-              if (project.demo) {
-                window.open(project.demo, '_blank');
-              }
-            }}
-          >
-            VIEW PROJECT
-          </Button>
-          <Button variant="ghost" className="border-white/10 bg-white/5 text-slate-200 hover:bg-white/10" asChild>
-            <a href={project.github || '#'} target="_blank" rel="noreferrer">
-              <Github className="h-4 w-4" />
-            </a>
-          </Button>
+          {project.demo && (
+            <Button
+              variant="outline"
+              className="flex-1 border-cyan-400/30 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10"
+              asChild
+            >
+              <a href={project.demo} target="_blank" rel="noopener noreferrer">
+                VIEW PROJECT
+                <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                <span className="sr-only"> — {project.title} (opens in a new tab)</span>
+              </a>
+            </Button>
+          )}
+          {project.github && (
+            <Button variant="ghost" className="border-white/10 bg-white/5 text-slate-200 hover:bg-white/10" asChild>
+              <a href={project.github} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} source on GitHub`}>
+                <Github className="h-4 w-4" />
+              </a>
+            </Button>
+          )}
         </div>
       </div>
     </article>
   );
 }
 
-function ContactRow({ icon, label, value, href }: { icon: React.ReactNode; label: string; value: string; href: string }) {
+function ContactRow({
+  icon,
+  label,
+  value,
+  href,
+  external = false,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  href: string;
+  external?: boolean;
+}) {
   return (
-    <a href={href} className="flex items-center gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-4 transition-colors hover:border-cyan-400/30 hover:bg-slate-950/90">
+    <a
+      href={href}
+      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      className="flex items-center gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-4 transition-colors hover:border-cyan-400/30 hover:bg-slate-950/90"
+    >
       <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10">{icon}</div>
-      <div>
+      <div className="min-w-0">
         <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{label}</div>
-        <div className="mt-1 text-base font-medium text-white">{value}</div>
+        <div className="mt-1 truncate text-base font-medium text-white">{value}</div>
       </div>
     </a>
   );
@@ -865,28 +898,62 @@ function MissionDashCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function certificateModal(index: number, setSelectedCertificate: (value: number | null) => void) {
+function CertificateModal({ index, onClose }: { index: number; onClose: () => void }) {
   const certificate = certificates[index];
+
+  // Close on Escape, and lock background scroll while the dialog is open.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [onClose]);
+
   if (!certificate) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-3xl rounded-[28px] border border-white/10 bg-[#07111f] p-6 shadow-[0_0_80px_rgba(14,165,233,0.12)]">
-        <div className="mb-5 flex items-center justify-between">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="certificate-modal-title"
+      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/80 p-4 backdrop-blur-sm"
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className="my-auto w-full max-w-3xl rounded-[28px] border border-white/10 bg-[#07111f] p-6 shadow-[0_0_80px_rgba(14,165,233,0.12)]"
+      >
+        <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300">CERTIFICATE</div>
-            <h3 className="mt-2 text-3xl font-bold text-white">{certificate.title || 'Certificate'}</h3>
+            <h3 id="certificate-modal-title" className="mt-2 text-2xl font-bold text-white sm:text-3xl">
+              {certificate.title || 'Certificate'}
+            </h3>
           </div>
-          <button onClick={() => setSelectedCertificate(null)} className="rounded-full border border-white/10 bg-white/5 p-2 text-slate-200 hover:bg-white/10">
+          <button
+            onClick={onClose}
+            aria-label="Close certificate"
+            autoFocus
+            className="shrink-0 rounded-full border border-white/10 bg-white/5 p-2 text-slate-200 hover:bg-white/10"
+          >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <div className="rounded-[12px] overflow-hidden border border-white/10 bg-white/5 p-4">
           {certificate.image ? (
-            <div className="relative h-64 w-full">
-              <img src={certificate.image} alt={certificate.title || 'certificate'} className="h-full w-full object-contain" />
-            </div>
+            <img
+              src={certificate.image}
+              alt={`${certificate.title} certificate`}
+              className="mx-auto max-h-[60vh] w-full object-contain"
+            />
           ) : (
             <div className="rounded-[24px] border border-dashed border-cyan-400/30 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.15),transparent_30%),linear-gradient(135deg,#0f172a,#0a1320)] p-8 text-center text-xs uppercase tracking-[0.25em] text-cyan-200">
               {certificate.title || 'Certificate'}
