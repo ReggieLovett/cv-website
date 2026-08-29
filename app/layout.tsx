@@ -1,5 +1,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import { Providers } from './providers';
 import { profile, contactInfo } from '@/data/portfolio';
 
@@ -47,19 +49,18 @@ export const metadata: Metadata = {
     url: '/',
     title,
     description,
-    images: [{ url: '/new profile.jpg', width: 1200, height: 630, alt: profile.name }],
   },
   twitter: {
     card: 'summary_large_image',
     title,
     description,
-    images: ['/new profile.jpg'],
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#050b14',
-  colorScheme: 'dark',
+  // Matches the default theme; Providers rewrites this when the visitor toggles.
+  themeColor: '#04060c',
+  colorScheme: 'dark light',
 };
 
 const personJsonLd = {
@@ -80,11 +81,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      data-bs-theme="dark"
+      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Marks the document as script-capable before first paint. The scroll
+            reveals only hide themselves under `html.js`, so a reader without
+            JavaScript gets the full page instead of an empty one. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.add('js')",
+          }}
+        />
+      </head>
       <body className="font-sans">
         <a
           href="#home"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-full focus:bg-cyan-400 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-slate-950"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black"
         >
           Skip to content
         </a>

@@ -47,16 +47,18 @@ export const profile: Profile = {
   headline: 'BSIT • ARTIFICIAL INTELLIGENCE',
 };
 
+// Reads like a resume: who he is, what he studied, what he can do, where he has
+// done it, the work itself, then affiliations, evidence, and finally contact.
 export const navItems = [
   'HOME',
   'ABOUT',
-  'PROJECTS',
+  'SKILLS',
   'EXPERIENCE',
+  'PROJECTS',
   'LEADERSHIP',
+  'ORGANIZATIONS',
   'ACHIEVEMENTS',
   'CERTIFICATES',
-  'ORGANIZATIONS',
-  'SKILLS',
   'CONTACT',
 ] as const;
 
@@ -499,5 +501,57 @@ export const r2xGallery = [
     category: 'Photo Manipulation',
     image: '/r2x/ACTIVIY_R2X MEDIA.jpg',
     alt: 'R2X Airplane photo manipulation',
+  },
+];
+
+/**
+ * Skills & Technologies — the category cards rendered as logo pills.
+ * `icon` keys map to the inline SVG marks in components/tech-icons.tsx.
+ */
+export type TechItem = { name: string; icon: string };
+
+export type TechCategory = {
+  label: string;
+  caption: string;
+  items: TechItem[];
+};
+
+export const techStack: TechCategory[] = [
+  {
+    label: 'PROGRAMMING LANGUAGES',
+    caption: 'The languages I build and problem-solve in.',
+    items: [
+      { name: 'JavaScript', icon: 'javascript' },
+      { name: 'TypeScript', icon: 'typescript' },
+      { name: 'Python', icon: 'python' },
+      { name: 'PHP', icon: 'php' },
+      { name: 'C++', icon: 'cpp' },
+    ],
+  },
+  {
+    label: 'FRONTEND',
+    caption: 'Interfaces, structure, and the layer people actually touch.',
+    items: [
+      { name: 'HTML', icon: 'html' },
+      { name: 'CSS', icon: 'css' },
+      { name: 'React', icon: 'react' },
+      { name: 'Next.js', icon: 'next' },
+    ],
+  },
+  {
+    label: 'BACKEND',
+    caption: 'Server-side logic and application runtimes.',
+    items: [
+      { name: 'Node.js', icon: 'node' },
+      { name: 'PHP', icon: 'php' },
+    ],
+  },
+  {
+    label: 'DATABASE',
+    caption: 'Storing, querying, and modelling data.',
+    items: [
+      { name: 'SQL', icon: 'sql' },
+      { name: 'Postgres', icon: 'postgres' },
+    ],
   },
 ];

@@ -1,104 +1,1665 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================================
+   REGGIE LOVETT — DESIGN SYSTEM
+   NASA deep-space contrast × Apple structured minimalism.
+   Monochrome canvas, one cool accent, NASA red reserved for signal marks.
+   ========================================================================= */
+
 @layer base {
   :root {
-    --background: 2 6 23;
-    --foreground: 236 240 255;
-    --card: 15 23 42;
-    --card-foreground: 248 250 252;
-    --popover: 15 23 42;
-    --popover-foreground: 248 250 252;
-    --primary: 56 189 248;
-    --primary-foreground: 2 6 23;
-    --secondary: 15 23 42;
-    --secondary-foreground: 248 250 252;
-    --muted: 15 23 42;
-    --muted-foreground: 148 163 184;
-    --accent: 14 165 233;
-    --accent-foreground: 248 250 252;
-    --destructive: 239 68 68;
-    --destructive-foreground: 248 250 252;
-    --border: 148 163 184 / 0.2;
-    --input: 15 23 42;
-    --ring: 34 211 238;
-    --radius: 1rem;
+    /* Canvas */
+    --void: 0 0 0;
+    --deep: 4 6 12;
+    --surface: 10 13 21;
+    --surface-2: 15 19 30;
+
+    /* Ink */
+    --ink: 245 245 247;
+    --ink-muted: 152 158 170;
+    /* Measured 4.32:1 on the dark ground at the previous value — the mono
+       labels are small text, so they need to clear 4.5:1 too. */
+    --ink-dim: 122 129 142;
+
+    /* Accents */
+    --signal: 77 141 255;
+    --signal-soft: 138 180 255;
+    --nasa-red: 252 61 33;
+    --nasa-blue: 11 61 145;
+
+    /* Translucency channels. Dark is the default palette; the light block below
+       re-points these, and only the handful of surfaces that sit on top of
+       photographs are pinned to literal white. */
+    --tint: 255 255 255;
+    --shade: 0 0 0;
+
+    /* Lines & glass */
+    --hairline: var(--tint) / 0.09;
+    --hairline-strong: 255 255 255 / 0.16;
+    --glass: 255 255 255 / 0.045;
+    --glass-2: 255 255 255 / 0.07;
+
+    /* shadcn bridge (kept so any remaining primitives resolve sanely) */
+    --background: 4 6 12;
+    --foreground: 245 245 247;
+    --card: 10 13 21;
+    --card-foreground: 245 245 247;
+    --popover: 10 13 21;
+    --popover-foreground: 245 245 247;
+    --primary: 77 141 255;
+    --primary-foreground: 4 6 12;
+    --secondary: 15 19 30;
+    --secondary-foreground: 245 245 247;
+    --muted: 15 19 30;
+    --muted-foreground: 152 158 170;
+    --accent: 77 141 255;
+    --accent-foreground: 245 245 247;
+    --destructive: 252 61 33;
+    --destructive-foreground: 245 245 247;
+    --border: 255 255 255 / 0.09;
+    --input: 15 19 30;
+    --ring: 77 141 255;
+    --radius: 1.25rem;
+
+    /* Motion */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-fluid: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+
+    /* Type: Geist, self-hosted through next/font — bundled at build time, so the
+       page still makes zero network requests for fonts. Apple's own faces come
+       next so macOS/iOS falls back to SF rather than to a generic grotesk. */
+    --font-display: var(--font-geist-sans), -apple-system, BlinkMacSystemFont,
+      'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, 'SF Mono',
+      Menlo, monospace;
+
+    /* Bootstrap 5 re-tuned to the dark system */
+    --bs-body-bg: rgb(var(--deep));
+    --bs-body-color: rgb(var(--ink));
+    --bs-body-font-family: var(--font-display);
+    --bs-border-color: rgb(var(--tint) / 0.09);
+    --bs-card-bg: transparent;
+    --bs-card-border-color: rgb(var(--tint) / 0.09);
+    --bs-card-border-radius: 1.25rem;
+    --bs-card-inner-border-radius: 1.25rem;
+    --bs-card-spacer-x: 1.5rem;
+    --bs-card-spacer-y: 1.5rem;
+    --bs-emphasis-color: rgb(var(--ink));
+    --bs-secondary-color: rgb(var(--ink-muted));
+    --bs-link-color: rgb(var(--signal-soft));
+    --bs-link-hover-color: rgb(var(--ink));
+    --bs-gutter-x: 1.5rem;
   }
 
-  .dark {
-    --background: 2 6 23;
-    --foreground: 236 240 255;
-  }
   * {
     @apply border-border;
   }
+
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+    -webkit-text-size-adjust: 100%;
   }
+
   body {
-    @apply bg-background text-foreground antialiased;
-    background-image: radial-gradient(circle at top, rgba(14, 165, 233, 0.12), transparent 30%),
-      linear-gradient(180deg, #020817 0%, #050b14 35%, #020817 100%);
+    font-family: var(--font-display);
+    background-color: rgb(var(--deep));
+    color: rgb(var(--ink));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
+    overflow-x: hidden;
   }
+
+  /* Bootstrap's reboot re-asserts these; the design system owns them instead. */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    margin: 0;
+  }
+
+  p, figure, ul, ol, dl {
+    margin: 0;
+  }
+
   a {
-    @apply transition-colors duration-200;
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.25s var(--ease-out-expo);
   }
-  button {
-    @apply transition-all duration-200;
+
+  ::selection {
+    background: rgb(var(--signal) / 0.28);
+    color: rgb(var(--ink));
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--signal));
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* Deep-space scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgb(var(--void));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--tint) / 0.12);
+    border-radius: 999px;
+    border: 3px solid rgb(var(--void));
+  }
+}
+
+@layer components {
+  /* ---------- Layout rails ---------------------------------------------- */
+  /* Bootstrap's .container drives every rail; only its gutters are re-tuned,
+     because 0.75rem is too tight for a full-bleed dark layout on phones. */
+  .container {
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .container {
+      padding-inline: 2rem;
+    }
+  }
+
+  .section {
+    position: relative;
+    padding-block: 6rem;
+  }
+  @media (min-width: 992px) {
+    .section {
+      padding-block: 8.5rem;
+    }
+  }
+
+  .section-rule {
+    border-top: 1px solid rgb(var(--hairline));
+  }
+
+  /* ---------- Typography ------------------------------------------------ */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgb(var(--signal-soft));
+  }
+
+  .eyebrow::before {
+    content: '';
+    width: 1.75rem;
+    height: 1px;
+    background: linear-gradient(90deg, rgb(var(--signal) / 0.9), transparent);
+  }
+
+  .eyebrow-plain {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-dim));
+  }
+
+  /* Tracking and leading are size-specific: letterforms read further apart as they
+     grow, so large text tightens and small text stays near zero. One fixed
+     letter-spacing across a scale is wrong at one end of it. */
+  .display {
+    font-weight: 600;
+    color: rgb(var(--ink));
+    text-wrap: balance;
+    font-optical-sizing: auto;
+  }
+
+  .display-xl {
+    font-size: clamp(2.75rem, 9vw, 7.25rem);
+    line-height: 0.92;
+    letter-spacing: -0.055em;
+    font-weight: 650;
+  }
+  .display-lg {
+    font-size: clamp(2.25rem, 5.6vw, 4.25rem);
+    line-height: 0.98;
+    letter-spacing: -0.042em;
+  }
+  .display-md {
+    font-size: clamp(1.5rem, 2.6vw, 2rem);
+    line-height: 1.12;
+    letter-spacing: -0.028em;
+  }
+
+  .lede {
+    font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+    line-height: 1.65;
+    color: rgb(var(--ink-muted));
+    text-wrap: pretty;
+  }
+
+  .body-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: rgb(var(--ink-muted));
+    text-wrap: pretty;
+  }
+
+  .gradient-ink {
+    background: linear-gradient(
+      180deg,
+      rgb(var(--ink)) 0%,
+      rgb(var(--ink) / 0.72) 55%,
+      rgb(var(--signal-soft) / 0.75) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ---------- Glass surfaces -------------------------------------------- */
+  /* Translucent surfaces that SCROLL carry no backdrop-filter: dozens of blurred
+     layers moving through the viewport pin the GPU on mobile. Over a near-black
+     canvas the blur contributes almost nothing anyway — the translucent gradient,
+     hairline, and inset highlight do the work. Real backdrop-filter is reserved
+     for fixed/sticky chrome (.chrome-blur below). */
+  .glass {
+    position: relative;
+    background: linear-gradient(
+      180deg,
+      rgb(var(--tint) / 0.06) 0%,
+      rgb(var(--tint) / 0.025) 100%
+    );
+    border: 1px solid rgb(var(--hairline));
+    border-radius: var(--bs-card-border-radius);
+    box-shadow:
+      inset 0 1px 0 rgb(var(--tint) / 0.07),
+      0 24px 60px -32px rgb(var(--shade) / 0.9);
+  }
+
+  /* Genuine material — only ever on fixed or sticky layers. */
+  .chrome-blur {
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+  }
+
+  .glass-hover {
+    transition:
+      transform 0.22s var(--ease-out-strong),
+      border-color 0.22s var(--ease-out-strong),
+      box-shadow 0.22s var(--ease-out-strong);
+    will-change: transform;
+  }
+  /* Bootstrap .card, re-skinned as a glass panel. */
+  .card.panel {
+    background: linear-gradient(
+      180deg,
+      rgb(var(--tint) / 0.06) 0%,
+      rgb(var(--tint) / 0.025) 100%
+    );
+    border: 1px solid rgb(var(--hairline));
+    border-radius: var(--bs-card-border-radius);
+    box-shadow:
+      inset 0 1px 0 rgb(var(--tint) / 0.07),
+      0 24px 60px -32px rgb(var(--shade) / 0.9);
+    overflow: hidden;
+    height: 100%;
+  }
+
+  /* ---------- Skills & Technologies ------------------------------------- */
+  /* The category card is now the inner core of a bezel enclosure, so the outer
+     hairline, radius and lift all live on .bezel — this is just the surface. */
+  .skill-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.75rem;
+    border-radius: calc(1.75rem - 0.375rem);
+    background:
+      radial-gradient(120% 100% at 0% 0%, rgb(var(--signal) / 0.07), transparent 55%),
+      linear-gradient(180deg, rgb(var(--tint) / 0.055) 0%, rgb(var(--tint) / 0.018) 100%);
+    border: 1px solid rgb(var(--tint) / 0.06);
+    box-shadow: inset 0 1px 1px rgb(var(--tint) / 0.1);
+  }
+
+  .skill-card__label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-dim));
+  }
+
+  .skill-card__count {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+    color: rgb(var(--ink-dim) / 0.75);
+  }
+
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+
+  /* Pill-shaped tech badge: logo + name, soft shadow, clean spacing. */
+  .tech-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5625rem;
+    padding: 0.5rem 1rem 0.5rem 0.625rem;
+    border-radius: 999px;
+    background: linear-gradient(
+      180deg,
+      rgb(var(--tint) / 0.085) 0%,
+      rgb(var(--tint) / 0.035) 100%
+    );
+    border: 1px solid rgb(var(--tint) / 0.1);
+    box-shadow:
+      inset 0 1px 0 rgb(var(--tint) / 0.09),
+      0 6px 16px -8px rgb(var(--shade) / 0.85);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: rgb(var(--ink) / 0.94);
+    white-space: nowrap;
+    transition:
+      transform 0.2s var(--ease-out-strong),
+      background 0.2s var(--ease-out-strong),
+      border-color 0.2s var(--ease-out-strong),
+      box-shadow 0.2s var(--ease-out-strong);
+  }
+  .tech-pill__icon {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 auto;
+    /* Some marks are lettering (JS, TS, php); keep them out of text selection
+       so copying a badge yields "JavaScript", not "JSJavaScript". */
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+  }
+
+  .tech-pill__icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Text-only capability pill (no logo). */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.875rem;
+    border-radius: 999px;
+    background: rgb(var(--tint) / 0.045);
+    border: 1px solid rgb(var(--tint) / 0.08);
+    font-size: 0.8125rem;
+    font-weight: 450;
+    color: rgb(var(--ink) / 0.82);
+    white-space: nowrap;
+    transition:
+      background 0.2s var(--ease-out-strong),
+      border-color 0.2s var(--ease-out-strong),
+      color 0.2s var(--ease-out-strong);
+  }
+  .chip-mono {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-muted));
+  }
+
+  .chip-signal {
+    background: rgb(var(--signal) / 0.1);
+    border-color: rgb(var(--signal) / 0.3);
+    color: rgb(var(--signal-soft));
+  }
+
+  /* ---------- Gallery tiles + lightbox ------------------------------------ */
+  .tile {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0.375rem;
+    border-radius: 1.75rem;
+    background: rgb(var(--tint) / 0.035);
+    border: 1px solid rgb(var(--tint) / 0.07);
+    box-shadow: 0 32px 70px -40px rgb(var(--shade) / 0.95);
+    transition:
+      transform 0.22s var(--ease-out-strong),
+      border-color 0.22s var(--ease-out-strong),
+      box-shadow 0.22s var(--ease-out-strong);
+  }
+
+  .tile__frame {
+    position: relative;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    border-radius: calc(1.75rem - 0.375rem);
+    background: rgb(var(--surface));
+  }
+
+  .tile__img {
+    object-fit: cover;
+    transform: scale(1.01);
+    transition: transform 0.5s var(--ease-out-strong);
+  }
+
+  .tile__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 35%, rgb(var(--shade) / 0.88) 100%);
+  }
+
+  .tile__meta {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    display: block;
+    padding: 1.25rem;
+    text-align: left;
+  }
+
+  .tile__title {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 1.0625rem;
+    font-weight: 550;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    color: rgb(var(--ink));
+  }
+
+  /* The expand affordance is the one thing that appears on hover — the caption
+     stays put, because information should not depend on a pointer. */
+  .tile__expand {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    background: rgb(var(--shade) / 0.55);
+    border: 1px solid rgb(var(--tint) / 0.16);
+    color: rgb(var(--ink));
+    opacity: 0;
+    transform: scale(0.92);
+    transition:
+      opacity 0.22s var(--ease-out-strong),
+      transform 0.22s var(--ease-out-strong);
+  }
+
+  .tile:focus-visible .tile__expand {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .tile:active {
+    transform: scale(0.99);
+    transition-duration: 120ms;
+  }
+
+  /* Grid, not flex. A flex item's height is not a definite length, so the
+     image's `max-height: 100%` could resolve to `none` — the picture then
+     rendered at its natural size and was clipped by the stage instead of
+     being scaled to fit. `minmax(0, 1fr)` gives the stage a definite height
+     that percentages resolve against, and stops a large image from forcing
+     the track taller than the viewport. */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    display: grid;
+    /* Both tracks need the minmax(0, …) floor. An implicit `auto` column sizes
+       to max-content, so the toolbar's title and buttons could push the column
+       wider than the viewport — taking the stage, and the picture in it, with
+       them. That is what threw the image off-centre and cropped it. */
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    background: rgb(var(--shade) / 0.9);
+    padding: 1rem;
+  }
+
+  .lightbox__bar {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0.75rem 0.25rem 1rem;
+  }
+
+  .lightbox__stage {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    padding: 0 clamp(0.5rem, 3vw, 3rem) 1rem;
+  }
+
+  /* Filling the cell and letting `object-fit` do the letterboxing removes the
+     sizing maths entirely: `scale-down` fits the picture inside the box and
+     never enlarges one smaller than its natural size, and it is centred by
+     definition. It cannot overflow, whatever the image's dimensions. */
+  .lightbox__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: scale-down;
+    object-position: center;
+  }
+
+  .lightbox__hint {
+    flex: 0 0 auto;
+    padding-bottom: 0.5rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-dim));
+  }
+
+  .theme-toggle {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    border: 1px solid rgb(var(--tint) / 0.12);
+    background: rgb(var(--tint) / 0.05);
+    color: rgb(var(--ink));
+    transition:
+      background 0.2s var(--ease-out-strong),
+      border-color 0.2s var(--ease-out-strong),
+      transform 0.2s var(--ease-out-strong);
+  }
+
+  .theme-toggle:active {
+    transform: scale(0.94);
+    transition-duration: 110ms;
+  }
+
+  .theme-toggle__glyphs {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1rem;
+    height: 1rem;
+  }
+
+  /* The two glyphs cross-rotate rather than hard-swapping. Neither starts from
+     scale(0) — things that appear from nothing read as glitches. */
+  .theme-toggle__glyphs > svg {
+    position: absolute;
+    transition:
+      opacity 0.25s var(--ease-out-strong),
+      transform 0.4s var(--ease-out-strong);
+  }
+
+  .theme-toggle__glyphs[data-dark='true'] > svg:first-child,
+  .theme-toggle__glyphs[data-dark='false'] > svg:last-child {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  .theme-toggle__glyphs[data-dark='true'] > svg:last-child {
+    opacity: 0;
+    transform: rotate(-80deg) scale(0.6);
+  }
+
+  .theme-toggle__glyphs[data-dark='false'] > svg:first-child {
+    opacity: 0;
+    transform: rotate(80deg) scale(0.6);
+  }
+
+  .icon-btn {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    border: 1px solid rgb(var(--tint) / 0.12);
+    background: rgb(var(--tint) / 0.05);
+    color: rgb(var(--ink));
+    transition:
+      background 0.18s var(--ease-out-strong),
+      border-color 0.18s var(--ease-out-strong),
+      transform 0.18s var(--ease-out-strong);
+  }
+
+  .icon-btn:active {
+    transform: scale(0.94);
+    transition-duration: 110ms;
+  }
+
+  /* ---------- Portrait plate --------------------------------------------
+     The photo is treated as an instrument panel rather than a rounded avatar:
+     registration ticks at the corners, a mono ID strip, and only a light
+     desaturation at rest so the face still reads as a person. */
+  .portrait {
+    position: relative;
+    overflow: hidden;
+    border-radius: calc(1.75rem - 0.375rem);
+  }
+
+  .portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.55) contrast(1.05);
+    transform: scale(1.02);
+    transition:
+      filter 0.45s var(--ease-out-strong),
+      transform 0.6s var(--ease-out-strong);
+  }
+  .portrait__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgb(var(--shade) / 0.35) 0%,
+      transparent 28%,
+      transparent 45%,
+      rgb(var(--shade) / 0.92) 100%
+    );
+  }
+
+  /* Four corner registration marks, drawn with borders on empty spans. */
+  .tick {
+    position: absolute;
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 1px solid rgb(var(--tint) / 0.35);
+    pointer-events: none;
+  }
+  .tick--tl { top: 0.875rem; left: 0.875rem; border-right: 0; border-bottom: 0; }
+  .tick--tr { top: 0.875rem; right: 0.875rem; border-left: 0; border-bottom: 0; }
+  .tick--bl { bottom: 0.875rem; left: 0.875rem; border-right: 0; border-top: 0; }
+  .tick--br { bottom: 0.875rem; right: 0.875rem; border-left: 0; border-top: 0; }
+
+  /* ---------- Spec sheet -------------------------------------------------
+     Facts as hairline-ruled rows read as a technical readout; the same four
+     values in four separate cards read as filler. */
+  .spec {
+    border-top: 1px solid rgb(var(--tint) / 0.09);
+  }
+
+  .spec__row {
+    display: grid;
+    grid-template-columns: minmax(7rem, 12rem) 1fr;
+    gap: 1rem 1.5rem;
+    align-items: baseline;
+    padding: 1.125rem 0;
+    border-bottom: 1px solid rgb(var(--tint) / 0.09);
+  }
+
+  @media (max-width: 575.98px) {
+    .spec__row {
+      grid-template-columns: 1fr;
+      gap: 0.375rem;
+      padding: 0.875rem 0;
+    }
+  }
+
+  .spec__label {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-dim));
+  }
+
+  .spec__value {
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    color: rgb(var(--ink));
+    text-wrap: pretty;
+  }
+
+  /* ---------- Floating nav island ---------------------------------------
+     The header is not glued edge-to-edge to the top. At rest it is invisible
+     chrome over the hero; once the page moves it contracts into a detached
+     glass pill — one of the few surfaces that earns a real backdrop-filter. */
+  .nav-island {
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: transparent;
+    box-shadow: none;
+    transition:
+      background 0.45s var(--ease-out-strong),
+      border-color 0.45s var(--ease-out-strong),
+      box-shadow 0.45s var(--ease-out-strong);
+  }
+
+  /* The blur belongs to the floating state only. A backdrop-filter still
+     applies when the element's own background is transparent, so leaving it on
+     at rest painted a saturated, blurred rectangle over the hero — the bar was
+     visible as a band before it had any business being visible at all. */
+  .nav-island[data-floating='true'] {
+    background: rgb(var(--shade) / 0.55);
+    border-color: rgb(var(--tint) / 0.1);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    box-shadow:
+      inset 0 1px 0 rgb(var(--tint) / 0.08),
+      0 24px 56px -28px rgb(var(--shade) / 0.95);
+  }
+
+  /* Ten wide-tracked links are the tightest thing in the layout. At the xl
+     breakpoint the old padding and tracking summed past the bar's width and the
+     last two links were clipped off-screen, so the link box is trimmed and the
+     tracking relaxed until it fits with room to spare. */
+  .site-nav__link {
+    position: relative;
+    flex: 0 0 auto;
+    padding: 0.5rem 0.5rem;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgb(var(--ink-dim));
+    transition: color 0.2s var(--ease-out-strong);
+  }
+
+  .site-nav__link[data-active='true'] {
+    color: rgb(var(--ink));
+  }
+
+  .site-nav__link:focus-visible {
+    box-shadow: none;
+  }
+
+  /* The active pill is drawn behind the label rather than as a border on the
+     link, so turning it on never changes the link's width. */
+  .site-nav__link[data-active='true']::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    border: 1px solid rgb(var(--tint) / 0.12);
+    background: rgb(var(--tint) / 0.07);
+  }
+
+  .site-nav__link > span {
+    position: relative;
+  }
+
+  .menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: rgb(var(--shade) / 0.82);
+    overflow-y: auto;
+  }
+
+  .menu-link[data-active='true'] {
+    color: rgb(var(--ink));
+  }
+
+  .menu-link {
+    display: block;
+    width: 100%;
+    padding: 0.625rem 0;
+    text-align: left;
+    font-size: clamp(1.75rem, 8vw, 2.75rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    color: rgb(var(--ink-dim));
+    transition: color 0.4s var(--ease-fluid);
+  }
+  /* ---------- Double-bezel enclosure -------------------------------------
+     A premium card is not a flat rectangle on a background — it reads as a
+     machined tray holding a plate. An outer shell carries the hairline and the
+     large radius; the inner core sits inside it with its own surface and a
+     concentric (smaller) radius, so the curves stay parallel. */
+  .bezel {
+    position: relative;
+    height: 100%;
+    padding: 0.375rem;
+    border-radius: 1.75rem;
+    background: rgb(var(--tint) / 0.035);
+    border: 1px solid rgb(var(--tint) / 0.07);
+    box-shadow: 0 32px 70px -40px rgb(var(--shade) / 0.95);
+    transition:
+      transform 0.22s var(--ease-out-strong),
+      border-color 0.22s var(--ease-out-strong),
+      box-shadow 0.22s var(--ease-out-strong);
+  }
+
+  .bezel__core {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* 1.75rem shell radius − 0.375rem padding = concentric inner curve. */
+    border-radius: calc(1.75rem - 0.375rem);
+    background: linear-gradient(
+      180deg,
+      rgb(var(--tint) / 0.055) 0%,
+      rgb(var(--tint) / 0.018) 100%
+    );
+    border: 1px solid rgb(var(--tint) / 0.06);
+    box-shadow: inset 0 1px 1px rgb(var(--tint) / 0.1);
+  }
+  /* ---------- Buttons ---------------------------------------------------- */
+  /* Press feedback fires on pointer-down (:active), never on release — waiting
+     for the click to acknowledge a press is what makes a UI feel dead. */
+  .btn-solid,
+  .btn-glass {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+    border-radius: 999px;
+    font-size: 0.9375rem;
+    font-weight: 550;
+    letter-spacing: -0.015em;
+    transition:
+      transform 0.2s var(--ease-out-strong),
+      background 0.2s var(--ease-out-strong),
+      border-color 0.2s var(--ease-out-strong),
+      box-shadow 0.2s var(--ease-out-strong);
+  }
+
+  .btn-solid {
+    background: rgb(var(--ink));
+    color: rgb(var(--deep));
+    border: 1px solid transparent;
+  }
+  .btn-glass {
+    background: rgb(var(--tint) / 0.06);
+    border: 1px solid rgb(var(--tint) / 0.14);
+    color: rgb(var(--ink));
+  }
+  .btn-solid:active,
+  .btn-glass:active,
+  .btn-quiet:active {
+    transform: scale(0.975);
+    transition-duration: 100ms;
+  }
+
+  /* Buttons with no trailing icon keep symmetric padding. */
+  .btn-solid.btn--plain,
+  .btn-glass.btn--plain {
+    padding: 0.8125rem 1.625rem;
+  }
+
+  /* The trailing arrow is never naked beside the label — it sits in its own
+     nested disc, and drifts diagonally on hover for kinetic tension. */
+  .btn__icon {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    transition:
+      transform 0.2s var(--ease-out-strong),
+      background 0.2s var(--ease-out-strong);
+  }
+
+  .btn-solid .btn__icon {
+    background: rgb(var(--deep) / 0.09);
+  }
+
+  .btn-glass .btn__icon {
+    background: rgb(var(--tint) / 0.1);
+  }
+  .btn-quiet {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.6875rem 1.125rem;
+    border-radius: 999px;
+    border: 1px solid rgb(var(--tint) / 0.12);
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-muted));
+    transition:
+      background 0.2s var(--ease-out-strong),
+      border-color 0.2s var(--ease-out-strong),
+      color 0.2s var(--ease-out-strong),
+      transform 0.2s var(--ease-out-strong);
+  }
+  .filter-pill {
+    padding: 0.5rem 1.125rem;
+    border-radius: 999px;
+    border: 1px solid rgb(var(--tint) / 0.1);
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-dim));
+    transition:
+      background 0.2s var(--ease-out-strong),
+      border-color 0.2s var(--ease-out-strong),
+      color 0.2s var(--ease-out-strong),
+      transform 0.2s var(--ease-out-strong);
+  }
+  .filter-pill:active {
+    transform: scale(0.96);
+    transition-duration: 100ms;
+  }
+
+  .filter-pill[data-active='true'] {
+    background: rgb(var(--ink));
+    border-color: rgb(var(--ink));
+    color: rgb(var(--deep));
   }
 }
 
 @layer utilities {
-  .stars {
+  /* ---------- Ambient space backdrop ------------------------------------ */
+  .starfield {
     position: absolute;
     inset: 0;
     background-image:
-      radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.8), transparent),
-      radial-gradient(2px 2px at 75% 25%, rgba(125,211,252,0.8), transparent),
-      radial-gradient(1.5px 1.5px at 35% 70%, rgba(255,255,255,0.6), transparent),
-      radial-gradient(1.5px 1.5px at 80% 65%, rgba(125,211,252,0.7), transparent),
-      radial-gradient(2px 2px at 55% 45%, rgba(255,255,255,0.7), transparent);
+      radial-gradient(1.4px 1.4px at 12% 18%, rgb(var(--tint) / 0.9), transparent),
+      radial-gradient(1px 1px at 28% 62%, rgb(var(--tint) / 0.55), transparent),
+      radial-gradient(1.6px 1.6px at 47% 26%, rgb(190 215 255 / 0.85), transparent),
+      radial-gradient(1px 1px at 63% 74%, rgb(var(--tint) / 0.5), transparent),
+      radial-gradient(1.3px 1.3px at 78% 38%, rgb(var(--tint) / 0.8), transparent),
+      radial-gradient(1px 1px at 88% 82%, rgb(190 215 255 / 0.6), transparent),
+      radial-gradient(1.2px 1.2px at 5% 88%, rgb(var(--tint) / 0.6), transparent);
     background-repeat: repeat;
-    background-size: 420px 420px;
-    opacity: 0.65;
+    background-size: 560px 560px;
+    opacity: 0.5;
   }
 
-  .orbital-grid {
+  /* Ambient glows, kept as classes so the light theme can dial them back —
+     the same intensity that reads as depth on black reads as a wash on grey. */
+  .glow-primary {
+    background: radial-gradient(75% 55% at 50% 0%, rgb(var(--signal) / 0.14), transparent 70%);
+  }
+
+  .glow-warm {
+    background: radial-gradient(45% 40% at 92% 78%, rgb(var(--nasa-red) / 0.06), transparent 70%);
+  }
+
+  .hero-halo {
+    background: radial-gradient(closest-side, rgb(var(--signal) / 0.2), transparent);
+  }
+
+  .aurora {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 45% at 50% -6%, rgb(var(--signal) / 0.16), transparent 70%),
+      radial-gradient(45% 38% at 88% 12%, rgb(var(--nasa-blue) / 0.22), transparent 70%),
+      radial-gradient(40% 36% at 6% 68%, rgb(var(--nasa-red) / 0.07), transparent 70%);
+  }
+
+  .grid-lines {
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
-    background-size: 30px 30px;
-    mask-image: radial-gradient(circle at center, black 52%, transparent 100%);
+      linear-gradient(rgb(var(--tint) / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--tint) / 0.045) 1px, transparent 1px);
+    background-size: 88px 88px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 25%, transparent 78%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 25%, transparent 78%);
   }
 
-  @keyframes pulse-slow {
-    0%,
-    100% {
-      opacity: 0.7;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.06);
-    }
+  /* Film grain sits on a fixed, non-interactive layer so it never repaints with
+     scrolling content. Gives the flat black some physical tooth. */
+  .grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  .animate-pulse-slow {
-    animation: pulse-slow 5s ease-in-out infinite;
+  /* A soft gradient where content passes under floating chrome, instead of a
+     1px rule. Nothing on this page is separated by a hard line at the top. */
+  .scroll-edge {
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    height: 3.5rem;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgb(var(--deep) / 0.7), transparent);
+    -webkit-mask-image: linear-gradient(180deg, #000, transparent);
+    mask-image: linear-gradient(180deg, #000, transparent);
   }
+
+  /* Hamburger → X: the bars rotate and translate into the cross rather than
+     being swapped for a different glyph. */
+  .burger {
+    position: relative;
+    width: 1rem;
+    height: 0.75rem;
+  }
+
+  .burger span {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1.5px;
+    border-radius: 2px;
+    background: currentColor;
+    transition:
+      transform 0.36s var(--ease-out-strong),
+      opacity 0.2s var(--ease-out-strong);
+  }
+
+  .burger span:nth-child(1) { transform: translateY(-50%) translateY(-5px); }
+  .burger span:nth-child(2) { transform: translateY(-50%); }
+  .burger span:nth-child(3) { transform: translateY(-50%) translateY(5px); }
+
+  .burger[data-open='true'] span:nth-child(1) {
+    transform: translateY(-50%) rotate(45deg);
+  }
+  .burger[data-open='true'] span:nth-child(2) {
+    opacity: 0;
+    transform: translateY(-50%) scaleX(0.4);
+  }
+  .burger[data-open='true'] span:nth-child(3) {
+    transform: translateY(-50%) rotate(-45deg);
+  }
+
+  /* Staggered entrance for the expanded mobile menu. */
+  @keyframes menu-item-in {
+    from { opacity: 0; transform: translate3d(0, 1.75rem, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+
+  .menu-item {
+    animation: menu-item-in 0.65s var(--ease-fluid) both;
+    animation-delay: var(--menu-delay, 0ms);
+  }
+
+  .hairline-x {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--tint) / 0.14) 22%,
+      rgb(var(--tint) / 0.14) 78%,
+      transparent
+    );
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(0, -18px, 0); }
+  }
+
+  .animate-drift {
+    animation: drift 9s ease-in-out infinite;
+  }
+
+  @keyframes beacon {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgb(52 211 153 / 0.55); }
+    70% { opacity: 0.85; box-shadow: 0 0 0 7px rgb(52 211 153 / 0); }
+  }
+
+  .animate-beacon {
+    animation: beacon 2.8s ease-out infinite;
+  }
+
+  @keyframes sweep {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(220%); }
+  }
+
+  .animate-sweep {
+    animation: sweep 7s ease-in-out infinite;
+  }
+
+  .border-edge { border-color: rgb(var(--tint) / 0.09); }
+  .border-edge-2 { border-color: rgb(var(--tint) / 0.12); }
+  .border-edge-3 { border-color: rgb(var(--tint) / 0.16); }
+  .bg-fill-1 { background-color: rgb(var(--tint) / 0.035); }
+  .bg-fill-2 { background-color: rgb(var(--tint) / 0.055); }
+  .bg-fill-3 { background-color: rgb(var(--tint) / 0.1); }
+  .bg-veil { background-color: rgb(var(--shade) / 0.4); }
+  .text-ink { color: rgb(var(--ink)); }
+  .text-muted-ink { color: rgb(var(--ink-muted)); }
+  .text-dim-ink { color: rgb(var(--ink-dim)); }
+  .text-signal { color: rgb(var(--signal-soft)); }
+  .text-nasa-red { color: rgb(var(--nasa-red)); }
+  .font-mono-ui { font-family: var(--font-mono); }
+  .bg-void { background-color: rgb(var(--void)); }
+  .bg-deep { background-color: rgb(var(--deep)); }
+  .bg-surface { background-color: rgb(var(--surface)); }
+  .border-hairline { border-color: rgb(var(--hairline)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================================
+   Scroll-triggered reveal.
+
+   The hidden state is scoped to `html.js`, a class set by an inline script in
+   the document head. Without JavaScript there is no IntersectionObserver to
+   un-hide anything, so the page must render fully visible rather than blank —
+   the entrance animation is an enhancement, never a gate on the content.
+
+   Kept outside @layer so it always resolves after the Tailwind utilities.
+   ========================================================================= */
+.reveal,
+.reveal-blur,
+.reveal-scale {
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* will-change is a promise to the compositor, not a speed switch — it is held
+   only while an element still has an entrance pending, then released. */
+html.js .reveal:not([data-visible='true']),
+html.js .reveal-blur:not([data-visible='true']),
+html.js .reveal-scale:not([data-visible='true']) {
+  will-change: opacity, transform;
+}
+
+/* Only opacity and transform are animated. The previous "blur in" variant
+   animated `filter`, which is not composited — every frame of every card
+   forced a repaint, and with a dozen grids on the page that is what made
+   scrolling feel heavy. The same softness now comes from scale, which the
+   compositor handles for free. */
+.reveal {
+  transition-property: opacity, transform;
+  transition-duration: 0.62s, 0.72s;
+  transition-timing-function: var(--ease-out-expo);
+}
+
+.reveal-blur {
+  transition-property: opacity, transform;
+  transition-duration: 0.68s, 0.8s;
+  transition-timing-function: var(--ease-out-expo);
+}
+
+.reveal-scale {
+  transition-property: opacity, transform;
+  transition-duration: 0.75s, 0.9s;
+  transition-timing-function: var(--ease-out-expo);
+}
+
+html.js .reveal:not([data-visible='true']) {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+}
+
+html.js .reveal-blur:not([data-visible='true']) {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0) scale(0.988);
+}
+
+html.js .reveal-scale:not([data-visible='true']) {
+  opacity: 0;
+  transform: scale(1.035);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js .reveal:not([data-visible='true']),
+  html.js .reveal-blur:not([data-visible='true']),
+  html.js .reveal-scale:not([data-visible='true']) {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Reduced transparency: frost the materials rather than removing them, so the
+   layering still reads but nothing depends on seeing through it. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .card.panel,
+  .skill-card,
+  .bezel__core {
+    background: rgb(var(--surface));
+  }
+
+  .bezel {
+    background: rgb(var(--surface-2));
+  }
+
+  .chrome-blur {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgb(var(--deep));
+  }
+
+  .grain {
+    display: none;
+  }
+}
+
+/* High contrast: solid grounds and defined edges. */
+@media (prefers-contrast: more) {
+  :root {
+    --ink-muted: 205 210 220;
+    --ink-dim: 175 182 194;
+  }
+
+  .glass,
+  .card.panel,
+  .skill-card,
+  .bezel__core,
+  .tech-pill,
+  .chip {
+    background: rgb(var(--surface));
+    border-color: rgb(var(--tint) / 0.42);
+  }
+}
+
+/* =========================================================================
+   Hover states, gated to real pointers.
+
+   A touch device fires :hover on tap and leaves it stuck until the next tap
+   elsewhere — a card lifted and glowing after you tapped it reads as a bug.
+   Every hover affordance has a non-hover equivalent (focus-visible rings, the
+   always-visible tile caption), so nothing is lost on touch.
+   ========================================================================= */
+@media (hover: hover) and (pointer: fine) {
+  .site-nav__link:hover {
+    color: rgb(var(--ink));
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+      background: rgb(var(--tint) / 0.22);
+    }
+
+  .glass-hover:hover {
+      transform: translateY(-4px);
+      border-color: rgb(var(--signal) / 0.32);
+      box-shadow:
+        inset 0 1px 0 rgb(var(--tint) / 0.1),
+        0 32px 70px -34px rgb(var(--shade) / 0.95),
+        0 0 0 1px rgb(var(--signal) / 0.06),
+        0 0 60px -22px rgb(var(--signal) / 0.5);
+    }
+
+  .tech-pill:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(
+        180deg,
+        rgb(var(--tint) / 0.13) 0%,
+        rgb(var(--tint) / 0.06) 100%
+      );
+      border-color: rgb(var(--tint) / 0.2);
+      box-shadow:
+        inset 0 1px 0 rgb(var(--tint) / 0.14),
+        0 12px 26px -12px rgb(var(--shade) / 0.9);
+    }
+
+  .chip:hover {
+      background: rgb(var(--tint) / 0.08);
+      border-color: rgb(var(--tint) / 0.16);
+      color: rgb(var(--ink));
+    }
+
+  .tile:hover {
+      transform: translateY(-4px);
+      border-color: rgb(var(--signal) / 0.28);
+      box-shadow:
+        0 44px 84px -44px rgb(var(--shade) / 0.98),
+        0 0 70px -28px rgb(var(--signal) / 0.45);
+    }
+
+  .tile:hover .tile__img {
+      transform: scale(1.05);
+    }
+
+  .tile:hover .tile__expand {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+  .icon-btn:hover {
+      background: rgb(var(--tint) / 0.11);
+      border-color: rgb(var(--tint) / 0.24);
+    }
+
+  .portrait:hover img {
+      filter: saturate(1) contrast(1);
+      transform: scale(1.05);
+    }
+
+  .menu-link:hover {
+      color: rgb(var(--ink));
+    }
+
+  .bezel-hover:hover {
+      transform: translateY(-5px);
+      border-color: rgb(var(--signal) / 0.28);
+      box-shadow:
+        0 44px 84px -44px rgb(var(--shade) / 0.98),
+        0 0 70px -28px rgb(var(--signal) / 0.45);
+    }
+
+  .btn-solid:hover {
+      color: rgb(var(--deep));
+      transform: translateY(-2px);
+      box-shadow: 0 20px 44px -20px rgb(var(--tint) / 0.5);
+    }
+
+  .btn-glass:hover {
+      transform: translateY(-2px);
+      background: rgb(var(--tint) / 0.11);
+      border-color: rgb(var(--tint) / 0.24);
+      color: rgb(var(--ink));
+    }
+
+  .btn-solid:hover .btn__icon,
+  .btn-glass:hover .btn__icon {
+      transform: translate(3px, -1px) scale(1.06);
+    }
+
+  .btn-quiet:hover {
+      background: rgb(var(--tint) / 0.06);
+      border-color: rgb(var(--tint) / 0.22);
+      color: rgb(var(--ink));
+    }
+
+  .filter-pill:hover {
+      color: rgb(var(--ink));
+      border-color: rgb(var(--tint) / 0.22);
+    }
+
+}
+
+/* =========================================================================
+   LIGHT PALETTE
+
+   Not an inversion. Dark mode builds surfaces by adding light to a black
+   ground; light mode can't do the reverse (dark-tinted cards on a pale page
+   read as dirty), so panels are re-pointed to white-on-grey and only the
+   edges take the dark tint. Anything that sits on top of a photograph is
+   pinned to literal white here, because it has an image behind it, not a
+   theme.
+   ========================================================================= */
+html.light {
+  --void: 255 255 255;
+  --deep: 240 242 247;
+  --surface: 255 255 255;
+  --surface-2: 247 248 251;
+
+  --ink: 14 17 24;
+  --ink-muted: 84 92 108;
+  /* Dim type still has to clear 4.5:1 on the light ground; the dark theme's
+     equivalent grey measured 3.6:1 here, which is why this isn't a mirror. */
+  --ink-dim: 96 104 120;
+
+  --signal: 21 84 205;
+  --signal-soft: 26 92 216;
+
+  --tint: 15 20 34;
+  --shade: 22 28 42;
+
+  color-scheme: light;
+}
+
+/* Panels are white sheets on a grey ground rather than tinted glass. */
+html.light .glass,
+html.light .card.panel,
+html.light .bezel__core,
+html.light .skill-card {
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.96) 0%,
+    rgb(255 255 255 / 0.82) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    0 24px 60px -34px rgb(var(--shade) / 0.28);
+}
+
+html.light .skill-card {
+  background:
+    radial-gradient(120% 100% at 0% 0%, rgb(var(--signal) / 0.05), transparent 55%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.96) 0%, rgb(255 255 255 / 0.82) 100%);
+}
+
+html.light .bezel,
+html.light .tile {
+  background: rgb(255 255 255 / 0.5);
+  box-shadow: 0 32px 70px -44px rgb(var(--shade) / 0.35);
+}
+
+html.light .tech-pill {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.98) 0%, rgb(255 255 255 / 0.86) 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    0 6px 16px -8px rgb(var(--shade) / 0.25);
+}
+
+/* The deep-space furniture belongs to the dark theme only. */
+html.light .starfield {
+  display: none;
+}
+
+html.light .aurora {
+  opacity: 0.26;
+}
+
+html.light .glow-primary,
+html.light .glow-warm {
+  opacity: 0.45;
+}
+
+html.light .hero-halo {
+  opacity: 0.3;
+}
+
+html.light .grid-lines {
+  opacity: 0.6;
+}
+
+/* A dark plate behind a white certificate scan is a dark-theme idea. */
+html.light .bg-veil {
+  background-color: rgb(var(--tint) / 0.035);
+}
+
+html.light .grain {
+  opacity: 0.014;
+}
+
+html.light .nav-island[data-floating='true'] {
+  background: rgb(255 255 255 / 0.72);
+}
+
+html.light .menu-overlay {
+  background: rgb(var(--deep) / 0.9);
+}
+
+/* Chrome layered over photographs keeps a dark scrim and light type in both
+   themes — the backdrop there is an image, not the page. */
+html.light .lightbox {
+  background: rgb(var(--deep) / 0.94);
+}
+
+html.light .tick {
+  border-color: rgb(255 255 255 / 0.45);
+}
+
+html.light .tile__expand {
+  background: rgb(0 0 0 / 0.55);
+  border-color: rgb(255 255 255 / 0.22);
+  color: rgb(255 255 255);
+}
+
+html.light .tile__meta,
+html.light .tile__title,
+html.light .portrait figcaption,
+html.light .portrait figcaption .display,
+html.light .portrait .font-mono-ui {
+  color: rgb(255 255 255);
+}
+
+html.light .tile__meta .text-signal,
+html.light .portrait .text-signal {
+  color: rgb(150 190 255);
+}
+
+html.light .portrait .text-muted-ink {
+  color: rgb(226 230 238);
+}
+
+/* The solid button inverts on its own (ink on deep), but its nested disc needs
+   the opposite tint to stay visible. */
+html.light .btn-solid .btn__icon {
+  background: rgb(255 255 255 / 0.16);
+}
+
+/* =========================================================================
+   Theme switch — a circular wipe from the control that triggered it.
+
+   The new theme is revealed with an expanding clip-path rather than a
+   crossfade, so the change reads as one surface sliding over another instead
+   of the whole page flickering brightness. Browsers without View Transitions
+   simply get the instant swap.
+   ========================================================================= */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* The outgoing theme drifts back a fraction as the new one sweeps over it, so
+   the two layers read as depth rather than a flat swap. Scaling *up* rather
+   than down means the old layer never pulls away from the viewport edges and
+   exposes a gap. */
+::view-transition-old(root) {
+  z-index: 1;
+  animation: theme-recede 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: center;
+}
+
+@keyframes theme-recede {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.018);
+  }
+}
+
+::view-transition-new(root) {
+  z-index: 2147483646;
+}
+
+html.theme-switching,
+html.theme-switching * {
+  /* The wipe owns the motion; per-element colour transitions would smear it. */
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+/* ---------- Overlay enter / exit ----------------------------------------
+   Overlays used to appear and vanish instantly. They now fade and settle in,
+   and leave faster than they arrive — the system should respond quicker than
+   it presents. */
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes panel-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 0; transform: translate3d(0, 6px, 0) scale(0.99); }
+}
+
+.overlay-anim {
+  animation: overlay-in 260ms var(--ease-out-strong) both;
+}
+
+.overlay-anim[data-closing='true'] {
+  animation: overlay-out 180ms var(--ease-out-strong) both;
+}
+
+.overlay-anim .panel-anim {
+  animation: panel-in 300ms var(--ease-out-strong) both;
+}
+
+.overlay-anim[data-closing='true'] .panel-anim {
+  animation: panel-out 180ms var(--ease-out-strong) both;
+}
+
+/* Menu links stagger out in reverse, quickly, so the list collapses toward
+   the control that closed it. */
+.overlay-anim[data-closing='true'] .menu-item {
+  animation: menu-item-out 160ms var(--ease-out-strong) both;
+  animation-delay: 0ms;
+}
+
+@keyframes menu-item-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: 0; transform: translate3d(0, 0.75rem, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay-anim,
+  .overlay-anim[data-closing='true'],
+  .overlay-anim .panel-anim,
+  .overlay-anim[data-closing='true'] .panel-anim,
+  .overlay-anim[data-closing='true'] .menu-item {
+    animation: none;
   }
 }

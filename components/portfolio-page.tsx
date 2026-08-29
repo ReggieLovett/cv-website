@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
+  ArrowUpRight,
   Award,
   Check,
   ExternalLink,
@@ -10,13 +11,8 @@ import {
   GraduationCap,
   Linkedin,
   Mail,
-  Menu,
-  Target,
   X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   achievements,
   beyondTheCode,
@@ -30,25 +26,33 @@ import {
   organizations,
   profile,
   projects,
-  skillGroups,
   timeline,
 } from '../data/portfolio';
 import { R2XGallery } from './r2x-gallery';
+import { SkillsSection } from './skills-section';
+import { Reveal } from './reveal';
+import { ThemeToggle } from './theme-toggle';
+import { useExitTransition } from './use-exit-transition';
 
 const filterOptions = ['ALL', 'AI', 'WEB DEVELOPMENT', 'DATABASE', 'HCI / UX', 'SOFTWARE', 'OTHER'] as const;
 
 export function PortfolioPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const menuExit = useExitTransition();
+  const certExit = useExitTransition();
   const [activeFilter, setActiveFilter] = useState<(typeof filterOptions)[number]>('ALL');
   const [activeSection, setActiveSection] = useState<string>('HOME');
   const [selectedCertificate, setSelectedCertificate] = useState<number | null>(null);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
+    // Sorted by real document position rather than trusting navItems' order —
+    // the reduce below walks them top-to-bottom, so a nav array that drifts out
+    // of sync with the page would otherwise report the wrong active section.
     const sections = navItems
       .map((item) => document.getElementById(item.toLowerCase()))
-      .filter((section): section is HTMLElement => section !== null);
-
-    if (sections.length === 0) return;
+      .filter((section): section is HTMLElement => section !== null)
+      .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
 
     // Sections are taller than the viewport, so IntersectionObserver ratios are not
     // comparable between them. Measure directly instead: the active section is the last
@@ -58,6 +62,10 @@ export function PortfolioPage() {
 
     const update = () => {
       frame = 0;
+      setScrolled(window.scrollY > 24);
+
+      if (sections.length === 0) return;
+
       const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
       const current = atBottom
         ? sections[sections.length - 1]
@@ -92,770 +100,1014 @@ export function PortfolioPage() {
   const latestProject = projects[0];
   const latestAchievement = achievements[0];
 
-  const scrollToSection = useCallback((id: string) => {
-    document.getElementById(id.toLowerCase())?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setMobileNavOpen(false);
-  }, []);
+  const closeMobileNav = useCallback(
+    () => menuExit.dismiss(() => setMobileNavOpen(false)),
+    [menuExit],
+  );
+
+  const scrollToSection = useCallback(
+    (id: string) => {
+      document.getElementById(id.toLowerCase())?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Dismissing from inside a state updater would fire twice under
+      // StrictMode's double-invoke; read the flag and act outside it.
+      if (mobileNavOpen) closeMobileNav();
+    },
+    [mobileNavOpen, closeMobileNav],
+  );
+
+  const missionStats = [
+    { label: 'STATUS', value: missionLabels.status },
+    { label: 'EDUCATION', value: missionLabels.education },
+    { label: 'SPECIALIZATION', value: missionLabels.specialization },
+    { label: 'INSTITUTION', value: missionLabels.institution },
+    { label: 'FOCUS', value: missionLabels.focus },
+    { label: 'MISSION', value: missionLabels.mission },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#050b14] text-slate-100">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.12),transparent_35%),radial-gradient(circle_at_bottom,_rgba(239,68,68,0.08),transparent_30%)]" />
-        <div className="stars" />
+    <div className="bg-deep relative min-h-screen">
+      {/* ---- Ambient deep-space canvas ------------------------------------ */}
+      <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+        <div className="starfield" />
+        <div className="glow-primary absolute inset-0" />
+        <div className="glow-warm absolute inset-0" />
       </div>
+      <div className="grain z-[40]" aria-hidden="true" />
 
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050b14]/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <button
-            onClick={() => scrollToSection('home')}
-            className="flex shrink-0 items-center gap-3 text-left"
+      {/* ---- Header -------------------------------------------------------- */}
+      <header className="fixed inset-x-0 top-0 z-[70]">
+        {scrolled && <div className="scroll-edge" aria-hidden="true" />}
+        <div className="container">
+          <div
+            data-floating={scrolled}
+            className="nav-island d-flex align-items-center justify-content-between gap-3"
           >
-            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-cyan-400/40 bg-[#0d2345] shadow-[0_0_24px_rgba(34,211,238,0.2)]">
-              <img
-                src="/Lovett_logo-removebg-preview.png"
-                alt=""
-                width={44}
-                height={44}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="hidden whitespace-nowrap sm:block">
-              <div className="text-xs uppercase tracking-[0.25em] text-slate-400">RL // DAToh</div>
-              <div className="text-sm font-semibold text-white">Reggie Portfolio</div>
-            </div>
-          </button>
-
-          {/* Ten wide-tracked nav items need ~1100px, so the inline nav only appears at xl. */}
-          <nav aria-label="Primary" className="hidden items-center gap-3 xl:flex xl:gap-4">
-            {navItems.map((item) => (
-              <button
-                key={item}
-                onClick={() => scrollToSection(item.toLowerCase())}
-                aria-current={activeSection === item ? 'true' : undefined}
-                className={`text-[11px] font-medium uppercase tracking-[0.2em] transition-colors ${
-                  activeSection === item ? 'text-cyan-300' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </nav>
-
-          {/* Redundant with the hero CTA — only shown once the 10-item nav has room to spare. */}
-          <div className="hidden items-center gap-3 2xl:flex">
-            <Button
-              variant="outline"
-              className="whitespace-nowrap border-cyan-400/40 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10"
-              onClick={() => scrollToSection('projects')}
+            <button
+              onClick={() => scrollToSection('home')}
+              className="d-flex align-items-center gap-3 shrink-0 text-left"
             >
-              EXPLORE MY WORK
-            </Button>
-          </div>
+              <span className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-full border border-edge-3 bg-fill-2">
+                <img
+                  src="/Lovett_logo-removebg-preview.png"
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-full w-full object-cover"
+                />
+              </span>
+              <span className="d-none d-sm-block d-xl-none d-xxl-block leading-tight">
+                <span className="font-mono-ui block text-[10px] tracking-[0.28em] text-dim-ink">RL // DAToh</span>
+                <span className="block text-[15px] font-semibold tracking-[-0.02em] text-ink">Reggie Portfolio</span>
+              </span>
+            </button>
 
-          <div className="flex items-center gap-2 xl:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={mobileNavOpen}
-              aria-controls="mobile-nav"
-              onClick={() => setMobileNavOpen((open) => !open)}
-            >
-              {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </div>
-        </div>
-
-        {mobileNavOpen && (
-          <nav id="mobile-nav" aria-label="Primary" className="border-t border-white/10 bg-[#050b14] xl:hidden">
-            <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 sm:px-6">
+            {/* Ten wide-tracked nav items need ~1100px, so the inline nav only appears at xl. */}
+            <nav aria-label="Primary" className="d-none d-xl-flex align-items-center gap-1">
               {navItems.map((item) => (
                 <button
                   key={item}
                   onClick={() => scrollToSection(item.toLowerCase())}
                   aria-current={activeSection === item ? 'true' : undefined}
-                  className={`rounded-md px-3 py-2 text-left text-[11px] font-medium uppercase tracking-[0.2em] ${
-                    activeSection === item ? 'bg-cyan-400/10 text-cyan-300' : 'text-slate-300'
-                  }`}
+                  data-active={activeSection === item}
+                  className="site-nav__link"
                 >
-                  {item}
+                  <span>{item}</span>
                 </button>
               ))}
+            </nav>
+
+            <div className="d-flex align-items-center gap-2">
+              <ThemeToggle />
+
+              <button
+                className="btn-quiet d-none d-xxl-inline-flex"
+                onClick={() => scrollToSection('projects')}
+              >
+                EXPLORE MY WORK
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </button>
+
+              <button
+                className="d-xl-none grid h-10 w-10 place-items-center rounded-full border border-edge-2 bg-fill-2 text-ink"
+                aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileNavOpen}
+                aria-controls="mobile-nav"
+                onClick={() => (mobileNavOpen ? closeMobileNav() : setMobileNavOpen(true))}
+              >
+                <span className="burger" data-open={mobileNavOpen && !menuExit.closing} aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              </button>
             </div>
-          </nav>
-        )}
+          </div>
+        </div>
+
       </header>
 
-      <main>
-        <section id="home" className="relative overflow-hidden border-b border-white/10">
-          <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.35fr_0.95fr] lg:px-8 lg:py-24">
-            <div className="relative z-10">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/5 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.3em] text-cyan-200">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
+      {mobileNavOpen && (
+        <nav
+          id="mobile-nav"
+          aria-label="Primary"
+          data-closing={menuExit.closing}
+          className="menu-overlay chrome-blur overlay-anim d-xl-none"
+        >
+          <div className="container" style={{ paddingTop: '6rem', paddingBottom: '3rem' }}>
+            {navItems.map((item, index) => (
+              <button
+                key={item}
+                onClick={() => scrollToSection(item.toLowerCase())}
+                aria-current={activeSection === item ? 'true' : undefined}
+                data-active={activeSection === item}
+                className="menu-link menu-item"
+                style={{ '--menu-delay': `${index * 45}ms` } as React.CSSProperties}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </nav>
+      )}
+
+      <main className="relative z-10">
+        {/* ---- Hero -------------------------------------------------------- */}
+        <section id="home" className="relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <div className="grid-lines" />
+            <div className="hero-halo absolute left-1/2 top-[-32%] h-[620px] w-[1100px] -translate-x-1/2 rounded-full blur-2xl" />
+            <div className="absolute bottom-[-10%] left-1/2 h-px w-[85%] -translate-x-1/2 hairline-x" />
+          </div>
+
+          <div className="container relative pb-20 pt-[7.5rem] text-center lg:pb-28 lg:pt-[10rem]">
+            <Reveal variant="up">
+              <span className="chip chip-mono chip-signal">
+                <span className="animate-beacon mr-2 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 MISSION CONTROL // ONLINE
-              </div>
+              </span>
+            </Reveal>
 
-              <h1 className="max-w-4xl text-4xl font-black leading-[0.96] tracking-[-0.06em] text-white sm:text-5xl md:text-6xl lg:text-7xl">
+            <Reveal variant="blur" delay={90}>
+              <h1 className="display display-xl mx-auto mt-8 max-w-[16ch]">
                 REGGIE LOVETT
-                <span className="mt-3 block bg-gradient-to-r from-slate-200 via-cyan-200 to-sky-400 bg-clip-text text-transparent">
-                  BSIT // ARTIFICIAL INTELLIGENCE
-                </span>
               </h1>
+              <p className="display display-lg gradient-ink mx-auto mt-2 max-w-[22ch]">
+                BSIT // ARTIFICIAL INTELLIGENCE
+              </p>
+            </Reveal>
 
-              <p className="mt-6 max-w-2xl text-xl font-medium uppercase tracking-[0.18em] text-cyan-300">
+            <Reveal variant="up" delay={220}>
+              <p className="font-mono-ui mx-auto mt-10 max-w-2xl text-[11px] tracking-[0.32em] text-signal sm:text-xs">
                 {profile.tagline}
               </p>
+              <p className="lede mx-auto mt-6 max-w-2xl">{profile.bio}</p>
+            </Reveal>
 
-              <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300">
-                {profile.bio}
-              </p>
-
-              <div className="mt-10 flex flex-wrap items-center gap-4">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_30px_rgba(59,130,246,0.35)] hover:opacity-95"
-                  onClick={() => scrollToSection('projects')}
-                >
+            <Reveal variant="up" delay={320}>
+              <div className="d-flex flex-wrap justify-content-center align-items-center gap-3 mt-10">
+                <button className="btn-solid" onClick={() => scrollToSection('projects')}>
                   EXPLORE MY PROJECTS
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white/15 bg-white/5 text-white hover:bg-white/10"
-                  onClick={() => scrollToSection('about')}
-                >
-                  ABOUT ME
-                </Button>
-              </div>
-            </div>
-
-            <div className="relative flex items-center justify-center">
-              <div className="relative h-[420px] w-full max-w-[540px] overflow-hidden rounded-[32px] border border-white/10 bg-[linear-gradient(135deg,rgba(15,23,42,0.95),rgba(8,47,73,0.85),rgba(2,6,23,0.98))] shadow-[0_0_80px_rgba(14,165,233,0.12)]">
-                <div className="orbital-grid" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.25),transparent_38%)]" />
-                <div className="absolute left-8 top-8 rounded-full border border-cyan-400/40 bg-cyan-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-cyan-200">
-                  SIGNAL // ACTIVE
-                </div>
-
-                <div className="absolute bottom-10 left-8 right-8 rounded-2xl border border-white/10 bg-slate-950/70 p-4 backdrop-blur-sm">
-                  <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-slate-400">
-                    <span>CORE SYSTEM</span>
-                    <span className="text-emerald-400">ONLINE</span>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div>
-                      <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">AI</div>
-                      <div className="mt-1 text-lg font-bold text-white">R&D</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">BUILD</div>
-                      <div className="mt-1 text-lg font-bold text-white">CODE</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] uppercase tracking-[0.2em] text-slate-500">LEAD</div>
-                      <div className="mt-1 text-lg font-bold text-white">TEAM</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute right-8 top-16 h-40 w-40 rounded-full border border-cyan-400/30 bg-cyan-400/5 shadow-[0_0_40px_rgba(34,211,238,0.2)]" />
-                <div className="absolute right-20 top-24 h-20 w-20 rounded-full border border-white/20 bg-slate-950/60" />
-                <div className="absolute left-20 top-1/2 h-32 w-32 -translate-y-1/2 rounded-full border border-red-500/20 bg-red-500/5" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <R2XGallery />
-
-        <section className="border-b border-white/10 bg-slate-950/40">
-          <div className="mx-auto grid max-w-7xl gap-4 px-4 py-8 sm:px-6 lg:grid-cols-6 lg:px-8">
-            <MissionStat label="STATUS" value={missionLabels.status} accent="text-emerald-400" />
-            <MissionStat label="EDUCATION" value={missionLabels.education} accent="text-cyan-300" />
-            <MissionStat label="SPECIALIZATION" value={missionLabels.specialization} accent="text-sky-300" />
-            <MissionStat label="INSTITUTION" value={missionLabels.institution} accent="text-slate-200" />
-            <MissionStat label="FOCUS" value={missionLabels.focus} accent="text-cyan-200" />
-            <MissionStat label="MISSION" value={missionLabels.mission} accent="text-red-300" />
-          </div>
-        </section>
-
-        <section id="about" className="relative border-b border-white/10 py-20">
-          <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-            <div className="flex items-center justify-center">
-              <div className="relative h-[420px] w-full overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,rgba(15,23,42,1),rgba(10,17,34,1))]">
-                <img
-                  src="/new profile.jpg"
-                  alt={`Portrait of ${profile.name}`}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-full w-full object-cover opacity-90 grayscale"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#020817] via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-cyan-400/20 bg-slate-950/70 p-4 backdrop-blur-sm">
-                  <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300">PROFILE // RL</div>
-                  <div className="mt-2 text-lg font-semibold text-white">{profile.name}</div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">ABOUT THE MISSION</div>
-              <h2 className="mt-6 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">
-                BUILDING TECHNOLOGY WITH PURPOSE.
-              </h2>
-
-              <p className="mt-6 text-lg leading-8 text-slate-300">
-                My name is <span className="font-semibold text-white">Reggie Lovett</span>. I am a {profile.year} Bachelor of Science in Information Technology student majoring in {profile.major} at {profile.school}.
-              </p>
-
-              <p className="mt-4 text-base leading-7 text-slate-300">
-                I am interested in Artificial Intelligence, software development, web development, technology, project development, leadership, and project management. I enjoy turning ideas into practical digital solutions and continuously developing both my technical and professional skills.
-              </p>
-
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <InfoChip label="Current Year" value={profile.year} />
-                <InfoChip label="Major" value={profile.major} />
-                <InfoChip label="School" value={profile.school} />
-                <InfoChip label="Degree" value={profile.degree} />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="projects" className="border-b border-white/10 py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-              <div>
-                <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">MISSIONS</div>
-                <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">
-                  SELECTED TECHNOLOGY PROJECTS.
-                </h2>
-              </div>
-              <p className="max-w-xl text-slate-300">Explore the technology concepts, digital ideas, and system-focused work driving my growth as a future technology professional.</p>
-            </div>
-
-            <div className="mb-8 flex flex-wrap gap-3">
-              {filterOptions.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => setActiveFilter(option)}
-                  className={`rounded-full border px-4 py-2 text-[10px] font-medium uppercase tracking-[0.2em] transition-all ${
-                    activeFilter === option
-                      ? 'border-cyan-400/60 bg-cyan-400/10 text-cyan-200'
-                      : 'border-white/10 bg-white/5 text-slate-300 hover:border-cyan-400/40 hover:text-white'
-                  }`}
-                >
-                  {option}
+                  <span className="btn__icon">
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
                 </button>
-              ))}
-            </div>
+                <button className="btn-glass btn--plain" onClick={() => scrollToSection('about')}>
+                  ABOUT ME
+                </button>
+              </div>
+            </Reveal>
+          </div>
 
-            <div className="grid gap-8 lg:grid-cols-3">
-              {filteredProjects.map((project) => (
-                <ProjectCard key={project.title} project={project} />
-              ))}
-            </div>
+          {/* Telemetry strip */}
+          <div className="container relative pb-16 lg:pb-24">
+            <Reveal variant="blur" delay={140}>
+              <div className="glass overflow-hidden p-6 lg:p-8">
+                <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+                  <div className="animate-sweep absolute -top-px h-px w-1/3 bg-gradient-to-r from-transparent via-[rgb(var(--tint)/0.5)] to-transparent" />
+                </div>
+
+                <div className="d-flex align-items-center justify-content-between mb-6 gap-3">
+                  <span className="font-mono-ui text-[10px] tracking-[0.28em] text-dim-ink">
+                    SIGNAL // ACTIVE
+                  </span>
+                  <span className="font-mono-ui d-flex align-items-center gap-2 text-[10px] tracking-[0.28em] text-dim-ink">
+                    CORE SYSTEM
+                    <span className="text-emerald-400">ONLINE</span>
+                  </span>
+                </div>
+
+                <div className="row g-4 text-start">
+                  {[
+                    { label: 'AI', value: 'R&D' },
+                    { label: 'BUILD', value: 'CODE' },
+                    { label: 'LEAD', value: 'TEAM' },
+                  ].map((cell) => (
+                    <div key={cell.label} className="col-4">
+                      <div className="font-mono-ui text-[10px] tracking-[0.24em] text-dim-ink">{cell.label}</div>
+                      <div className="display display-md mt-2">{cell.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
           </div>
         </section>
 
-        <section className="border-b border-white/10 bg-[#0a1220] py-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-6 lg:grid-cols-3">
-              <MissionDashCard label="CURRENT FOCUS" value="Artificial Intelligence" />
-              <MissionDashCard label="LATEST PROJECT" value={latestProject.title} />
-              <MissionDashCard label="LATEST ACHIEVEMENT" value={latestAchievement.title || 'Latest milestone'} />
-            </div>
-          </div>
-        </section>
-
-        <section id="experience" className="border-b border-white/10 py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12 text-center">
-              <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">FIELD OPERATIONS</div>
-              <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">PROFESSIONAL EXPERIENCE.</h2>
-            </div>
-
-            <div className="space-y-6">
-              {experience.map((item) => (
-                <Card key={item.title} className="border-white/10 bg-white/5">
-                  <CardContent className="p-6 md:p-8">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                      <div>
-                        <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300">{item.type}</div>
-                        <h3 className="mt-3 text-2xl font-bold text-white">{item.title}</h3>
-                        <div className="mt-2 text-sm text-slate-300">{item.organization}</div>
-                      </div>
-                      <Badge className="w-fit border-cyan-400/30 bg-cyan-400/10 text-cyan-200">{item.date || 'Date unavailable'}</Badge>
+        {/* ---- Mission stats ---------------------------------------------- */}
+        <section className="section-rule border-b border-edge py-8">
+          <div className="container">
+            <div className="row g-3">
+              {missionStats.map((stat, index) => (
+                <div key={stat.label} className="col-6 col-lg-4 col-xxl-2">
+                  <Reveal delay={index * 40} className="h-100">
+                    <div className="glass h-100 p-4">
+                      <div className="font-mono-ui text-[9px] tracking-[0.24em] text-dim-ink">{stat.label}</div>
+                      <div className="mt-2 text-[13px] font-medium leading-snug text-ink">{stat.value}</div>
                     </div>
-                    <p className="mt-6 max-w-3xl text-base leading-7 text-slate-300">{item.description}</p>
-                    <div className="mt-6 flex flex-wrap gap-2">
-                      {item.highlights.map((highlight) => (
-                        <span key={highlight} className="rounded-full border border-white/10 bg-slate-900/60 px-3 py-1 text-xs uppercase tracking-[0.12em] text-slate-300">
-                          {highlight}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="leadership" className="border-b border-white/10 bg-[#0b1421] py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12">
-              <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">LEADERSHIP & REPRESENTATION</div>
-              <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">LEADING WITH IMPACT.</h2>
-            </div>
-
-            <div className="grid gap-8 lg:grid-cols-2">
-              {leadership.map((item) => (
-                <Card key={item.organization} className="border-white/10 bg-white/5">
-                  <CardContent className="p-6 md:p-8">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300">{item.position}</div>
-                        <h3 className="mt-2 text-2xl font-bold text-white">{item.organization}</h3>
-                        {item.chapter && <p className="mt-2 text-sm text-slate-300">{item.chapter}</p>}
-                        {item.school && <p className="mt-1 text-sm text-slate-300">{item.school}</p>}
-                      </div>
-                      <div className="rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-[10px] uppercase tracking-[0.25em] text-cyan-200">
-                        {item.year || 'Year unavailable'}
-                      </div>
-                    </div>
-
-                    <p className="mt-6 text-base leading-7 text-slate-300">{item.description}</p>
-
-                    <div className="mt-6">
-                      <div className="mb-3 text-[10px] uppercase tracking-[0.25em] text-slate-400">KEY AREAS</div>
-                      <div className="flex flex-wrap gap-2">
-                        {item.skills.map((skill) => (
-                          <span key={skill} className="rounded-full border border-white/10 bg-slate-900 px-3 py-1 text-xs uppercase tracking-[0.08em] text-slate-200">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </Reveal>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="achievements" className="border-b border-white/10 py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12 text-center">
-              <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">MISSION ACHIEVEMENTS</div>
-              <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">GROWTH THROUGH EXPERIENCE.</h2>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {achievements.map((achievement) => (
-                <Card key={`${achievement.title}-${achievement.date}`} className="border-white/10 bg-white/5">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between">
-                      <Badge className="border-cyan-400/30 bg-cyan-400/10 text-cyan-200">{achievement.category}</Badge>
-                      <Award className="h-5 w-5 text-cyan-300" />
-                    </div>
-                    <h3 className="mt-4 text-xl font-bold text-white">{achievement.title || 'Achievement'}</h3>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-sm text-slate-300">
-                    <div>{achievement.organization || 'Organization unavailable'}</div>
-                    <div className="text-slate-200">{achievement.date || 'Date unavailable'}</div>
-                    <p className="leading-6 text-slate-300">{achievement.description || 'Description unavailable'}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="certificates" className="border-b border-white/10 bg-[#0b1320] py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12 text-center">
-              <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">CERTIFICATIONS</div>
-              <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">VERIFIED LEARNING.</h2>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {certificates.map((certificate, index) => (
-                <Card key={`${certificate.title}-${index}`} className="group overflow-hidden border-white/10 bg-white/5">
-                  <div className="h-48 border-b border-white/10 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.2),transparent_40%),linear-gradient(135deg,#0f172a,#0a1320)] p-6">
-                    {certificate.image ? (
-                      <img
-                        src={certificate.image}
-                        alt={`${certificate.title} certificate`}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-full rounded-2xl object-contain transition-transform duration-300 group-hover:scale-[1.03]"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-cyan-300/30 bg-slate-900/50 text-center text-xs uppercase tracking-[0.25em] text-cyan-200">
-                        {certificate.title || 'Certificate'}
-                      </div>
-                    )}
-                  </div>
-                  <CardContent className="p-5">
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{certificate.issuer || 'Issuer unavailable'}</div>
-                    <h3 className="mt-3 text-xl font-bold text-white">{certificate.title || 'Certificate'}</h3>
-                    <div className="mt-3 text-sm text-slate-300">{certificate.date || 'Date unavailable'}</div>
-                    <div className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-400">{certificate.credentialId || 'Credential unavailable'}</div>
-                    <Button
-                      variant="outline"
-                      className="mt-5 w-full border-cyan-400/30 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10"
-                      onClick={() => setSelectedCertificate(index)}
-                    >
-                      VIEW CERTIFICATE
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="organizations" className="border-b border-white/10 py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12 text-center">
-              <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">ORGANIZATIONS & COMMUNITY</div>
-              <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">PART OF THE COMMUNITY.</h2>
-            </div>
-
-            <div className="grid gap-8 lg:grid-cols-2">
-              {organizations.map((organization) => (
-                <Card key={organization.name} className="border-white/10 bg-white/5">
-                  <CardContent className="p-6 md:p-8">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <div className="text-[10px] uppercase tracking-[0.2em] text-cyan-300">{organization.type}</div>
-                        <h3 className="mt-3 text-2xl font-bold text-white">{organization.name}</h3>
-                        {organization.chapter && <div className="mt-2 text-sm text-slate-300">{organization.chapter}</div>}
-                      </div>
-                      <div className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-[10px] uppercase tracking-[0.2em] text-slate-200">
-                        {organization.position}
-                      </div>
-                    </div>
-                    <p className="mt-6 text-base leading-7 text-slate-300">{organization.description}</p>
-                    <div className="mt-6 text-sm uppercase tracking-[0.18em] text-slate-400">{organization.year || 'Year unavailable'}</div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="skills" className="border-b border-white/10 bg-[#0a1220] py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12 text-center">
-              <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">TECHNICAL SYSTEMS</div>
-              <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">TOOLS, SKILLS, & SYSTEMS.</h2>
-            </div>
-
-            <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-              {skillGroups.map((group) => (
-                <Card key={group.label} className="border-white/10 bg-white/5">
-                  <CardContent className="p-6">
-                    <div className={`mb-5 inline-flex rounded-full bg-gradient-to-r ${group.accent} px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-white`}>
-                      {group.label}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {group.skills.map((skill) => (
-                        <span key={skill} className="rounded-full border border-white/10 bg-slate-900 px-3 py-1 text-xs uppercase tracking-[0.08em] text-slate-200">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="contact" className="py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-              <div>
-                <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">CONTACT MISSION CONTROL</div>
-                <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">LET&rsquo;S BUILD WHAT&rsquo;S NEXT.</h2>
-                <p className="mt-6 max-w-xl text-base leading-7 text-slate-300">
-                  I’m open to collaboration, internships, project opportunities, and conversations around AI, software development, and technology leadership.
-                </p>
-
-                <div className="mt-8 space-y-4">
-                  <ContactRow icon={<Mail className="h-5 w-5 text-cyan-300" />} label="Email" value={contactInfo.email} href={`mailto:${contactInfo.email}`} />
-                  <ContactRow icon={<Github className="h-5 w-5 text-cyan-300" />} label="GitHub" value="@ReggieLovett" href={contactInfo.github} external />
-                  <ContactRow icon={<Linkedin className="h-5 w-5 text-cyan-300" />} label="LinkedIn" value="in/reggielovett" href={contactInfo.linkedin} external />
-                  <a
-                    href="https://youtu.be/wxX6j3y0vaM?si=Q0siCI3kp430fLqf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-4 transition-colors hover:border-cyan-400/30 hover:bg-slate-950/90"
+        {/* ---- About ------------------------------------------------------- */}
+        <section id="about" className="section section-rule">
+          <div className="container">
+            <div className="row g-5">
+              {/* The portrait stays pinned while the biography scrolls past it, so
+                  the person and the words about them stay on screen together. */}
+              <div className="col-12 col-lg-5">
+                <Reveal variant="scale">
+                  <figure
+                    className="bezel mb-0"
+                    style={{ position: 'sticky', top: '7rem' }}
                   >
-                    <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-cyan-400/30 bg-cyan-400/10">
-                      <img src="/superman.jpg" alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                    <div className="bezel__core">
+                      <div className="portrait" style={{ aspectRatio: '4 / 5' }}>
+                        <img
+                          src="/new profile.jpg"
+                          alt={`Portrait of ${profile.name}`}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <div className="portrait__scrim" />
+                        <span className="tick tick--tl" aria-hidden="true" />
+                        <span className="tick tick--tr" aria-hidden="true" />
+                        <span className="tick tick--bl" aria-hidden="true" />
+                        <span className="tick tick--br" aria-hidden="true" />
+
+                        <div className="absolute inset-x-0 top-0 d-flex justify-content-between p-4 pt-5">
+                          <span className="font-mono-ui text-[10px] tracking-[0.28em] text-signal">
+                            PROFILE // RL
+                          </span>
+                          <span className="font-mono-ui text-[10px] tracking-[0.28em] text-muted-ink">
+                            {profile.nickname}
+                          </span>
+                        </div>
+
+                        <figcaption className="absolute inset-x-0 bottom-0 p-5">
+                          <div className="display display-md">{profile.name}</div>
+                          <div className="font-mono-ui mt-3 text-[10px] leading-relaxed tracking-[0.22em] text-muted-ink">
+                            {profile.headline}
+                          </div>
+                        </figcaption>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Hope Core</div>
-                      <div className="mt-1 text-base font-medium text-white">Watch / Visit</div>
-                    </div>
-                  </a>
-                </div>
+                  </figure>
+                </Reveal>
               </div>
 
-              <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,rgba(15,23,42,0.9),rgba(2,6,23,0.98))] p-6 md:p-8">
-                <div className="mb-6 text-[10px] uppercase tracking-[0.25em] text-cyan-300">MISSION STATUS</div>
-                <div className="space-y-4">
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Current Focus</div>
-                    <div className="mt-2 text-xl font-bold text-white">Artificial Intelligence</div>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Current Leadership</div>
-                    <div className="mt-2 text-xl font-bold text-white">JPCS SPUP Chapter • Treasurer</div>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Current Student Role</div>
-                    <div className="mt-2 text-xl font-bold text-white">PSG • Senator</div>
-                  </div>
-                </div>
+              <div className="col-12 col-lg-7">
+                <Reveal delay={120}>
+                  <div className="eyebrow">ABOUT THE MISSION</div>
+                  <h2 className="display display-lg mt-6">
+                    BUILDING TECHNOLOGY
+                    <br />
+                    <span className="gradient-ink">WITH PURPOSE.</span>
+                  </h2>
+
+                  <p className="lede mt-8">
+                    My name is <span className="font-semibold text-ink">Reggie Lovett</span>. I am a {profile.year}{' '}
+                    Bachelor of Science in Information Technology student majoring in {profile.major} at{' '}
+                    {profile.school}.
+                  </p>
+
+                  <p className="body-text mt-5">
+                    I am interested in Artificial Intelligence, software development, web development, technology,
+                    project development, leadership, and project management. I enjoy turning ideas into practical
+                    digital solutions and continuously developing both my technical and professional skills.
+                  </p>
+                </Reveal>
+
+                <Reveal delay={200}>
+                  <dl className="spec mt-11">
+                    {[
+                      { label: 'Current Year', value: profile.year },
+                      { label: 'Major', value: profile.major },
+                      { label: 'School', value: profile.school },
+                      { label: 'Degree', value: profile.degree },
+                    ].map((item) => (
+                      <div key={item.label} className="spec__row">
+                        <dt className="spec__label">{item.label}</dt>
+                        <dd className="spec__value mb-0">{item.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </Reveal>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="border-t border-white/10 bg-[#060d18] py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">BEYOND THE CODE</div>
-                <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">TECHNOLOGY IS ONLY PART OF THE MISSION.</h2>
-              </div>
-            </div>
+        {/* ---- Education ---------------------------------------------------- */}
+        <section className="section section-rule">
+          <div className="container">
+            <Reveal className="mb-11 max-w-3xl">
+              <div className="eyebrow">EDUCATION</div>
+              <h2 className="display display-lg mt-6">
+                ACADEMIC <span className="gradient-ink">FOUNDATION.</span>
+              </h2>
+            </Reveal>
 
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {beyondTheCode.map((item) => (
-                <div key={item.id} className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                  <div className="text-[10px] uppercase tracking-[0.3em] text-cyan-300">{item.id}</div>
-                  <h3 className="mt-4 text-xl font-bold text-white">{item.title}</h3>
-                  <p className="mt-4 text-sm leading-6 text-slate-300">{item.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-t border-white/10 bg-[#050b14] py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12">
-              <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">EDUCATION</div>
-              <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">ACADEMIC FOUNDATION.</h2>
-            </div>
-
-            <Card className="border-white/10 bg-white/5">
-              <CardContent className="p-6 md:p-8">
-                <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10">
-                        <GraduationCap className="h-5 w-5 text-cyan-300" />
-                      </div>
-                      <div>
-                        <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{education.school}</div>
-                        <h3 className="text-2xl font-bold text-white">{education.degree}</h3>
-                      </div>
+            <Reveal variant="blur">
+              <article className="card panel p-4 p-md-5">
+                <div className="row g-4 align-items-start">
+                  <div className="col-12 col-lg-8">
+                    <div className="d-flex align-items-center gap-3">
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-edge-2 bg-fill-2">
+                        <GraduationCap className="h-5 w-5 text-signal" />
+                      </span>
+                      <span>
+                        <span className="font-mono-ui block text-[10px] tracking-[0.22em] text-dim-ink">
+                          {education.school}
+                        </span>
+                        <span className="display display-md mt-2 block">{education.degree}</span>
+                      </span>
                     </div>
-                    <div className="mt-4 text-base text-slate-300">Major: {education.major}</div>
-                    <div className="mt-2 text-base text-slate-300">Year: {education.year}</div>
+                    <div className="body-text mt-4">Major: {education.major}</div>
+                    <div className="body-text mt-1">Year: {education.year}</div>
                   </div>
 
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm uppercase tracking-[0.15em] text-cyan-200">
-                    {education.expectedGraduation || 'Expected graduation unavailable'}
+                  <div className="col-12 col-lg-4 d-flex justify-content-lg-end">
+                    <span className="chip chip-mono chip-signal">
+                      {education.expectedGraduation || 'Expected graduation unavailable'}
+                    </span>
                   </div>
                 </div>
 
-                <div className="mt-8 grid gap-6 md:grid-cols-2">
-                  <div>
-                    <div className="mb-3 text-[10px] uppercase tracking-[0.2em] text-slate-400">Relevant Coursework</div>
-                    <div className="flex flex-wrap gap-2">
+                <div className="row g-4 mt-4">
+                  <div className="col-12 col-md-6">
+                    <div className="font-mono-ui mb-3 text-[10px] tracking-[0.24em] text-dim-ink">
+                      RELEVANT COURSEWORK
+                    </div>
+                    <div className="pill-row">
                       {education.relevantCoursework.map((course) => (
-                        <span key={course} className="rounded-full border border-white/10 bg-slate-900 px-3 py-1 text-xs uppercase tracking-[0.08em] text-slate-200">
+                        <span key={course} className="chip">
                           {course}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div>
-                    <div className="mb-3 text-[10px] uppercase tracking-[0.2em] text-slate-400">Academic Achievements</div>
-                    <div className="space-y-3 text-sm text-slate-300">
+                  <div className="col-12 col-md-6">
+                    <div className="font-mono-ui mb-3 text-[10px] tracking-[0.24em] text-dim-ink">
+                      ACADEMIC ACHIEVEMENTS
+                    </div>
+                    <div className="d-flex flex-column gap-3">
                       {education.achievements.map((item) => (
-                        <div key={item} className="flex items-start gap-2">
-                          <Check className="mt-1 h-4 w-4 text-cyan-300" />
-                          <span>{item}</span>
+                        <div key={item} className="d-flex align-items-start gap-2">
+                          <Check className="mt-1 h-4 w-4 shrink-0 text-signal" />
+                          <span className="body-text" style={{ fontSize: '0.9375rem' }}>{item}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </article>
+            </Reveal>
           </div>
         </section>
 
-        <section className="border-t border-white/10 py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12 text-center">
-              <div className="text-[11px] font-medium uppercase tracking-[0.3em] text-cyan-300">MISSION TIMELINE</div>
-              <h2 className="mt-3 text-4xl font-black tracking-[-0.06em] text-white sm:text-5xl">THE JOURNEY SO FAR.</h2>
+        {/* ---- Skills & Technologies --------------------------------------- */}
+        <SkillsSection />
+
+        {/* ---- Experience -------------------------------------------------- */}
+        <section id="experience" className="section section-rule">
+          <div className="container">
+            <Reveal className="mb-11 max-w-3xl">
+              <div className="eyebrow">FIELD OPERATIONS</div>
+              <h2 className="display display-lg mt-6">
+                PROFESSIONAL <span className="gradient-ink">EXPERIENCE.</span>
+              </h2>
+            </Reveal>
+
+            <div className="row g-4">
+              {experience.map((item, index) => (
+                <div key={item.title} className="col-12">
+                  <Reveal variant="up" delay={index * 50}>
+                    <article className="card panel glass-hover p-4 p-md-5">
+                      <div className="row g-4">
+                        <div className="col-12 col-lg-5">
+                          <div className="font-mono-ui text-[10px] tracking-[0.26em] text-signal">{item.type}</div>
+                          <h3 className="display display-md mt-4">{item.title}</h3>
+                          <div className="body-text mt-3" style={{ fontSize: '0.9375rem' }}>
+                            {item.organization}
+                          </div>
+                          <span className="chip chip-mono mt-4">{item.date || 'Date unavailable'}</span>
+                        </div>
+
+                        <div className="col-12 col-lg-7">
+                          <p className="body-text">{item.description}</p>
+                          <div className="pill-row mt-4">
+                            {item.highlights.map((highlight) => (
+                              <span key={highlight} className="chip">
+                                {highlight}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  </Reveal>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Projects ---------------------------------------------------- */}
+        <section id="projects" className="section section-rule">
+          <div className="container">
+            <div className="row g-4 align-items-end mb-11">
+              <div className="col-12 col-lg-7">
+                <Reveal>
+                  <div className="eyebrow">MISSIONS</div>
+                  <h2 className="display display-lg mt-6">
+                    SELECTED TECHNOLOGY
+                    <br />
+                    <span className="gradient-ink">PROJECTS.</span>
+                  </h2>
+                </Reveal>
+              </div>
+              <div className="col-12 col-lg-5">
+                <Reveal delay={120}>
+                  <p className="body-text">
+                    Explore the technology concepts, digital ideas, and system-focused work driving my growth as a
+                    future technology professional.
+                  </p>
+                </Reveal>
+              </div>
             </div>
 
-            <div className="relative">
-              <div className="absolute left-5 top-0 h-full w-px bg-white/10 md:left-1/2" />
-              <div className="space-y-8">
-                {timeline.map((item, index) => (
-                  <div key={`${item.title}-${index}`} className={`relative flex flex-col md:flex-row ${index % 2 === 0 ? 'md:justify-end' : ''}`}>
-                    <div className="absolute left-2.5 top-5 h-5 w-5 rounded-full border-4 border-[#050b14] bg-cyan-400 md:left-1/2 md:-translate-x-1/2" />
-                    <div className={`md:w-[calc(50%-2rem)] ${index % 2 === 0 ? 'md:mr-8' : 'md:ml-8'}`}>
-                      <Card className="border-white/10 bg-white/5">
-                        <CardContent className="p-5">
-                          <div className="text-[10px] uppercase tracking-[0.2em] text-cyan-300">{item.year || 'Year unavailable'}</div>
-                          <h3 className="mt-2 text-xl font-bold text-white">{item.title}</h3>
-                          <div className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-400">{item.category}</div>
-                          <p className="mt-3 text-sm leading-6 text-slate-300">{item.description || 'Details unavailable'}</p>
-                        </CardContent>
-                      </Card>
+            <Reveal>
+              <div className="d-flex flex-wrap gap-2 mb-5">
+                {filterOptions.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => setActiveFilter(option)}
+                    data-active={activeFilter === option}
+                    className="filter-pill"
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </Reveal>
+
+            <div className="row g-4">
+              {filteredProjects.map((project, index) => (
+                <div key={project.title} className="col-12 col-lg-4">
+                  <Reveal variant="blur" delay={index * 40} className="h-100">
+                    <ProjectCard project={project} />
+                  </Reveal>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Mission dash ------------------------------------------------ */}
+        <section className="section-rule py-10">
+          <div className="container">
+            <div className="row g-4">
+              {[
+                { label: 'CURRENT FOCUS', value: 'Artificial Intelligence' },
+                { label: 'LATEST PROJECT', value: latestProject.title },
+                { label: 'LATEST ACHIEVEMENT', value: latestAchievement.title || 'Latest milestone' },
+              ].map((item, index) => (
+                <div key={item.label} className="col-12 col-lg-4">
+                  <Reveal delay={index * 50} className="h-100">
+                    <div className="glass glass-hover h-100 p-5">
+                      <div className="font-mono-ui text-[10px] tracking-[0.26em] text-dim-ink">{item.label}</div>
+                      <div className="mt-3 text-lg font-semibold leading-snug tracking-[-0.02em] text-ink">
+                        {item.value}
+                      </div>
                     </div>
-                  </div>
+                  </Reveal>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---- R2X gallery ------------------------------------------------- */}
+        <R2XGallery />
+
+        {/* ---- Leadership -------------------------------------------------- */}
+        <section id="leadership" className="section section-rule">
+          <div className="container">
+            <Reveal className="mb-11 max-w-3xl">
+              <div className="eyebrow">LEADERSHIP &amp; REPRESENTATION</div>
+              <h2 className="display display-lg mt-6">
+                LEADING WITH <span className="gradient-ink">IMPACT.</span>
+              </h2>
+            </Reveal>
+
+            <div className="row g-4">
+              {leadership.map((item, index) => (
+                <div key={item.organization} className="col-12 col-lg-6">
+                  <Reveal variant="blur" delay={index * 40} className="h-100">
+                    <article className="card panel glass-hover p-4 p-md-5">
+                      <div className="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                          <div className="font-mono-ui text-[10px] tracking-[0.26em] text-signal">{item.position}</div>
+                          <h3 className="display display-md mt-3">{item.organization}</h3>
+                          {item.chapter && <p className="body-text mt-3" style={{ fontSize: '0.9375rem' }}>{item.chapter}</p>}
+                          {item.school && <p className="body-text mt-1" style={{ fontSize: '0.9375rem' }}>{item.school}</p>}
+                        </div>
+                        <span className="chip chip-mono shrink-0">{item.year || 'Year unavailable'}</span>
+                      </div>
+
+                      <p className="body-text mt-4">{item.description}</p>
+
+                      <div className="mt-4">
+                        <div className="font-mono-ui mb-3 text-[10px] tracking-[0.26em] text-dim-ink">KEY AREAS</div>
+                        <div className="pill-row">
+                          {item.skills.map((skill) => (
+                            <span key={skill} className="chip">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </article>
+                  </Reveal>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Organizations ----------------------------------------------- */}
+        <section id="organizations" className="section section-rule">
+          <div className="container">
+            <Reveal className="mb-11 max-w-3xl">
+              <div className="eyebrow">ORGANIZATIONS &amp; COMMUNITY</div>
+              <h2 className="display display-lg mt-6">
+                PART OF THE <span className="gradient-ink">COMMUNITY.</span>
+              </h2>
+            </Reveal>
+
+            <div className="row g-4">
+              {organizations.map((organization, index) => (
+                <div key={organization.name} className="col-12 col-lg-6">
+                  <Reveal variant="blur" delay={index * 40} className="h-100">
+                    <article className="card panel glass-hover p-4 p-md-5">
+                      <div className="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                          <div className="font-mono-ui text-[10px] tracking-[0.26em] text-signal">{organization.type}</div>
+                          <h3 className="display display-md mt-3">{organization.name}</h3>
+                          {organization.chapter && (
+                            <p className="body-text mt-3" style={{ fontSize: '0.9375rem' }}>{organization.chapter}</p>
+                          )}
+                        </div>
+                        <span className="chip chip-mono shrink-0">{organization.position}</span>
+                      </div>
+                      <p className="body-text mt-4">{organization.description}</p>
+                      <div className="font-mono-ui mt-4 text-[10px] tracking-[0.22em] text-dim-ink">
+                        {organization.year || 'Year unavailable'}
+                      </div>
+                    </article>
+                  </Reveal>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Achievements ------------------------------------------------ */}
+        <section id="achievements" className="section section-rule">
+          <div className="container">
+            <Reveal className="mb-11 max-w-3xl">
+              <div className="eyebrow">MISSION ACHIEVEMENTS</div>
+              <h2 className="display display-lg mt-6">
+                GROWTH THROUGH <span className="gradient-ink">EXPERIENCE.</span>
+              </h2>
+            </Reveal>
+
+            <div className="row g-4">
+              {achievements.map((achievement, index) => (
+                <div key={`${achievement.title}-${achievement.date}`} className="col-12 col-md-6 col-xl-3">
+                  <Reveal variant="blur" delay={index * 50} className="h-100">
+                    <article className="bezel bezel-hover">
+                      <div className="bezel__core p-4">
+                      <div className="d-flex align-items-center justify-content-between gap-2">
+                        <span className="chip chip-mono">{achievement.category}</span>
+                        <Award className="h-4 w-4 text-signal" />
+                      </div>
+                      <h3 className="mt-4 text-xl font-semibold leading-tight tracking-[-0.025em] text-ink">
+                        {achievement.title || 'Achievement'}
+                      </h3>
+                      <div className="body-text mt-4" style={{ fontSize: '0.875rem' }}>
+                        {achievement.organization || 'Organization unavailable'}
+                      </div>
+                      <div className="font-mono-ui mt-2 text-[10px] tracking-[0.2em] text-dim-ink">
+                        {achievement.date || 'Date unavailable'}
+                      </div>
+                      <p className="body-text mt-4" style={{ fontSize: '0.875rem' }}>
+                        {achievement.description || 'Description unavailable'}
+                      </p>
+                      </div>
+                    </article>
+                  </Reveal>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Certificates ------------------------------------------------ */}
+        <section id="certificates" className="section section-rule">
+          <div className="container">
+            <Reveal className="mb-11 max-w-3xl">
+              <div className="eyebrow">CERTIFICATIONS</div>
+              <h2 className="display display-lg mt-6">
+                VERIFIED <span className="gradient-ink">LEARNING.</span>
+              </h2>
+            </Reveal>
+
+            <div className="row g-4">
+              {certificates.map((certificate, index) => (
+                <div key={`${certificate.title}-${index}`} className="col-12 col-md-6 col-xl-4">
+                  <Reveal variant="blur" delay={(index % 3) * 50} className="h-100">
+                    <article className="bezel bezel-hover group">
+                      <div className="bezel__core">
+                      <div className="relative overflow-hidden border-b border-edge bg-veil p-5" style={{ height: '13rem' }}>
+                        <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_0%,rgb(77_141_255/0.18),transparent)]" />
+                        {certificate.image ? (
+                          <img
+                            src={certificate.image}
+                            alt={`${certificate.title} certificate`}
+                            loading="lazy"
+                            decoding="async"
+                            className="relative h-full w-full rounded-xl object-contain transition-transform duration-[900ms] ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-[1.06]"
+                          />
+                        ) : (
+                          <div className="font-mono-ui relative grid h-full place-items-center rounded-xl border border-dashed border-edge-3 px-4 text-center text-[10px] tracking-[0.24em] text-dim-ink">
+                            {certificate.title || 'Certificate'}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="d-flex flex-column flex-grow-1 p-4">
+                        <div className="font-mono-ui text-[10px] leading-relaxed tracking-[0.18em] text-dim-ink">
+                          {certificate.issuer || 'Issuer unavailable'}
+                        </div>
+                        <h3 className="mt-3 text-lg font-semibold leading-snug tracking-[-0.02em] text-ink">
+                          {certificate.title || 'Certificate'}
+                        </h3>
+                        <div className="body-text mt-3" style={{ fontSize: '0.875rem' }}>
+                          {certificate.date || 'Date unavailable'}
+                        </div>
+                        <div className="font-mono-ui mt-2 text-[10px] tracking-[0.18em] text-dim-ink">
+                          {certificate.credentialId || 'Credential unavailable'}
+                        </div>
+                        <button
+                          className="btn-quiet mt-auto w-100"
+                          style={{ marginTop: '1.25rem' }}
+                          onClick={() => setSelectedCertificate(index)}
+                        >
+                          VIEW CERTIFICATE
+                        </button>
+                      </div>
+                      </div>
+                    </article>
+                  </Reveal>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Timeline ----------------------------------------------------- */}
+        <section className="section section-rule">
+          <div className="container">
+            <Reveal className="mb-11 max-w-3xl">
+              <div className="eyebrow">MISSION TIMELINE</div>
+              <h2 className="display display-lg mt-6">
+                THE JOURNEY <span className="gradient-ink">SO FAR.</span>
+              </h2>
+            </Reveal>
+
+            <div className="relative">
+              <div
+                className="absolute top-0 h-full w-px bg-gradient-to-b from-transparent via-[rgb(var(--tint)/0.15)] to-transparent"
+                style={{ left: '0.4375rem' }}
+                aria-hidden="true"
+              />
+              <div className="d-flex flex-column gap-4">
+                {timeline.map((item, index) => (
+                  <Reveal key={`${item.title}-${index}`} delay={index * 45}>
+                    <div className="d-flex gap-4">
+                      <span className="relative mt-5 grid h-3.5 w-3.5 shrink-0 place-items-center">
+                        <span className="absolute inset-0 rounded-full bg-[rgb(var(--tint)/0.2)]" />
+                        <span className="relative h-1.5 w-1.5 rounded-full bg-[rgb(var(--ink))]" />
+                      </span>
+                      <div className="glass glass-hover flex-grow-1 p-4 p-md-5">
+                        <div className="d-flex flex-wrap align-items-center gap-3">
+                          <span className="chip chip-mono chip-signal">{item.year || 'Year unavailable'}</span>
+                          <span className="font-mono-ui text-[10px] tracking-[0.24em] text-dim-ink">{item.category}</span>
+                        </div>
+                        <h3 className="display display-md mt-4">{item.title}</h3>
+                        <p className="body-text mt-3">{item.description || 'Details unavailable'}</p>
+                      </div>
+                    </div>
+                  </Reveal>
                 ))}
               </div>
             </div>
           </div>
         </section>
 
-        <footer className="border-t border-white/10 bg-[#050b14] py-12">
-          <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <div>
-              <div className="text-xs uppercase tracking-[0.25em] text-cyan-300">RL // DAToh</div>
-              <div className="mt-2 text-2xl font-bold text-white">REGGIE LOVETT</div>
-              <div className="mt-2 text-sm uppercase tracking-[0.18em] text-slate-400">BSIT • ARTIFICIAL INTELLIGENCE</div>
-            </div>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-300">
-              {navItems.map((item) => (
-                <button key={item} onClick={() => scrollToSection(item.toLowerCase())} className="hover:text-white">{item}</button>
+        {/* ---- Beyond the code --------------------------------------------- */}
+        <section className="section section-rule">
+          <div className="container">
+            <Reveal className="mb-11 max-w-4xl">
+              <div className="eyebrow">BEYOND THE CODE</div>
+              <h2 className="display display-lg mt-6">
+                TECHNOLOGY IS ONLY PART
+                <br />
+                <span className="gradient-ink">OF THE MISSION.</span>
+              </h2>
+            </Reveal>
+
+            <div className="row g-4">
+              {beyondTheCode.map((item, index) => (
+                <div key={item.id} className="col-12 col-md-6 col-xl-3">
+                  <Reveal variant="blur" delay={index * 50} className="h-100">
+                    <div className="bezel bezel-hover">
+                      <div className="bezel__core p-5">
+                        <div className="font-mono-ui text-[10px] tracking-[0.3em] text-signal">{item.id}</div>
+                        <h3 className="display display-md mt-5">{item.title}</h3>
+                        <p className="body-text mt-4" style={{ fontSize: '0.875rem' }}>{item.text}</p>
+                      </div>
+                    </div>
+                  </Reveal>
+                </div>
               ))}
             </div>
-            <div className="flex items-center gap-4 text-slate-300">
-              <a href={contactInfo.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile" className="hover:text-white">
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a href={contactInfo.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" className="hover:text-white">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href={`mailto:${contactInfo.email}`} aria-label="Send an email" className="hover:text-white">
-                <Mail className="h-5 w-5" />
-              </a>
+          </div>
+        </section>
+
+        {/* ---- Contact ----------------------------------------------------- */}
+        <section id="contact" className="section section-rule">
+          <div className="container">
+            <div className="row g-5">
+              <div className="col-12 col-lg-7">
+                <Reveal>
+                  <div className="eyebrow">CONTACT MISSION CONTROL</div>
+                  <h2 className="display display-lg mt-6">
+                    LET&rsquo;S BUILD
+                    <br />
+                    <span className="gradient-ink">WHAT&rsquo;S NEXT.</span>
+                  </h2>
+                  <p className="lede mt-6" style={{ maxWidth: '36rem' }}>
+                    I’m open to collaboration, internships, project opportunities, and conversations around AI,
+                    software development, and technology leadership.
+                  </p>
+                </Reveal>
+
+                <div className="row g-3 mt-4">
+                  <div className="col-12">
+                    <Reveal>
+                      <ContactRow
+                        icon={<Mail className="h-4 w-4" />}
+                        label="Email"
+                        value={contactInfo.email}
+                        href={`mailto:${contactInfo.email}`}
+                      />
+                    </Reveal>
+                  </div>
+                  <div className="col-12 col-sm-6">
+                    <Reveal delay={70} className="h-100">
+                      <ContactRow
+                        icon={<Github className="h-4 w-4" />}
+                        label="GitHub"
+                        value="@ReggieLovett"
+                        href={contactInfo.github}
+                        external
+                      />
+                    </Reveal>
+                  </div>
+                  <div className="col-12 col-sm-6">
+                    <Reveal delay={140} className="h-100">
+                      <ContactRow
+                        icon={<Linkedin className="h-4 w-4" />}
+                        label="LinkedIn"
+                        value="in/reggielovett"
+                        href={contactInfo.linkedin}
+                        external
+                      />
+                    </Reveal>
+                  </div>
+                  <div className="col-12">
+                    <Reveal delay={210}>
+                      <a
+                        href="https://youtu.be/wxX6j3y0vaM?si=Q0siCI3kp430fLqf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="glass glass-hover d-flex align-items-center gap-3 p-4"
+                      >
+                        <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-edge-2">
+                          <img src="/superman.jpg" alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="font-mono-ui block text-[10px] tracking-[0.24em] text-dim-ink">Hope Core</span>
+                          <span className="mt-1 block text-[15px] font-medium text-ink">Watch / Visit</span>
+                        </span>
+                        <ArrowUpRight className="ms-auto h-4 w-4 text-dim-ink" />
+                      </a>
+                    </Reveal>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-12 col-lg-5">
+                <Reveal variant="blur" delay={120} className="h-100">
+                  <div className="glass h-100 p-4 p-md-5">
+                    <div className="font-mono-ui text-[10px] tracking-[0.28em] text-signal">MISSION STATUS</div>
+                    <div className="row g-3 mt-3">
+                      {[
+                        { label: 'Current Focus', value: 'Artificial Intelligence' },
+                        { label: 'Current Leadership', value: 'JPCS SPUP Chapter • Treasurer' },
+                        { label: 'Current Student Role', value: 'PSG • Senator' },
+                      ].map((item) => (
+                        <div key={item.label} className="col-12">
+                          <div className="rounded-2xl border border-edge bg-fill-1 p-4">
+                            <div className="font-mono-ui text-[9px] tracking-[0.24em] text-dim-ink">
+                              {item.label.toUpperCase()}
+                            </div>
+                            <div className="mt-2 text-lg font-semibold tracking-[-0.02em] text-ink">{item.value}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Reveal>
+              </div>
             </div>
           </div>
-          <div className="mx-auto mt-8 max-w-7xl px-4 text-center text-sm text-slate-400 sm:px-6 lg:px-8">
-            © {new Date().getFullYear()} {profile.name}
+        </section>
+
+        {/* ---- Footer ------------------------------------------------------- */}
+        <footer className="section-rule bg-void py-12">
+          <div className="container">
+            <div className="row g-5 align-items-start">
+              <div className="col-12 col-lg-4">
+                <div className="font-mono-ui text-[10px] tracking-[0.3em] text-signal">RL // DAToh</div>
+                <div className="display display-md mt-4">REGGIE LOVETT</div>
+                <div className="font-mono-ui mt-3 text-[10px] tracking-[0.24em] text-dim-ink">
+                  BSIT • ARTIFICIAL INTELLIGENCE
+                </div>
+              </div>
+
+              <div className="col-12 col-lg-5">
+                <div className="row g-2">
+                  {navItems.map((item) => (
+                    <div key={item} className="col-6 col-sm-4">
+                      <button
+                        onClick={() => scrollToSection(item.toLowerCase())}
+                        className="font-mono-ui text-[10px] tracking-[0.2em] text-dim-ink transition-colors hover:text-ink"
+                      >
+                        {item}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="col-12 col-lg-3 d-flex gap-2 justify-content-lg-end">
+                {[
+                  { href: contactInfo.linkedin, label: 'LinkedIn profile', icon: <Linkedin className="h-4 w-4" />, external: true },
+                  { href: contactInfo.github, label: 'GitHub profile', icon: <Github className="h-4 w-4" />, external: true },
+                  { href: `mailto:${contactInfo.email}`, label: 'Send an email', icon: <Mail className="h-4 w-4" />, external: false },
+                ].map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    aria-label={link.label}
+                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    className="grid h-11 w-11 place-items-center rounded-full border border-edge bg-fill-1 text-muted-ink transition-colors hover:border-edge-3 hover:text-ink"
+                  >
+                    {link.icon}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-11 border-t border-edge pt-6 text-center">
+              <span className="font-mono-ui text-[10px] tracking-[0.22em] text-dim-ink">
+                © {new Date().getFullYear()} {profile.name}
+              </span>
+            </div>
           </div>
         </footer>
       </main>
 
       {selectedCertificate !== null && (
-        <CertificateModal index={selectedCertificate} onClose={() => setSelectedCertificate(null)} />
+        <CertificateModal
+          index={selectedCertificate}
+          closing={certExit.closing}
+          onClose={() => certExit.dismiss(() => setSelectedCertificate(null))}
+        />
       )}
-    </div>
-  );
-}
-
-function MissionStat({ label, value, accent }: { label: string; value: string; accent: string }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <div className="text-[10px] uppercase tracking-[0.25em] text-slate-400">{label}</div>
-      <div className={`mt-2 text-sm font-medium ${accent}`}>{value}</div>
-    </div>
-  );
-}
-
-function InfoChip({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-4">
-      <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{label}</div>
-      <div className="mt-2 text-sm font-medium text-white">{value}</div>
     </div>
   );
 }
 
 function ProjectCard({ project }: { project: (typeof projects)[number] }) {
   return (
-    <article className="group overflow-hidden rounded-[28px] border border-white/10 bg-white/5 shadow-[0_0_30px_rgba(15,23,42,0.35)] transition-transform duration-300 hover:-translate-y-1 hover:border-cyan-400/40">
-      <div className="relative h-56 overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.18),transparent_30%),linear-gradient(135deg,#0f172a,#0b1120,#111827)] p-5">
+    <article className="bezel bezel-hover group">
+      <div className="bezel__core">
+      <div className="relative overflow-hidden border-b border-edge" style={{ aspectRatio: '16 / 10' }}>
         {project.details?.screenshots && project.details.screenshots.length > 0 ? (
           <img
             src={project.details.screenshots[0]}
             alt={`${project.title} preview`}
             loading="lazy"
             decoding="async"
-            className="absolute inset-0 h-full w-full object-cover opacity-90"
+            className="h-full w-full object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-[1.06]"
           />
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(59,130,246,0.25),transparent_34%)]" />
+          <div className="h-full w-full bg-[radial-gradient(70%_70%_at_50%_30%,rgb(77_141_255/0.25),transparent)]" />
         )}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(59,130,246,0.25),transparent_34%)]" />
-        <div className="relative z-10 flex h-full items-center justify-between">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300">{project.category}</div>
-            <div className="mt-3 text-[10px] uppercase tracking-[0.2em] text-slate-400">{project.year}</div>
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10 text-cyan-300">
-            <Target className="h-5 w-5" />
-          </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+        <div className="absolute inset-x-4 bottom-4 d-flex align-items-center justify-content-between gap-2">
+          <span className="chip chip-mono">{project.category}</span>
+          <span className="font-mono-ui text-[10px] tracking-[0.24em] text-muted-ink">{project.year}</span>
         </div>
       </div>
 
-      <div className="p-6">
-        <h3 className="text-2xl font-bold text-white">{project.title}</h3>
-        <p className="mt-3 text-sm leading-6 text-slate-300">{project.description}</p>
+      <div className="d-flex flex-column flex-grow-1 p-4 p-md-5">
+        <h3 className="display display-md">{project.title}</h3>
+        <p className="body-text mt-3" style={{ fontSize: '0.9375rem' }}>{project.description}</p>
 
-        <div className="mt-4 space-y-2 text-sm text-slate-300">
-          <div><span className="text-slate-400">ROLE:</span> {project.role}</div>
-          <div><span className="text-slate-400">TECH:</span> {project.technologies.join(' • ')}</div>
-        </div>
+        <dl className="mt-4 d-flex flex-column gap-2">
+          <div className="d-flex gap-2">
+            <dt className="font-mono-ui shrink-0 text-[10px] tracking-[0.2em] text-dim-ink" style={{ paddingTop: '0.2rem' }}>
+              ROLE
+            </dt>
+            <dd className="body-text mb-0" style={{ fontSize: '0.875rem' }}>{project.role}</dd>
+          </div>
+          <div className="d-flex gap-2">
+            <dt className="font-mono-ui shrink-0 text-[10px] tracking-[0.2em] text-dim-ink" style={{ paddingTop: '0.2rem' }}>
+              TECH
+            </dt>
+            <dd className="body-text mb-0" style={{ fontSize: '0.875rem' }}>{project.technologies.join(' • ')}</dd>
+          </div>
+        </dl>
 
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="pill-row mt-4">
           {project.technologies.slice(0, 3).map((tech) => (
-            <span key={tech} className="rounded-full border border-white/10 bg-slate-900/80 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-slate-200">
+            <span key={tech} className="chip">
               {tech}
             </span>
           ))}
         </div>
 
-        <div className="mt-6 flex gap-3">
+        <div className="d-flex gap-2 mt-auto" style={{ paddingTop: '1.5rem' }}>
           {project.demo && (
-            <Button
-              variant="outline"
-              className="flex-1 border-cyan-400/30 bg-cyan-400/5 text-cyan-200 hover:bg-cyan-400/10"
-              asChild
-            >
-              <a href={project.demo} target="_blank" rel="noopener noreferrer">
-                VIEW PROJECT
-                <ExternalLink className="ml-2 h-3.5 w-3.5" />
-                <span className="sr-only"> — {project.title} (opens in a new tab)</span>
-              </a>
-            </Button>
+            <a href={project.demo} target="_blank" rel="noopener noreferrer" className="btn-glass flex-grow-1">
+              VIEW PROJECT
+              <span className="btn__icon">
+                <ExternalLink className="h-3.5 w-3.5" />
+              </span>
+              <span className="sr-only"> — {project.title} (opens in a new tab)</span>
+            </a>
           )}
           {project.github && (
-            <Button variant="ghost" className="border-white/10 bg-white/5 text-slate-200 hover:bg-white/10" asChild>
-              <a href={project.github} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} source on GitHub`}>
-                <Github className="h-4 w-4" />
-              </a>
-            </Button>
+            <a
+              href={project.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${project.title} source on GitHub`}
+              className="btn-glass btn--plain"
+            >
+              <Github className="h-4 w-4" />
+            </a>
           )}
         </div>
+      </div>
       </div>
     </article>
   );
@@ -878,27 +1130,29 @@ function ContactRow({
     <a
       href={href}
       {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-      className="flex items-center gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-4 transition-colors hover:border-cyan-400/30 hover:bg-slate-950/90"
+      className="glass glass-hover d-flex align-items-center gap-3 h-100 p-4"
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10">{icon}</div>
-      <div className="min-w-0">
-        <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{label}</div>
-        <div className="mt-1 truncate text-base font-medium text-white">{value}</div>
-      </div>
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-edge-2 bg-fill-2 text-signal">
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="font-mono-ui block text-[10px] tracking-[0.24em] text-dim-ink">{label}</span>
+        <span className="mt-1 block truncate text-[15px] font-medium text-ink">{value}</span>
+      </span>
+      <ArrowUpRight className="ms-auto h-4 w-4 shrink-0 text-dim-ink" />
     </a>
   );
 }
 
-function MissionDashCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-[#0d1728] p-5">
-      <div className="text-[10px] uppercase tracking-[0.25em] text-slate-400">{label}</div>
-      <div className="mt-3 text-lg font-semibold text-white">{value}</div>
-    </div>
-  );
-}
-
-function CertificateModal({ index, onClose }: { index: number; onClose: () => void }) {
+function CertificateModal({
+  index,
+  closing,
+  onClose,
+}: {
+  index: number;
+  closing: boolean;
+  onClose: () => void;
+}) {
   const certificate = certificates[index];
 
   // Close on Escape, and lock background scroll while the dialog is open.
@@ -924,57 +1178,76 @@ function CertificateModal({ index, onClose }: { index: number; onClose: () => vo
       aria-modal="true"
       aria-labelledby="certificate-modal-title"
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/80 p-4 backdrop-blur-sm"
+      data-closing={closing}
+      className="overlay-anim fixed inset-0 z-[100] overflow-y-auto bg-[rgb(var(--deep)/0.92)] p-4 backdrop-blur-xl"
     >
-      <div
-        onClick={(event) => event.stopPropagation()}
-        className="my-auto w-full max-w-3xl rounded-[28px] border border-white/10 bg-[#07111f] p-6 shadow-[0_0_80px_rgba(14,165,233,0.12)]"
-      >
-        <div className="mb-5 flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.25em] text-cyan-300">CERTIFICATE</div>
-            <h3 id="certificate-modal-title" className="mt-2 text-2xl font-bold text-white sm:text-3xl">
-              {certificate.title || 'Certificate'}
-            </h3>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="Close certificate"
-            autoFocus
-            className="shrink-0 rounded-full border border-white/10 bg-white/5 p-2 text-slate-200 hover:bg-white/10"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="rounded-[12px] overflow-hidden border border-white/10 bg-white/5 p-4">
-          {certificate.image ? (
-            <img
-              src={certificate.image}
-              alt={`${certificate.title} certificate`}
-              className="mx-auto max-h-[60vh] w-full object-contain"
-            />
-          ) : (
-            <div className="rounded-[24px] border border-dashed border-cyan-400/30 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.15),transparent_30%),linear-gradient(135deg,#0f172a,#0a1320)] p-8 text-center text-xs uppercase tracking-[0.25em] text-cyan-200">
-              {certificate.title || 'Certificate'}
+      <div className="container d-flex align-items-center" style={{ minHeight: '100%' }}>
+        <div
+          onClick={(event) => event.stopPropagation()}
+          className="glass panel-anim mx-auto my-5 w-100 p-4 p-md-5"
+          style={{ maxWidth: '52rem', borderRadius: '2rem' }}
+        >
+          <div className="d-flex justify-content-between align-items-start gap-3 mb-4">
+            <div>
+              <div className="font-mono-ui text-[10px] tracking-[0.28em] text-signal">CERTIFICATE</div>
+              <h3 id="certificate-modal-title" className="display display-md mt-3">
+                {certificate.title || 'Certificate'}
+              </h3>
             </div>
-          )}
-        </div>
+            <button
+              onClick={onClose}
+              aria-label="Close certificate"
+              autoFocus
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-edge-2 bg-fill-2 text-ink transition-colors hover:bg-fill-3"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 text-sm text-slate-300">
-          <div><span className="text-slate-400">Issuer:</span> {certificate.issuer || 'Unavailable'}</div>
-          <div><span className="text-slate-400">Date:</span> {certificate.date || 'Unavailable'}</div>
-          <div><span className="text-slate-400">Credential ID:</span> {certificate.credentialId || 'Unavailable'}</div>
-          <div><span className="text-slate-400">Verification:</span> {certificate.verificationUrl ? 'Available' : 'Not provided'}</div>
-        </div>
+          <div className="overflow-hidden rounded-2xl border border-edge bg-veil p-4">
+            {certificate.image ? (
+              <img
+                src={certificate.image}
+                alt={`${certificate.title} certificate`}
+                className="mx-auto w-100 object-contain"
+                style={{ maxHeight: '60vh' }}
+              />
+            ) : (
+              <div className="font-mono-ui grid place-items-center rounded-xl border border-dashed border-edge-3 p-5 text-center text-[10px] tracking-[0.24em] text-dim-ink">
+                {certificate.title || 'Certificate'}
+              </div>
+            )}
+          </div>
 
-        {certificate.verificationUrl && (
-          <div className="mt-6">
-            <a href={certificate.verificationUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-cyan-200">
+          <div className="row g-3 mt-3">
+            {[
+              { label: 'Issuer', value: certificate.issuer || 'Unavailable' },
+              { label: 'Date', value: certificate.date || 'Unavailable' },
+              { label: 'Credential ID', value: certificate.credentialId || 'Unavailable' },
+              { label: 'Verification', value: certificate.verificationUrl ? 'Available' : 'Not provided' },
+            ].map((row) => (
+              <div key={row.label} className="col-12 col-sm-6">
+                <div className="rounded-2xl border border-edge bg-fill-1 p-3">
+                  <div className="font-mono-ui text-[9px] tracking-[0.22em] text-dim-ink">
+                    {row.label.toUpperCase()}
+                  </div>
+                  <div className="mt-2 text-sm text-ink">{row.value}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {certificate.verificationUrl && (
+            <a
+              href={certificate.verificationUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-quiet mt-4"
+            >
               VERIFY CERTIFICATE <ExternalLink className="h-3 w-3" />
             </a>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
