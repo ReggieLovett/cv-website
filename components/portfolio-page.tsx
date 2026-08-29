@@ -33,11 +33,13 @@ import { SkillsSection } from './skills-section';
 import { Reveal } from './reveal';
 import { ThemeToggle } from './theme-toggle';
 import { SoundEffects, SoundToggle } from './sound-effects';
+import { ContributionGraph } from './contribution-graph';
+import type { ContributionData } from '@/lib/contributions';
 import { useExitTransition } from './use-exit-transition';
 
 const filterOptions = ['ALL', 'AI', 'WEB DEVELOPMENT', 'DATABASE', 'HCI / UX', 'SOFTWARE', 'OTHER'] as const;
 
-export function PortfolioPage() {
+export function PortfolioPage({ contributions }: { contributions: ContributionData | null }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const menuExit = useExitTransition();
   const certExit = useExitTransition();
@@ -612,6 +614,9 @@ export function PortfolioPage() {
             </div>
           </div>
         </section>
+
+        {/* ---- Contribution activity --------------------------------------- */}
+        <ContributionGraph data={contributions} />
 
         {/* ---- R2X gallery ------------------------------------------------- */}
         <R2XGallery />
