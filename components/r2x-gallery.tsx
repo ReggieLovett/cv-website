@@ -146,7 +146,7 @@ function Lightbox({
           <button className="icon-btn" onClick={() => onStep(1)} aria-label="Next image">
             <ArrowRight className="h-4 w-4" />
           </button>
-          <button className="icon-btn" onClick={onClose} aria-label="Close gallery" autoFocus>
+          <button className="icon-btn" onClick={onClose} data-sound="close" aria-label="Close gallery" autoFocus>
             <X className="h-4 w-4" />
           </button>
         </div>

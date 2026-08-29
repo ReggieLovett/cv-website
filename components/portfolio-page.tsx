@@ -32,6 +32,7 @@ import { R2XGallery } from './r2x-gallery';
 import { SkillsSection } from './skills-section';
 import { Reveal } from './reveal';
 import { ThemeToggle } from './theme-toggle';
+import { SoundEffects, SoundToggle } from './sound-effects';
 import { useExitTransition } from './use-exit-transition';
 
 const filterOptions = ['ALL', 'AI', 'WEB DEVELOPMENT', 'DATABASE', 'HCI / UX', 'SOFTWARE', 'OTHER'] as const;
@@ -133,6 +134,7 @@ export function PortfolioPage() {
         <div className="glow-warm absolute inset-0" />
       </div>
       <div className="grain z-[40]" aria-hidden="true" />
+      <SoundEffects />
 
       {/* ---- Header -------------------------------------------------------- */}
       <header className="fixed inset-x-0 top-0 z-[70]">
@@ -177,6 +179,7 @@ export function PortfolioPage() {
             </nav>
 
             <div className="d-flex align-items-center gap-2">
+              <SoundToggle />
               <ThemeToggle />
 
               <button
@@ -1196,6 +1199,7 @@ function CertificateModal({
             </div>
             <button
               onClick={onClose}
+              data-sound="close"
               aria-label="Close certificate"
               autoFocus
               className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-edge-2 bg-fill-2 text-ink transition-colors hover:bg-fill-3"
