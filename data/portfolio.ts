@@ -235,6 +235,22 @@ export const certificates = [
     image: '/certificates/ite-regional-2025.png',
     verificationUrl: '',
   },
+  {
+    title: 'Neo4j Certification',
+    issuer: 'Neo4j GraphAcademy',
+    date: '2026',
+    credentialId: '20aaa4fa-29ee-48fc-931a-d7c1f0d82795',
+    image: '/certificates/neo4j cert.png',
+    verificationUrl: 'https://graphacademy.neo4j.com/c/20aaa4fa-29ee-48fc-931a-d7c1f0d82795/',
+  },
+  {
+    title: 'JavaScript Developer Certification',
+    issuer: 'CodeCred',
+    date: '2026',
+    credentialId: 'f58a57bd-7070-4f2f-8138-fca095f1b3a6',
+    image: '/certificates/codecred.png',
+    verificationUrl: 'https://codecred.dev/verify/f58a57bd-7070-4f2f-8138-fca095f1b3a6',
+  },
 ];
 
 export const experience = [
