@@ -1,11 +1,19 @@
 import type { Config } from 'tailwindcss';
-import tailwindcssAnimate from 'tailwindcss-animate';
 
+/**
+ * EDITORIAL.
+ *
+ * One palette that flips with the theme: every semantic token is an RGB
+ * triple surfaced through `var(--…)`, so a single `[data-theme]` attribute
+ * repaints the whole system.
+ *
+ * The type scale is the design. Three tiers with real distance between them —
+ * a hero that is roughly 2.5x the section titles, section titles roughly 2.5x
+ * the reading size, and one small mono label beneath everything. The previous
+ * scale put `display` at 4.5rem against a `hero` of 7rem, which read as two
+ * versions of "big" rather than as a hierarchy.
+ */
 const config: Config = {
-  darkMode: ['class'],
-  // Bootstrap 5 owns `.container` / `.row` / `.col-*`; Tailwind's own `.container`
-  // is generated later in the cascade and would strip Bootstrap's centering.
-  corePlugins: { container: false },
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -13,86 +21,59 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-      },
-      borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+      colors: {
+        // Grounds.
+        space: 'rgb(var(--space) / <alpha-value>)',
+        void: 'rgb(var(--void) / <alpha-value>)',
+        panel: 'rgb(var(--panel) / <alpha-value>)',
+        panel2: 'rgb(var(--panel2) / <alpha-value>)',
+        line: 'rgb(var(--line) / <alpha-value>)',
+        line2: 'rgb(var(--line2) / <alpha-value>)',
+        // Type.
+        bone: 'rgb(var(--bone) / <alpha-value>)',
+        dim: 'rgb(var(--dim) / <alpha-value>)',
+        faint: 'rgb(var(--faint) / <alpha-value>)',
+        // Accent. One, used sparingly.
+        signal: 'rgb(var(--signal) / <alpha-value>)',
+        'signal-soft': 'rgb(var(--signal-soft) / <alpha-value>)',
+        telemetry: 'rgb(var(--telemetry) / <alpha-value>)',
+        // Status.
+        ok: 'rgb(var(--ok) / <alpha-value>)',
+        warn: 'rgb(var(--warn) / <alpha-value>)',
       },
       fontFamily: {
-        sans: ['var(--font-display)'],
-        mono: ['var(--font-mono)'],
+        sans: ['var(--font-geist-sans)', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
+        mono: ['var(--font-geist-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
-      colors: {
-        background: 'rgb(var(--background))',
-        foreground: 'rgb(var(--foreground))',
-        card: {
-          DEFAULT: 'rgb(var(--card))',
-          foreground: 'rgb(var(--card-foreground))',
-        },
-        popover: {
-          DEFAULT: 'rgb(var(--popover))',
-          foreground: 'rgb(var(--popover-foreground))',
-        },
-        primary: {
-          DEFAULT: 'rgb(var(--primary))',
-          foreground: 'rgb(var(--primary-foreground))',
-        },
-        secondary: {
-          DEFAULT: 'rgb(var(--secondary))',
-          foreground: 'rgb(var(--secondary-foreground))',
-        },
-        muted: {
-          DEFAULT: 'rgb(var(--muted))',
-          foreground: 'rgb(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'rgb(var(--accent))',
-          foreground: 'rgb(var(--accent-foreground))',
-        },
-        destructive: {
-          DEFAULT: 'rgb(var(--destructive))',
-          foreground: 'rgb(var(--destructive-foreground))',
-        },
-        border: 'rgb(var(--border))',
-        input: 'rgb(var(--input))',
-        ring: 'rgb(var(--ring))',
-        chart: {
-          '1': 'rgb(var(--chart-1))',
-          '2': 'rgb(var(--chart-2))',
-          '3': 'rgb(var(--chart-3))',
-          '4': 'rgb(var(--chart-4))',
-          '5': 'rgb(var(--chart-5))',
-        },
+      fontSize: {
+        // Mono label tiers.
+        tag: ['0.6875rem', { lineHeight: '1.4', letterSpacing: '0.1em' }],
+        readout: ['0.6875rem', { lineHeight: '1.35', letterSpacing: '0.14em' }],
+        // Reading tiers. `body` moved up from 0.9375rem — under a display
+        // this large, the old size read as fine print.
+        body: ['1rem', { lineHeight: '1.65' }],
+        lead: ['clamp(1.125rem, 1.6vw, 1.375rem)', { lineHeight: '1.5', letterSpacing: '-0.005em' }],
+        // Display tiers.
+        title: ['clamp(1.375rem, 2.2vw, 1.875rem)', { lineHeight: '1.15', letterSpacing: '-0.02em' }],
+        display: ['clamp(2rem, 4.2vw, 3.25rem)', { lineHeight: '1.02', letterSpacing: '-0.032em' }],
+        hero: ['clamp(3rem, 10.5vw, 8.5rem)', { lineHeight: '0.86', letterSpacing: '-0.045em' }],
       },
-      keyframes: {
-        'accordion-down': {
-          from: {
-            height: '0',
-          },
-          to: {
-            height: 'var(--radix-accordion-content-height)',
-          },
-        },
-        'accordion-up': {
-          from: {
-            height: 'var(--radix-accordion-content-height)',
-          },
-          to: {
-            height: '0',
-          },
-        },
+      maxWidth: {
+        measure: '60ch',
       },
-      animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
+      transitionTimingFunction: {
+        out: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        'in-out': 'cubic-bezier(0.77, 0, 0.175, 1)',
+      },
+      transitionDuration: {
+        press: '120ms',
+        hover: '220ms',
+        panel: '240ms',
+        overlay: '300ms',
       },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [],
 };
+
 export default config;

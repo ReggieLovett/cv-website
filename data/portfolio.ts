@@ -1,11 +1,3 @@
-export type ProjectCategory =
-  | 'AI'
-  | 'WEB DEVELOPMENT'
-  | 'DATABASE'
-  | 'HCI / UX'
-  | 'SOFTWARE'
-  | 'OTHER';
-
 export type AchievementCategory =
   | 'Academic'
   | 'Leadership'
@@ -68,73 +60,6 @@ export const contactInfo = {
   github: 'https://github.com/ReggieLovett',
 };
 
-export const projects = [
-  {
-    title: 'Digital Twin (ECA Final Project)',
-    category: 'SOFTWARE' as const,
-    year: '2026',
-    description: 'A team-built digital twin platform with realtime chat and Microsoft Teams integration.',
-    role: 'Project Manager',
-    technologies: ['Next.js', 'React', 'Realtime Chat', 'Microsoft Teams Integration', 'WebSockets'],
-    image: '',
-    github: '',
-    demo: 'https://group-3-digital-twin.vercel.app/artemis',
-    details: {
-      overview:
-        'A digital twin platform developed as an ECA final project. The system mirrors real-world entities and supports realtime communication and collaboration via chat and Teams integration.',
-      problem: 'Demonstrate synchronized state and collaborative tooling for simulated assets.',
-      solution: 'A web-based digital twin with chat features and Microsoft Teams interoperability for team collaboration.',
-      myRole: 'Project manager — coordinated the team and led integration efforts.',
-      features: ['Realtime chat', 'Teams deep link integration', 'Digital twin dashboard'],
-      challenges: ['Realtime synchronization', 'Integrating with Teams authentication and deep links'],
-      whatILearned: 'Realtime systems, API integration patterns, and collaboration workflows.',
-      screenshots: ['/group-3-digital-twin.vercel.app_chat.png'],
-    },
-  },
-  {
-    title: 'HealthCare Wellness & Medical Center',
-    category: 'WEB DEVELOPMENT' as const,
-    year: '2026',
-    description: 'A two-person build of a complete appointment booking system for a healthcare center.',
-    role: 'Duo (with Rhys Christian Suyu)',
-    technologies: ['PHP', 'HTML', 'CSS', 'JavaScript', 'MySQL'],
-    image: '',
-    github: '',
-    demo: 'http://hosbiz.infinityfree.me/',
-    details: {
-      overview: 'An appointment booking and management system for a healthcare and wellness center developed as a two-person project.',
-      problem: 'Streamline appointment booking, patient records, and provider scheduling.',
-      solution: 'End-to-end booking flow with role-based access, notifications, and calendar integration.',
-      myRole: 'Duo project member — worked closely with Rhys Christian Suyu on development and testing.',
-      features: ['Appointment booking', 'Provider schedules', 'Patient management', 'Notifications'],
-      challenges: ['Data privacy', 'Scheduling edge-cases', 'Reliable notifications'],
-      whatILearned: 'Project coordination, healthcare workflows, and production readiness considerations.',
-      screenshots: ['/hosbiz.infinityfree.me__i=1.png'],
-    },
-  },
-  {
-    title: 'Old Portfolio (2nd Year)',
-    category: 'WEB DEVELOPMENT' as const,
-    year: '2024',
-    description: 'My 2nd-year personal portfolio website.',
-    role: 'Creator',
-    technologies: ['HTML', 'CSS', 'JavaScript'],
-    image: '',
-    github: '',
-    demo: 'https://l0v3tt.site',
-    details: {
-      overview: 'A personal portfolio showcasing early projects and learning during my 2nd year.',
-      problem: 'I needed a dedicated platform to present my projects and document my growth as a technology student.',
-      solution: 'I designed and built a responsive personal portfolio that organized my work, profile, and contact information in one site.',
-      myRole: 'Creator',
-      features: ['Project showcase', 'Contact info', 'Simple responsive layout'],
-      challenges: ['Designing a clean one-page flow', 'Writing concise project summaries', 'Making the layout mobile-friendly'],
-      whatILearned: 'I learned how to structure personal branding content, improve responsive UI skills, and deploy a portfolio for public access.',
-      screenshots: ['/l0v3tt.site_ (2).png'],
-    },
-  },
-];
-
 export const achievements = [
   {
     title: 'Academic Growth in Technology',
@@ -170,88 +95,195 @@ export const achievements = [
   },
 ];
 
-export const certificates = [
+/**
+ * Credentials.
+ *
+ * Every entry carries an explicit `category`. Keyword-sniffing the title to
+ * guess a category looks clever and then quietly files something under the
+ * wrong tab the first time a name does not contain the expected word — the
+ * data is the right place to be certain.
+ */
+/**
+ * Credentials — one list.
+ *
+ * Badges and paper certificates used to live in two arrays rendered by two
+ * components in two places, which meant the reader met the same idea twice and
+ * had to work out how the halves related. They are one thing: evidence, sorted
+ * by what it evidences. `kind` is the only difference that survives, and it
+ * exists so a card can show the right artwork and say whether the claim can be
+ * checked by a stranger.
+ *
+ * Ordering inside a category is deliberate: verifiable badges first, then the
+ * scanned records. The strongest evidence leads.
+ */
+export type CredentialCategory = 'Technical' | 'Leadership' | 'Seminars';
+
+export const credentialCategories = [
+  'Technical',
+  'Leadership',
+  'Seminars',
+] as const satisfies readonly CredentialCategory[];
+
+export type CredentialKind = 'Badge' | 'Certificate';
+
+export type Credential = {
+  id: string;
+  title: string;
+  issuer: string;
+  date: string;
+  category: CredentialCategory;
+  kind: CredentialKind;
+  /** Artwork. Empty when there is no scan or badge image on file. */
+  image: string;
+  /** A public record anyone can check. Empty when the credential has none. */
+  verifyUrl: string;
+  /** Badges carry a line on what the credential actually covers. */
+  summary?: string;
+};
+
+const credly = (id: string) => `https://www.credly.com/badges/${id}`;
+
+export const credentials: Credential[] = [
+  // ---- Technical ----------------------------------------------------------
   {
-    title: 'Technology Skills Certificate',
-    issuer: 'St. Paul University Philippines - Institute of Technology and Engineering',
-    date: '2025',
-    credentialId: 'SPUP-ITE-TECH-2025',
-    image: '/certificates/Reggie b. Lovett.png',
-    verificationUrl: '',
+    id: '2ca928e6-c77b-45ae-a358-59aade74c6af',
+    title: 'Building RAG Apps Using MongoDB',
+    issuer: 'MongoDB',
+    date: 'September 2026',
+    category: 'Technical',
+    kind: 'Badge',
+    image: '/badges/mongodb-rag-apps.png',
+    verifyUrl: credly('2ca928e6-c77b-45ae-a358-59aade74c6af'),
+    summary: 'Retrieval-augmented generation end to end — chunking, embedding, and grounding answers in real data.',
   },
   {
-    title: 'Professional Development Certificate',
-    issuer: 'DICT / Philippine Startup Challenge X',
-    date: '2025',
-    credentialId: 'PSCX-PART-2025',
-    image: '/certificates/competion participation cert.png',
-    verificationUrl: '',
+    id: '408df2c2-1045-42e6-b332-428955eaccff',
+    title: 'Building AI-Powered Search with MongoDB Vector Search',
+    issuer: 'MongoDB',
+    date: 'September 2026',
+    category: 'Technical',
+    kind: 'Badge',
+    image: '/badges/mongodb-vector-search.png',
+    verifyUrl: credly('408df2c2-1045-42e6-b332-428955eaccff'),
+    summary: 'Semantic search on Atlas Vector Search: embeddings, indexes, and relevance that survives real queries.',
   },
   {
-    title: '10-Week Full Stack and Agentic AI Developer Industry Project Internship',
-    issuer: 'Employability Advantage',
-    date: 'May 2026',
-    credentialId: 'EA-2026-10WK',
-    image: '/certificates/eca cert.png',
-    verificationUrl: '',
+    id: '92ba988c-e735-4c99-b012-44084a6b7fbe',
+    title: 'Building AI Agents with MongoDB',
+    issuer: 'MongoDB',
+    date: 'September 2026',
+    category: 'Technical',
+    kind: 'Badge',
+    image: '/badges/mongodb-ai-agents.png',
+    verifyUrl: credly('92ba988c-e735-4c99-b012-44084a6b7fbe'),
+    summary: 'Agents that plan and act — multi-step tool use with memory backed by MongoDB.',
   },
   {
-    title: 'Philippine Startup Challenge X (PSCX) Regional Pitching Competition - Team Arche',
-    issuer: 'DICT / PSCX',
-    date: '2025',
-    credentialId: 'PSCX-REG-2025-ARCHE',
-    image: '/certificates/competion participation cert.png',
-    verificationUrl: '',
-  },
-  {
-    title: 'Presenter, ASEAN Youth Voices',
-    issuer: 'CHED / St. Paul University Philippines',
-    date: 'August 2025',
-    credentialId: 'CHED-ASYV-2025',
-    image: '/certificates/public speaking cert.JPG',
-    verificationUrl: '',
-  },
-  {
-    title: 'Mental Health Junior Coach',
-    issuer: 'Project DAVID / Emotional Reset Center USA LLC',
-    date: 'May 2025',
-    credentialId: 'DAVID-MHJC-2025',
-    image: '/certificates/project david cert junior mental coach.JPEG',
-    verificationUrl: '',
-  },
-  {
-    title: 'Junior Philippine Computer Society (JPCS) Membership - AY 2025-2026',
-    issuer: 'JPCS (National & SPUP Chapter)',
-    date: 'AY 2025-2026',
-    credentialId: 'JPCS-AY25-26',
-    image: '/certificates/jpcs member cert.png',
-    verificationUrl: '',
-  },
-  {
-    title: 'ITE Regional Summit',
-    issuer: 'Institute of Technology and Engineering (ITE)',
-    date: '2026',
-    credentialId: 'ITE-REG-2026',
-    image: '/certificates/ite-regional-2025.png',
-    verificationUrl: '',
-  },
-  {
-    title: 'Neo4j Certification',
+    id: 'neo4j-certified-professional',
+    title: 'Neo4j Certified Professional',
     issuer: 'Neo4j GraphAcademy',
     date: '2026',
-    credentialId: '20aaa4fa-29ee-48fc-931a-d7c1f0d82795',
+    category: 'Technical',
+    kind: 'Badge',
     image: '/certificates/neo4j cert.png',
-    verificationUrl: 'https://graphacademy.neo4j.com/c/20aaa4fa-29ee-48fc-931a-d7c1f0d82795/',
+    verifyUrl: 'https://graphacademy.neo4j.com/c/20aaa4fa-29ee-48fc-931a-d7c1f0d82795/',
   },
   {
+    id: 'codecred-javascript',
     title: 'JavaScript Developer Certification',
     issuer: 'CodeCred',
     date: '2026',
-    credentialId: 'f58a57bd-7070-4f2f-8138-fca095f1b3a6',
+    category: 'Technical',
+    kind: 'Badge',
     image: '/certificates/codecred.png',
-    verificationUrl: 'https://codecred.dev/verify/f58a57bd-7070-4f2f-8138-fca095f1b3a6',
+    verifyUrl: 'https://codecred.dev/verify/f58a57bd-7070-4f2f-8138-fca095f1b3a6',
+  },
+  {
+    id: 'EA-2026-10WK',
+    title: 'SPUP FullStack and Agentic AI Industry Project',
+    issuer: 'Employability Advantage / St. Paul University Philippines',
+    date: 'May 2026',
+    category: 'Technical',
+    kind: 'Certificate',
+    image: '/certificates/eca cert.png',
+    verifyUrl: '',
+  },
+  {
+    id: 'SPUP-ITE-TECH-2025',
+    title: 'Technology Skills Certificate',
+    issuer: 'St. Paul University Philippines — Institute of Technology and Engineering',
+    date: '2025',
+    category: 'Technical',
+    kind: 'Certificate',
+    image: '/certificates/Reggie b. Lovett.png',
+    verifyUrl: '',
+  },
+  {
+    id: 'ITE-REG-2026',
+    title: 'Regional ITE Convention',
+    issuer: 'Institute of Technology and Engineering (ITE)',
+    date: '2026',
+    category: 'Technical',
+    kind: 'Certificate',
+    image: '/certificates/ite-regional-2025.png',
+    verifyUrl: '',
+  },
+
+  // ---- Leadership ---------------------------------------------------------
+  {
+    id: 'PSCX-REG-2025-ARCHE',
+    title: 'Philippine Startup Challenge X — Regional Pitching, Team Arche',
+    issuer: 'DICT / PSCX',
+    date: '2025',
+    category: 'Leadership',
+    kind: 'Certificate',
+    image: '/certificates/competion participation cert.png',
+    verifyUrl: '',
+  },
+  {
+    id: 'CHED-ASYV-2025',
+    title: 'Presenter, ASEAN Youth Voices',
+    issuer: 'CHED / St. Paul University Philippines',
+    date: 'August 2025',
+    category: 'Leadership',
+    kind: 'Certificate',
+    image: '/certificates/public speaking cert.JPG',
+    verifyUrl: '',
+  },
+  {
+    id: 'JPCS-AY25-26',
+    title: 'Junior Philippine Computer Society Membership',
+    issuer: 'JPCS (National & SPUP Chapter)',
+    date: 'AY 2025–2026',
+    category: 'Leadership',
+    kind: 'Certificate',
+    image: '/certificates/jpcs member cert.png',
+    verifyUrl: '',
+  },
+
+  // ---- Seminars -----------------------------------------------------------
+  {
+    id: 'DAVID-MHJC-2025',
+    title: 'Mental Health Junior Coach',
+    issuer: 'Project DAVID / Emotional Reset Center USA LLC',
+    date: 'May 2025',
+    category: 'Seminars',
+    kind: 'Certificate',
+    image: '/certificates/project david cert junior mental coach.JPEG',
+    verifyUrl: '',
+  },
+  {
+    id: 'UNESCO-NCS',
+    title: 'UNESCO National Capability Seminar',
+    issuer: 'UNESCO',
+    date: '2026',
+    category: 'Seminars',
+    kind: 'Certificate',
+    image: '',
+    verifyUrl: '',
   },
 ];
+
 
 export const experience = [
   {
@@ -489,36 +521,6 @@ export const globalExposure = [
   },
 ];
 
-export const r2xGallery = [
-  {
-    id: 'r2x-01',
-    title: 'R²X Chameleon Logo',
-    category: 'Brand Identity',
-    image: '/r2x/Screenshot 2026-04-23 at 7.13.29 PM.png',
-    alt: 'R2X Chameleon Logo',
-  },
-  {
-    id: 'r2x-02',
-    title: 'Shoot. Edit. Tell. R²X — T-shirt Mockup',
-    category: 'Merchandise',
-    image: '/r2x/mock up pic.png',
-    alt: 'R2X T-shirt mockup',
-  },
-  {
-    id: 'r2x-03',
-    title: 'Hanin — Film Poster',
-    category: 'Print Design',
-    image: '/r2x/poster_film.png',
-    alt: 'Hanin Film Poster',
-  },
-  {
-    id: 'r2x-04',
-    title: 'R²X Airplane Activity',
-    category: 'Photo Manipulation',
-    image: '/r2x/ACTIVIY_R2X MEDIA.jpg',
-    alt: 'R2X Airplane photo manipulation',
-  },
-];
 
 /**
  * Skills & Technologies — the category cards rendered as logo pills.
@@ -569,5 +571,194 @@ export const techStack: TechCategory[] = [
       { name: 'SQL', icon: 'sql' },
       { name: 'Postgres', icon: 'postgres' },
     ],
+  },
+];
+
+
+/**
+ * Capabilities.
+ *
+ * Deliberately a flat list of what the work is, not a taxonomy of tools. The
+ * tool names live in `tools` as supporting evidence — a client hires the
+ * capability and only then asks what it was made in.
+ */
+export type Capability = {
+  no: string;
+  title: string;
+  body: string;
+  tools: string[];
+  /** Bento column span at the lg breakpoint. Drives the composition. */
+  span: 4 | 6 | 8 | 12;
+};
+
+export const capabilities: Capability[] = [
+  {
+    no: '01',
+    title: 'Fullstack Development',
+    body: 'End-to-end delivery: data model, API, interface, deploy. Ten weeks of it under industry supervision on the SPUP project.',
+    tools: ['Next.js', 'React', 'TypeScript', 'Node.js', 'PHP', 'Postgres', 'MySQL'],
+    span: 6,
+  },
+  {
+    no: '02',
+    title: 'Agentic AI',
+    body: 'Systems that plan and act rather than only answer — tool use, retrieval, and the evaluation loop that keeps them honest.',
+    tools: ['Python', 'Prompt engineering', 'Retrieval', 'Neo4j'],
+    span: 6,
+  },
+  {
+    no: '03',
+    title: 'UI / UX Design',
+    body: 'Interface work from wireframe to build, with the motion and state detail that decides whether a product feels finished.',
+    tools: ['Bootstrap 5', 'Uizard', 'Figma'],
+    span: 4,
+  },
+  {
+    no: '04',
+    title: 'Graphic Design',
+    body: 'Layout, typography, and print. Posters, decks, and campaign assets that hold their structure at any size.',
+    tools: ['Layout', 'Typography', 'Print production'],
+    span: 4,
+  },
+  {
+    no: '05',
+    title: 'Brand Identity',
+    body: 'Marks and the systems around them: R²X and Lovett Cafe, both built to stay recognisable across every surface they land on.',
+    tools: ['Logo systems', 'Art direction', 'Brand guidelines'],
+    span: 6,
+  },
+];
+
+/**
+ * Projects & media.
+ *
+ * Two lists, kept apart on purpose: `projects` is the software that ships
+ * (with a link the reader can open), `media` is the design and photography —
+ * the pictures made along the way. Every entry is backed by a file in
+ * `public/`. There are no placeholder rows: an index that lists work it
+ * cannot show is a worse impression than a shorter index.
+ */
+export type WorkDiscipline =
+  | 'Brand Identity'
+  | 'Print'
+  | 'Merchandise'
+  | 'Photography'
+  | 'Product Design'
+  | 'Web';
+
+export type WorkEntry = {
+  id: string;
+  index: string;
+  title: string;
+  client: string;
+  discipline: WorkDiscipline;
+  year: string;
+  summary: string;
+  image: string;
+  alt: string;
+  /** Sets the plate proportion, so the grid reads as a composition. */
+  ratio: string;
+  href?: string;
+};
+
+/**
+ * Projects — the software builds, shipped. These lead the page.
+ */
+export const projects: WorkEntry[] = [
+  {
+    id: 'digital-twin',
+    index: '01',
+    title: 'Digital Twin',
+    client: 'ECA Final Project',
+    discipline: 'Product Design',
+    year: '2026',
+    summary:
+      'A team-built digital twin platform with realtime chat and Microsoft Teams integration. I led the build as project manager.',
+    image: '/group-3-digital-twin.vercel.app_chat.png',
+    alt: 'The Digital Twin platform chat interface',
+    ratio: '16 / 10',
+    href: 'https://group-3-digital-twin.vercel.app/artemis',
+  },
+  {
+    id: 'healthcare',
+    index: '02',
+    title: 'Wellness & Medical Center',
+    client: 'HealthCare',
+    discipline: 'Product Design',
+    year: '2026',
+    summary:
+      'A complete appointment booking system for a healthcare centre, built as a duo with Rhys Christian Suyu.',
+    image: '/hosbiz.infinityfree.me__i=1.png',
+    alt: 'The HealthCare Wellness and Medical Center booking interface',
+    ratio: '16 / 10',
+    href: 'http://hosbiz.infinityfree.me/',
+  },
+  {
+    id: 'portfolio-2024',
+    index: '03',
+    title: 'Portfolio, 2nd year',
+    client: 'Personal',
+    discipline: 'Web',
+    year: '2024',
+    summary: 'The first version of this site. Kept because the distance is the point.',
+    image: '/l0v3tt.site_ (2).png',
+    alt: 'The 2024 version of the personal portfolio site',
+    ratio: '16 / 10',
+    href: 'https://l0v3tt.site',
+  },
+];
+
+/**
+ * Media & Design — the pictures, marks, and print made along the way.
+ */
+export const media: WorkEntry[] = [
+  {
+    id: 'r2x-mark',
+    index: '01',
+    title: 'Chameleon mark',
+    client: 'R²X',
+    discipline: 'Brand Identity',
+    year: '2026',
+    summary:
+      'A student media collective. One shape that changes surface without changing silhouette — which is what the group does across film, photo, and print.',
+    image: '/r2x/r2x-chameleon-mark.png',
+    alt: 'The R²X chameleon logo mark',
+    ratio: '4 / 3',
+  },
+  {
+    id: 'r2x-poster',
+    index: '02',
+    title: 'Hanin',
+    client: 'R²X',
+    discipline: 'Print',
+    year: '2026',
+    summary: 'One-sheet film poster. Title, credit block, and a single image doing all the work.',
+    image: '/r2x/poster_film.png',
+    alt: 'Poster for the film Hanin',
+    ratio: '2 / 3',
+  },
+  {
+    id: 'r2x-tee',
+    index: '03',
+    title: 'Shoot. Edit. Tell.',
+    client: 'R²X',
+    discipline: 'Merchandise',
+    year: '2026',
+    summary: 'The mark and tagline applied to apparel — the identity at its least controlled scale.',
+    image: '/r2x/mock up pic.png',
+    alt: 'R²X t-shirt carrying the Shoot Edit Tell tagline',
+    ratio: '1 / 1',
+  },
+  {
+    id: 'r2x-airplane',
+    index: '04',
+    title: 'Airplane',
+    client: 'R²X',
+    discipline: 'Photography',
+    year: '2026',
+    summary: 'Composite built for a campus activity campaign.',
+    image: '/r2x/ACTIVIY_R2X MEDIA.jpg',
+    alt: 'Composited photograph produced for an R²X campus activity',
+    ratio: '4 / 3',
   },
 ];

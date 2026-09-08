@@ -1,256 +1,160 @@
-/**
- * Brand marks for the Skills & Technologies badges.
- *
- * Every glyph is inline SVG on a 24×24 grid so the pills stay crisp at any size
- * and the page makes no network request for icon fonts or a CDN sprite sheet.
- */
+import type { SVGProps } from 'react';
 
-/**
- * Each pill already carries the technology name as visible text, so the glyph is
- * purely decorative: hiding it from assistive tech keeps the badge from being
- * announced twice ("JavaScript JavaScript").
- */
-const decorative = { 'aria-hidden': true as const, focusable: 'false' as const };
-
-function JavaScriptIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <rect width="24" height="24" rx="5" fill="#F7DF1E" />
-      <text
-        x="12"
-        y="17.4"
-        textAnchor="middle"
-        textLength="13"
-        lengthAdjust="spacingAndGlyphs"
-        fontSize="11"
-        fontWeight="700"
-        fontFamily="var(--font-display)"
-        fill="#0B0B0B"
-      >
-        JS
-      </text>
-    </svg>
-  );
-}
-
-function TypeScriptIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <rect width="24" height="24" rx="5" fill="#3178C6" />
-      <text
-        x="12"
-        y="17.4"
-        textAnchor="middle"
-        textLength="13"
-        lengthAdjust="spacingAndGlyphs"
-        fontSize="11"
-        fontWeight="700"
-        fontFamily="var(--font-display)"
-        fill="#FFFFFF"
-      >
+const paths: Record<string, React.ReactNode> = {
+  javascript: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" fill="currentColor" fillOpacity="0.12" />
+      <path
+        d="M12 8.5v7M9.2 10.5h1.2l2.3 4 0.7-1v-3.8M15.5 12v-1.5a1 1 0 0 0-1-1h-0.5a1.3 1.3 0 0 0-1.3 1.3v0.4"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </>
+  ),
+  typescript: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="2" fill="currentColor" fillOpacity="0.12" />
+      <text x="6.5" y="17" fontSize="11" fontWeight="700" fill="currentColor" fontFamily="inherit">
         TS
       </text>
-    </svg>
-  );
-}
-
-/** Two rotationally symmetric hooks — the interlocking snakes of the Python mark. */
-function PythonIcon() {
-  const hook =
-    'M12 1.2c-2.4 0-4.1.3-5 .9C6.2 2.6 6 3.4 6 4.6v2.6h6.2v.9H5.5c-1.3 0-2.4.8-2.9 2.2C2.1 11.8 2 13 2 14.4c0 1.5.1 2.7.5 3.7.5 1.3 1.5 2.1 2.8 2.1h2.1v-3.1c0-1.6 1.3-2.9 2.9-2.9h6.2c1.2 0 2.2-1 2.2-2.2V4.6c0-1.2-1-2.1-2.2-2.4-1.1-.7-2.8-1-4.5-1z';
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <g>
-        <path d={hook} fill="#3776AB" />
-        <circle cx="9" cy="4.7" r="1.05" fill="#FFFFFF" />
-      </g>
-      <g transform="rotate(180 12 12)">
-        <path d={hook} fill="#FFD43B" />
-        <circle cx="9" cy="4.7" r="1.05" fill="#FFFFFF" />
-      </g>
-    </svg>
-  );
-}
-
-function CppIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <path d="M12 1.2 21.4 6.6v10.8L12 22.8 2.6 17.4V6.6z" fill="#00599C" />
-      <text
-        x="11.4"
-        y="16.2"
-        textAnchor="middle"
-        textLength="12.5"
-        lengthAdjust="spacingAndGlyphs"
-        fontSize="9.5"
-        fontWeight="700"
-        fontFamily="var(--font-display)"
-        fill="#FFFFFF"
-      >
-        C++
-      </text>
-    </svg>
-  );
-}
-
-function PhpIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <ellipse cx="12" cy="12" rx="11.4" ry="6.6" fill="#777BB4" />
-      <text
-        x="12"
-        y="15"
-        textAnchor="middle"
-        textLength="15"
-        lengthAdjust="spacingAndGlyphs"
-        fontSize="8.6"
-        fontWeight="700"
-        fontStyle="italic"
-        fontFamily="var(--font-display)"
-        fill="#FFFFFF"
-      >
-        php
-      </text>
-    </svg>
-  );
-}
-
-function HtmlIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <path d="M3 1.8h18l-1.63 18.36L12 22.2l-7.37-2.04z" fill="#E34F26" />
-      <path d="M12 3.6v16.9l5.94-1.65L19.3 3.6z" fill="#EF652A" />
+    </>
+  ),
+  python: (
+    <>
+      <ellipse cx="12" cy="12" rx="8.5" ry="5" transform="rotate(0)" fill="currentColor" fillOpacity="0.15" />
       <path
-        d="M12 6.6H6.9l.5 5.6h4.6v2.6l-2.4-.66-.16-1.8H6.86l.32 3.66L12 17.4v-2.6l.02.01v-2.6H9.6l-.16-1.8H12z"
-        fill="#FFFFFF"
-        opacity="0.95"
-      />
-      <path
-        d="M12 6.6v2.6h4.86l.2-2.6zm0 5.6v2.6h2.28l-.2 2.2-2.08.58v2.7l4.8-1.32.66-6.76z"
-        fill="#EBEBEB"
-      />
-    </svg>
-  );
-}
-
-function CssIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <path d="M3 1.8h18l-1.63 18.36L12 22.2l-7.37-2.04z" fill="#1572B6" />
-      <path d="M12 3.6v16.9l5.94-1.65L19.3 3.6z" fill="#33A9DC" />
-      <path
-        d="M12 6.6H6.9l.18 2.06H12V6.6zm0 5.2H9.28l.18 2.06H12v-2.06zm0 5.6-2.08-.58-.14-1.6H7.7l.28 3.16L12 19.5z"
-        fill="#FFFFFF"
-        opacity="0.95"
-      />
-      <path
-        d="M12 6.6v2.06h4.9l.2-2.06zm0 5.2v2.06h2.6l-.25 2.72-2.35.66v2.26l4.32-1.2.6-6.5z"
-        fill="#EBEBEB"
-      />
-    </svg>
-  );
-}
-
-function ReactIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <circle cx="12" cy="12" r="2.05" fill="#61DAFB" />
-      <g fill="none" stroke="#61DAFB" strokeWidth="1.05">
-        <ellipse cx="12" cy="12" rx="10.4" ry="3.95" />
-        <ellipse cx="12" cy="12" rx="10.4" ry="3.95" transform="rotate(60 12 12)" />
-        <ellipse cx="12" cy="12" rx="10.4" ry="3.95" transform="rotate(120 12 12)" />
-      </g>
-    </svg>
-  );
-}
-
-function NextIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <circle cx="12" cy="12" r="11.2" fill="#000000" stroke="#FFFFFF" strokeOpacity="0.28" />
-      <path
-        d="M8.6 16.9V7.3l8.1 10.4"
-        fill="none"
-        stroke="#FFFFFF"
-        strokeWidth="1.55"
-        strokeLinecap="square"
-      />
-      <path d="M15.5 7.3v6.1" fill="none" stroke="#FFFFFF" strokeWidth="1.55" strokeLinecap="square" />
-    </svg>
-  );
-}
-
-function NodeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <path d="M12 1.2 21.4 6.6v10.8L12 22.8 2.6 17.4V6.6z" fill="#539E43" />
-      <path d="M12 4.6 18.5 8.3v7.4L12 19.4 5.5 15.7V8.3z" fill="#3F7E35" />
-      <path
-        d="M10.05 9.1h1.62l3.02 4.76V9.1h1.32v6.02h-1.6l-3.04-4.8v4.8h-1.32z"
-        fill="#FFFFFF"
-      />
-    </svg>
-  );
-}
-
-function SqlIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <ellipse cx="12" cy="5.4" rx="8.4" ry="3.3" fill="#8FB4E3" />
-      <path d="M3.6 5.4v13.2c0 1.82 3.76 3.3 8.4 3.3s8.4-1.48 8.4-3.3V5.4z" fill="#5C86BE" />
-      <ellipse cx="12" cy="5.4" rx="8.4" ry="3.3" fill="#A8C6EC" />
-      <path
-        d="M3.6 10.1c0 1.82 3.76 3.3 8.4 3.3s8.4-1.48 8.4-3.3M3.6 15c0 1.82 3.76 3.3 8.4 3.3s8.4-1.48 8.4-3.3"
-        fill="none"
-        stroke="#0B1220"
-        strokeOpacity="0.35"
+        d="M8.5 12h-2m11 0h-2M12 6.5c3-0.3 4.5 0 4.5 0M8 6.5c-3 0.3-4.5 0-4.5 0"
+        stroke="currentColor"
         strokeWidth="1"
+        fill="none"
       />
-    </svg>
-  );
-}
-
-/** Slonik, the PostgreSQL elephant, reduced to a silhouette that survives 24px. */
-function PostgresIcon() {
-  return (
-    <svg viewBox="0 0 24 24" {...decorative}>
-      <circle cx="12" cy="12" r="11.2" fill="#336791" />
+      <circle cx="16.5" cy="13" r="0.7" fill="currentColor" />
+      <circle cx="7.5" cy="13" r="0.7" fill="currentColor" />
+    </>
+  ),
+  php: (
+    <>
+      <text x="6" y="16.5" fontSize="13" fontWeight="700" fill="currentColor" fontFamily="inherit">
+        &lt;?php
+      </text>
+    </>
+  ),
+  cpp: (
+    <>
       <path
-        d="M11.7 4.4c-3.7 0-6.6 2.3-6.6 5.6 0 1.6.6 3 1.7 4.1-.5 1.1-.7 2.4-.3 3.6.2.6.9.9 1.5.6.5-.3.7-.9.7-1.5 0-.5.4-.8.9-.6.8.3 1.6.5 2.5.5.5 0 1 0 1.4-.1-.1 1.3-.3 2.6-.6 3.9-.2.7.3 1.3 1 1.3.6 0 1.1-.4 1.2-1.1.3-1.6.5-3.2.5-4.9 1.9-1 3.1-2.8 3.1-5 0-3.5-3.3-6.4-7-6.4z"
-        fill="#FFFFFF"
+        d="M7 8v8M13 8l-6 3v2l6 3M17 8l-6 3v2l6 3"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
       />
+    </>
+  ),
+  html: (
+    <>
       <path
-        d="M16 14.4c.3 1.6.3 3.3.1 4.9-.1.7.4 1.2 1 1.2s1-.5 1-1.2c.1-1.8 0-3.6-.4-5.3z"
-        fill="#FFFFFF"
+        d="M8 3l-1 14 5 3 5-3-1-14H8zM10 9h4M10 12h4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
       />
-      <circle cx="9.3" cy="9.5" r="1" fill="#336791" />
-    </svg>
-  );
-}
+    </>
+  ),
+  css: (
+    <>
+      <path
+        d="M6 3l-1 15 7 3 7-3-1-15H6zM9 9h6M16 12H8M10 16h4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </>
+  ),
+  react: (
+    <>
+      <circle cx="12" cy="12" r="2" fill="currentColor" fillOpacity="0.4" />
+      <ellipse cx="12" cy="12" rx="9" ry="3.6" stroke="currentColor" strokeWidth="0.5" fill="none" />
+      <ellipse
+        cx="12"
+        cy="12"
+        rx="9"
+        ry="3.6"
+        stroke="currentColor"
+        strokeWidth="0.5"
+        fill="none"
+        transform="rotate(60 12 12)"
+      />
+      <ellipse
+        cx="12"
+        cy="12"
+        rx="9"
+        ry="3.6"
+        stroke="currentColor"
+        strokeWidth="0.5"
+        fill="none"
+        transform="rotate(120 12 12)"
+      />
+    </>
+  ),
+  next: (
+    <>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1" fill="none" />
+      <path d="M8 15V9l8 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+    </>
+  ),
+  node: (
+    <>
+      <path
+        d="M12 3l8 4.6v8.8L12 21l-8-4.6V7.6L12 3z"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinejoin="round"
+        fill="currentColor"
+        fillOpacity="0.08"
+      />
+      <path d="M12 8v8M8 9.5l4-2.5 4 2.5" stroke="currentColor" strokeWidth="1.1" fill="none" />
+    </>
+  ),
+  sql: (
+    <>
+      <ellipse cx="12" cy="5.5" rx="7" ry="2.7" stroke="currentColor" strokeWidth="1.1" fill="none" />
+      <path d="M5 5.5v6c0 1.5 3.1 2.7 7 2.7s7-1.2 7-2.7v-6" stroke="currentColor" strokeWidth="1.1" fill="none" />
+      <path d="M5 11.5v6c0 1.5 3.1 2.7 7 2.7s7-1.2 7-2.7v-6" stroke="currentColor" strokeWidth="1.1" fill="none" />
+    </>
+  ),
+  postgres: (
+    <>
+      <ellipse cx="12" cy="4.8" rx="7" ry="2.6" stroke="currentColor" strokeWidth="1" fill="none" />
+      <path d="M5 4.8v6" stroke="currentColor" strokeWidth="1" fill="none" />
+      <path d="M19 4.8v6" stroke="currentColor" strokeWidth="1" fill="none" />
+      <path d="M7 5.5h3M14 5.5h3" stroke="currentColor" strokeWidth="0.8" />
+      <path d="M12 4.8v2M8 20v4M12 20v4M8 16h-4M8 20h8v4" stroke="currentColor" strokeWidth="1.1" fill="none" />
+    </>
+  ),
+};
 
-/** Icon key → component. Keys are referenced from `techStack` in data/portfolio.ts. */
-export const techIcons = {
-  javascript: JavaScriptIcon,
-  typescript: TypeScriptIcon,
-  python: PythonIcon,
-  cpp: CppIcon,
-  php: PhpIcon,
-  html: HtmlIcon,
-  css: CssIcon,
-  react: ReactIcon,
-  next: NextIcon,
-  node: NodeIcon,
-  sql: SqlIcon,
-  postgres: PostgresIcon,
-} as const;
-
-export type TechIconKey = keyof typeof techIcons;
-
-export function TechIcon({ name }: { name: TechIconKey }) {
-  const Glyph = techIcons[name];
+export function TechIcon({ name, ...props }: { name: string } & SVGProps<SVGSVGElement>) {
   return (
-    <span className="tech-pill__icon" aria-hidden="true">
-      <Glyph />
-    </span>
+    <svg
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      {paths[name] ?? <circle cx="12" cy="12" r="8" strokeWidth="1" />}
+    </svg>
   );
 }

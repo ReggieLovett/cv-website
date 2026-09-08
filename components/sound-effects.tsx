@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import {
   getSoundServerSnapshot,
@@ -12,25 +12,27 @@ import {
 } from '@/lib/sounds';
 
 /**
+ * SoundEffects.
+ *
  * Interface sounds are wired with one delegated listener rather than an
  * onClick on several dozen elements — nothing in the components has to know
  * that sound exists, and anything added later is covered automatically.
  *
  * It listens on `pointerdown`, not `click`: feedback belongs on the press.
- * Waiting for the release makes an interface feel like it's lagging behind
+ * Waiting for the release makes an interface feel like it is lagging behind
  * the finger.
  */
 const SOUND_MAP: Array<[selector: string, sound: SoundName]> = [
   // Most specific first — the first match wins.
-  ['.sound-toggle', 'tick'], // handled by the control itself; skipped below
-  ['.theme-toggle', 'chime'],
-  ['[data-sound="close"]', 'close'],
-  ['.tile', 'open'],
-  ['.filter-pill', 'switch'],
-  ['.btn-solid, .btn-glass', 'tap'],
-  ['.site-nav__link, .menu-link, .btn-quiet, .icon-btn, .chip', 'tick'],
+  ['.theme-toggle', 'chime'], // theme switch can afford the noise
+  ['[role="tab"]', 'switch'],
+  ['button[aria-current]', 'tick'],
   ['button, a[href]', 'tick'],
 ];
+
+// Controls that own their feedback on `click` rather than the press — playing
+// on pointerdown here would double up with the click handler's playback.
+const SILENT = ['.sound-toggle', '[data-sound="close"]'];
 
 export function SoundEffects() {
   useEffect(() => {
@@ -41,12 +43,13 @@ export function SoundEffects() {
       const target = event.target as Element | null;
       if (!target || typeof target.closest !== 'function') return;
 
+      for (const selector of SILENT) {
+        if (target.closest(selector)) return;
+      }
+
       for (const [selector, sound] of SOUND_MAP) {
         const hit = target.closest(selector);
         if (!hit) continue;
-        // The mute control makes its own noise when switching back on, so
-        // that it can confirm itself — and stays silent when switching off.
-        if (hit.classList.contains('sound-toggle')) return;
         play(sound);
         return;
       }
@@ -60,25 +63,24 @@ export function SoundEffects() {
 }
 
 export function SoundToggle({ className = '' }: { className?: string }) {
-  // Reading an external store this way keeps the preference out of component
-  // state, so there is no setState-inside-an-effect to cascade a second render
-  // — and React reconciles the server's "on" with the stored value on hydration.
+  // Reading an external store keeps the preference out of component state, so
+  // there is no setState-inside-an-effect to cascade a second render — and
+  // React reconciles the server's "on" with the stored value on hydration.
   const on = useSyncExternalStore(subscribeToSound, isSoundEnabled, getSoundServerSnapshot);
-
-  const toggle = useCallback(() => setSoundEnabled(!on), [on]);
 
   return (
     <button
       type="button"
-      onClick={toggle}
-      className={`theme-toggle sound-toggle ${className}`.trim()}
+      onClick={() => setSoundEnabled(!on)}
+      className={`toggle-arm sound-toggle press ${className}`.trim()}
       aria-pressed={on}
       aria-label={on ? 'Mute interface sounds' : 'Unmute interface sounds'}
     >
-      <span className="theme-toggle__glyphs" data-dark={on} aria-hidden="true">
-        <Volume2 className="h-4 w-4" />
-        <VolumeX className="h-4 w-4" />
+      <span className="toggle-arm__glyphs" aria-hidden="true">
+        <Volume2 className="toggle-arm__on h-4 w-4" />
+        <VolumeX className="toggle-arm__off h-4 w-4" />
       </span>
+      <span className="tag">{on ? 'Sound: On' : 'Sound: Off'}</span>
     </button>
   );
 }

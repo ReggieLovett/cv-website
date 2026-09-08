@@ -2,7 +2,6 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
-import { Providers } from './providers';
 import { profile, contactInfo } from '@/data/portfolio';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://reggielovett.vercel.app';
@@ -58,8 +57,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Matches the default theme; Providers rewrites this when the visitor toggles.
-  themeColor: '#04060c',
+  // The theme-color meta is repainted at runtime by the theme store; this
+  // static default just voices the dark ground until that runs.
+  themeColor: '#08090B',
   colorScheme: 'dark light',
 };
 
@@ -83,28 +83,46 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      data-bs-theme="dark"
       className={`${GeistSans.variable} ${GeistMono.variable}`}
+      // The pre-paint script below mutates the documentElement's class and
+      // data-entrance before React hydrates it, so hydration must not try to
+      // reconcile attributes it no longer owns.
       suppressHydrationWarning
     >
       <head>
-        {/* Marks the document as script-capable before first paint. The scroll
-            reveals only hide themselves under `html.js`, so a reader without
-            JavaScript gets the full page instead of an empty one. */}
+        {/* Runs before first paint.
+            1. Marks the document as script-capable. The scroll reveals only
+               hide themselves under `html.js`, so a reader without JavaScript
+               gets the full page instead of an empty one.
+            2. Applies the stored theme. Default is dark (the `:root` tokens),
+               so a light preference is the only case that needs an attribute.
+               Doing it here keeps `data-theme` consistent with the colors the
+               first paint commits — no flash of the wrong ground.
+            3. Decides whether the entrance curtain has already played this
+               session. This has to happen here, not in React: the server HTML
+               cannot know about sessionStorage, so the curtain ships in the
+               markup and paints before hydration. Setting the attribute
+               pre-paint lets CSS drop it, which is the difference between a
+               returning visitor seeing nothing and seeing a flash. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: "document.documentElement.classList.add('js')",
+            __html: `document.documentElement.classList.add('js');try{if(localStorage.getItem('theme')==='light')document.documentElement.dataset.theme='light';if(sessionStorage.getItem('entrance-played')==='1')document.documentElement.dataset.entrance='played'}catch(e){}`,
           }}
         />
       </head>
       <body className="font-sans">
         <a
-          href="#home"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black"
+          href="#top"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-bone focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-space"
         >
           Skip to content
         </a>
-        <Providers>{children}</Providers>
+        {children}
+        {/* Reading position, painted by the compositor — see `.progress`. */}
+        <div className="progress" aria-hidden="true" />
+        {/* Print tooth over the whole document. Fixed and inert — see `.grain`
+            in globals.css for why it sits below the lightbox. */}
+        <div className="grain" aria-hidden="true" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
