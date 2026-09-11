@@ -12,7 +12,7 @@
  * a decaying body, which is how a struck object actually behaves.
  */
 
-export type SoundName = 'tap' | 'tick' | 'switch' | 'open' | 'close' | 'chime';
+export type SoundName = 'tap' | 'tick' | 'switch' | 'open' | 'close' | 'chime' | 'blade';
 
 const STORAGE_KEY = 'sound-enabled';
 const MASTER_GAIN = 0.45;
@@ -196,6 +196,65 @@ const voices: Record<SoundName, (c: AudioContext, out: GainNode, at: number) => 
     });
 
     burst(c, out, at, { frequency: 5200, q: 0.4, gain: 0.075, decay: 0.55, type: 'highpass' });
+  },
+
+  /**
+   * A blade drawn and powered up — the anniversary badge.
+   *
+   * Synthesised from scratch, like everything else here, and deliberately so:
+   * the sound people picture when they think of a legendary sword being raised
+   * is Nintendo's recording, and shipping that would be shipping someone else's
+   * copyrighted audio. This is built to evoke the same event rather than
+   * reproduce the cue — an ascending arpeggio, not a transcribed melody.
+   *
+   * Three layers, in the order the ear assembles them:
+   *   1. the draw — a rising filtered-noise sweep, steel leaving a scabbard
+   *   2. the flourish — five ascending notes, each a beat behind the last
+   *   3. the bloom — inharmonic partials ringing on, which is what makes the
+   *      tail read as struck metal rather than as a synth pad
+   */
+  blade(c, out, at) {
+    // 1. The draw. Highpassed noise rising under everything else.
+    burst(c, out, at, { frequency: 2200, q: 0.35, gain: 0.16, decay: 0.26, type: 'highpass' });
+    tone(c, out, at, { frequency: 380, to: 2600, gain: 0.07, decay: 0.24, attack: 0.05 });
+
+    // 2. The flourish. An A-major arpeggio climbing two octaves — an ascending
+    //    run rather than any particular tune, which keeps it original.
+    const run = [440, 554.37, 659.25, 880, 1108.73];
+    run.forEach((frequency, i) => {
+      tone(c, out, at + 0.055 + i * 0.062, {
+        frequency,
+        gain: 0.2 - i * 0.012,
+        decay: 0.2,
+        attack: 0.006,
+        type: 'triangle',
+      });
+    });
+
+    // 3. The bloom, landing with the last note of the run. Ratios are not a
+    //    clean harmonic series — that inharmonicity is the metal.
+    const landing = at + 0.055 + run.length * 0.062;
+    const partials: Array<[number, number, number]> = [
+      [1108.73, 0.26, 1.9],
+      [1661.22, 0.17, 1.6],
+      [2217.46, 0.11, 1.3],
+      [3322.44, 0.06, 1.0],
+      [4434.92, 0.03, 0.8],
+    ];
+
+    partials.forEach(([frequency, gain, decay], i) => {
+      tone(c, out, landing + i * 0.007, {
+        frequency,
+        // Struck metal drifts slightly flat as it rings out.
+        to: frequency * 0.994,
+        gain,
+        decay,
+        attack: 0.005,
+        type: i < 2 ? 'triangle' : 'sine',
+      });
+    });
+
+    burst(c, out, landing, { frequency: 6000, q: 0.4, gain: 0.06, decay: 0.7, type: 'highpass' });
   },
 };
 

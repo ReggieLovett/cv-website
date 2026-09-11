@@ -1,0 +1,411 @@
+/* =========================================================================
+   THE LEGEND OF ZELDA — 40th ANNIVERSARY
+   Additive. Nothing here edits the rest of the stylesheet; it re-points the
+   palette variables the system already reads, then adds ornament that only
+   exists while the theme is on.
+
+   WHY IT IS SAFE
+   The Tailwind palette is declared as `rgb(var(--space) / <alpha-value>)`, so
+   every `bg-space`, `text-bone`, `border-line` and `text-signal` resolves
+   through these variables at paint time. Re-pointing them recolours the site
+   without a component changing. No spacing, radius, type-size or layout value
+   is touched anywhere below, so the grid stays pixel-identical.
+
+   FORMAT — IMPORTANT
+   Values are space-separated RGB channels, not hex, because Tailwind wraps them
+   in `rgb(... / <alpha-value>)`. Writing `#0A1410` would compile to
+   `rgb(#0A1410 / 1)` and break every themed colour at once.
+
+   SPECIFICITY
+   `html.zelda-theme` is (0,1,1) and beats `:root` (0,1,0). The second selector
+   adds the attribute to reach (0,2,1) so it also beats `html[data-theme='light']`
+   outright — the theme therefore holds whether the visitor is in light or dark
+   mode, and regardless of import order.
+   ========================================================================= */
+
+html.zelda-theme,
+html.zelda-theme[data-theme='light'] {
+  /* ---- Grounds: deep Hylian forest, never pure black -------------------
+     Same discipline as the site's navy — every grey is pulled toward green so
+     the gold belongs to the page instead of sitting on top of it. */
+  --space: 9 20 15;
+  --void: 5 12 9;
+  --panel: 16 32 24;
+  --panel2: 24 46 34;
+  --line: 34 60 44;
+  --line2: 58 92 68;
+
+  /* ---- Type: aged parchment rather than white ------------------------- */
+  --bone: 242 236 214; /* 15.9:1 on the ground */
+  --dim: 170 180 152; /*  8.7:1 */
+  --faint: 134 146 122; /*  5.8:1 — clears AA for the 11px mono tier */
+
+  /* ---- Accent: Triforce gold, one colour at three depths -------------- */
+  --signal: 212 175 55; /*  8.9:1 — type and marks */
+  --signal-deep: 166 129 30; /* filled surfaces */
+  --signal-soft: 46 38 14; /* tinted grounds */
+  --telemetry: 212 175 55;
+
+  /* ---- Status: kept legible, shifted into the palette ----------------- */
+  --ok: 124 196 124;
+  --warn: 230 176 60;
+
+  /* Told the OS this is a dark ground even if the visitor's own toggle says
+     light, so form controls and scrollbars do not invert underneath it. */
+  color-scheme: dark;
+}
+
+/* =========================================================================
+   ORNAMENT
+   Everything below is scoped to the theme and exists only while it is on.
+   All of it is colour, gradient, or a pseudo-element — no element in the
+   document is moved, resized, or re-spaced.
+   ========================================================================= */
+
+/* ---------- Ground wash and Triforce watermark ---------------------------
+   Both are background LAYERS on body, not fixed pseudo-elements.
+   
+   That distinction matters, and I got it wrong first. A fixed pseudo-element
+   with `z-index: 0` paints in the positioned layer, which is above normal text,
+   so the content has to be lifted above it — and lifting it with
+   `body > * { position: relative }` has specificity (0,1,2), which outranks
+   `.grain` and `.progress` at (0,1,0) and silently rewrites their
+   `position: fixed` to `relative`. The grain overlay and the reading-progress
+   bar both break, only while the theme is on, which is exactly the kind of bug
+   that ships.
+
+   Background images have none of that hazard: they paint above the
+   background-colour and below every piece of content, by definition. No child is
+   touched, no stacking context is created, nothing can be overridden.
+   `background-attachment: fixed` keeps them viewport-anchored, which is the one
+   thing the pseudo-element was actually buying.
+
+   The Triforce is an inline SVG data URI — three filled triangles around an
+   empty fourth, which is the whole point of the mark. No asset to ship. */
+html.zelda-theme body {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 87' fill='%23D4AF37' fill-opacity='0.04'%3E%3Cpath d='M50 0 25 43.5h50z'/%3E%3Cpath d='M25 43.5 0 87h50z'/%3E%3Cpath d='M75 43.5 50 87h50z'/%3E%3C/svg%3E"),
+    radial-gradient(58rem 34rem at 50% -12%, rgb(212 175 55 / 0.11), transparent 68%),
+    radial-gradient(40rem 30rem at 88% 8%, rgb(124 196 124 / 0.05), transparent 70%);
+  background-position:
+    center 12vh,
+    center top,
+    right top;
+  background-size:
+    min(38rem, 72vw) auto,
+    auto,
+    auto;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* ---------- Gilded display type -----------------------------------------
+   The one place the gold becomes a gradient rather than a flat colour: a
+   brushed-metal fall across the largest type on the page. Scoped to the hero so
+   it stays an event, not a texture applied to every heading. */
+html.zelda-theme .text-hero {
+  background: linear-gradient(
+    172deg,
+    rgb(250 240 200) 0%,
+    rgb(212 175 55) 34%,
+    rgb(166 129 30) 62%,
+    rgb(232 205 120) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The stroke fallback matters: if background-clip: text is unsupported the
+   heading would render fully transparent — an invisible name. */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  html.zelda-theme .text-hero {
+    background: none;
+    color: rgb(var(--signal));
+  }
+}
+
+/* ---------- Rules and selection ------------------------------------------ */
+html.zelda-theme ::selection {
+  background: rgb(212 175 55 / 0.3);
+  color: rgb(var(--bone));
+}
+
+html.zelda-theme ::-webkit-scrollbar-thumb {
+  background: rgb(var(--signal-deep));
+}
+
+/* ---------- The badge ----------------------------------------------------
+   Styled to match `.toggle-arm` — its siblings in the control cluster — so the
+   crest reads as one of the site's controls. The theme being off is the default
+   state, so the badge is legible before it has ever been pressed. */
+.zelda-emblem {
+  /* No positioning here on purpose: the badge is a flex child of the control
+     cluster in the hero, and it must not opt out of that layout. */
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.zelda-emblem__crest {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  transition:
+    filter var(--dur-hover, 200ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    box-shadow var(--dur-hover, 200ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+/* The emblem is portrait (184 × 274), so it is constrained by height and left
+   to find its own width. Setting both would letterbox it. */
+.zelda-emblem__img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  /* removebg output is transparent — nothing is painted behind it. */
+  background: none;
+  /* Dormant: desaturated and dimmed, so the lit state has somewhere to go. */
+  filter: grayscale(1) opacity(0.5);
+  transition: filter var(--dur-panel, 240ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+/* Lit. Full colour plus a gold bloom — the crest is the indicator, so it says
+   "on" without the label having to be read. */
+.zelda-emblem[aria-pressed='true'] .zelda-emblem__img {
+  filter: none;
+}
+
+.zelda-emblem[aria-pressed='true'] .zelda-emblem__crest {
+  box-shadow: 0 0 0.75rem rgb(212 175 55 / 0.45);
+}
+
+/* Hover is gated: a touch device fires hover on tap, which would leave the
+   brightened state stuck on after the finger lifts. */
+@media (hover: hover) and (pointer: fine) {
+  .zelda-emblem:hover .zelda-emblem__img {
+    filter: grayscale(0) opacity(1);
+  }
+
+  .zelda-emblem:hover .tag {
+    color: rgb(var(--signal));
+  }
+}
+
+.zelda-emblem[aria-pressed='true'] .tag {
+  color: rgb(var(--signal));
+}
+
+/* ---------- Draw flourish -----------------------------------------------
+   One pass of light across the crest when the theme is switched on, timed to
+   land with the blade sound. It runs once — `animation` on a state change, not a
+   loop, because a permanently animating control in a header is a distraction
+   rather than a detail. */
+.zelda-emblem[aria-pressed='true'] .zelda-emblem__crest::after {
+  content: '';
+  position: absolute;
+  inset: -0.3125rem;
+  border-radius: 999px;
+  border: 1px solid rgb(212 175 55 / 0.9);
+  animation: zelda-draw 620ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) 1 both;
+  pointer-events: none;
+}
+
+@keyframes zelda-draw {
+  from {
+    /* Never from scale(0) — nothing in the real world appears from nothing. */
+    opacity: 1;
+    transform: scale(0.72);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* ---------- Reduced motion ----------------------------------------------
+   Fewer and gentler, not none. The colour change survives because it carries
+   the state; the expanding ring and the wash animation do not. */
+@media (prefers-reduced-motion: reduce) {
+  .zelda-emblem[aria-pressed='true'] .zelda-emblem__crest::after {
+    animation: none;
+  }
+
+  .zelda-emblem__img,
+  .zelda-emblem__crest {
+    transition: none;
+  }
+}
+
+/* =========================================================================
+   WATERCOLOUR
+   Pigment on cold-press paper, which is a painting technique rather than any
+   particular game's artwork: translucent washes that pool and darken where they
+   overlap, a visible paper tooth breaking every edge, and colour that sits *in*
+   the sheet instead of on top of it.
+
+   All of it is background layers, masks, and pseudo-elements on surfaces that
+   already exist. No element is moved, resized, or re-spaced — the earlier
+   attempt at a fixed overlay taught me that lifting content above a wash is how
+   you silently break `position: fixed` on someone else's overlay.
+   ========================================================================= */
+
+/* ---------- Pigment pools ------------------------------------------------
+   Six washes at low alpha, deliberately off-centre from one another. Where two
+   overlap the alpha compounds and the paper reads as darker — which is exactly
+   how wet pigment behaves, and why this looks painted rather than gradient-ed.
+   Replaces the two-layer wash set from earlier in this file. */
+html.zelda-theme body {
+  background-image:
+    /* Triforce watermark, faint, sitting under the pigment. */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 87' fill='%23D4AF37' fill-opacity='0.035'%3E%3Cpath d='M50 0 25 43.5h50z'/%3E%3Cpath d='M25 43.5 0 87h50z'/%3E%3Cpath d='M75 43.5 50 87h50z'/%3E%3C/svg%3E"),
+    /* Gold bloom, top centre — the light source. */
+    radial-gradient(46rem 26rem at 48% -8%, rgb(212 175 55 / 0.13), transparent 66%),
+    radial-gradient(30rem 22rem at 62% 2%, rgb(232 205 120 / 0.07), transparent 70%),
+    /* Sap green pooling right. */
+    radial-gradient(38rem 30rem at 92% 14%, rgb(96 150 108 / 0.09), transparent 68%),
+    /* Teal settling left, lower — the cool counterweight. */
+    radial-gradient(34rem 34rem at 4% 46%, rgb(74 132 138 / 0.08), transparent 70%),
+    /* A second gold, far down, so the page does not go flat as you scroll. */
+    radial-gradient(42rem 28rem at 70% 88%, rgb(196 158 62 / 0.07), transparent 72%),
+    radial-gradient(30rem 26rem at 18% 96%, rgb(96 150 108 / 0.06), transparent 74%);
+  background-position:
+    center 11vh,
+    center top,
+    center top,
+    right top,
+    left center,
+    center bottom,
+    left bottom;
+  background-size:
+    min(36rem, 70vw) auto,
+    auto, auto, auto, auto, auto, auto;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* ---------- Paper tooth --------------------------------------------------
+   The site already has a grain overlay; the theme just asks more of it. Turned
+   up and warmed, so the noise reads as the raised fibres of cold-press stock
+   catching pigment rather than as film grain. Only opacity and filter change —
+   position and z-index are left exactly as they were, which is what keeps this
+   from becoming the bug I hit earlier. */
+html.zelda-theme .grain {
+  opacity: 0.085;
+  filter: sepia(0.55) saturate(1.4) contrast(1.15);
+}
+
+/* =========================================================================
+   FRAMES
+   Ornamental corner brackets in an original geometric idiom — a mitred gold
+   hairline that turns in on itself. Drawn with gradients on two pseudo-elements
+   so there is no asset, no DOM node, and no reflow: the brackets are inset
+   *over* the surface, never added to its box.
+   ========================================================================= */
+
+html.zelda-theme .card,
+html.zelda-theme .cred-cell,
+html.zelda-theme .frame {
+  position: relative;
+}
+
+/* Top-left and bottom-right brackets. */
+html.zelda-theme .card::before,
+html.zelda-theme .cred-cell::before,
+html.zelda-theme .frame::before {
+  content: '';
+  position: absolute;
+  inset: 0.4375rem;
+  pointer-events: none;
+  z-index: 2;
+  /* Four thin bars, clipped to the corners by background-size, which is far
+     cheaper than four elements and gives a crisp mitre. */
+  background-image:
+    linear-gradient(to right, rgb(212 175 55 / 0.55), transparent),
+    linear-gradient(to bottom, rgb(212 175 55 / 0.55), transparent),
+    linear-gradient(to left, rgb(212 175 55 / 0.55), transparent),
+    linear-gradient(to top, rgb(212 175 55 / 0.55), transparent);
+  background-size:
+    1.25rem 1px,
+    1px 1.25rem,
+    1.25rem 1px,
+    1px 1.25rem;
+  background-position:
+    left top,
+    left top,
+    right bottom,
+    right bottom;
+  background-repeat: no-repeat;
+  transition: opacity var(--dur-panel, 240ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+}
+
+/* A watercolour bloom inside the surface — pigment gathering toward one corner,
+   masked with fractal noise so the edge breaks like a wet wash drying rather
+   than fading out on a clean radius. */
+html.zelda-theme .card::after,
+html.zelda-theme .cred-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(120% 90% at 8% 4%, rgb(212 175 55 / 0.07), transparent 62%);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+  -webkit-mask-size: cover;
+  mask-size: cover;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html.zelda-theme .card:hover::before,
+  html.zelda-theme .cred-cell:hover::before {
+    opacity: 1;
+  }
+}
+
+/* ---------- Illuminated rules -------------------------------------------
+   Section rules stop being flat hairlines and gain a bright centre, like a
+   gilded line ruled by hand — heavier in the middle where the nib pressed. */
+html.zelda-theme .rule-top,
+html.zelda-theme .rule-bottom {
+  border-color: transparent;
+  border-image: linear-gradient(
+      to right,
+      transparent,
+      rgb(212 175 55 / 0.42) 18%,
+      rgb(212 175 55 / 0.6) 50%,
+      rgb(212 175 55 / 0.42) 82%,
+      transparent
+    )
+    1;
+}
+
+/* ---------- Ceremonial timing -------------------------------------------
+   Zelda's interfaces are unhurried where the site's are brisk: menus settle,
+   they do not snap. So the scroll reveals get a longer, softer curve while the
+   theme is on.
+
+   Note what is NOT touched — press feedback, hover, and the tab indicator all
+   keep their original sub-300ms timings. Slowing a control you operate is how an
+   interface starts feeling laggy; this only slows things you *watch*. */
+html.zelda-theme {
+  --dur-reveal: 900ms;
+}
+
+/* ---------- Reduced motion ---------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html.zelda-theme {
+    /* Back to the site's own value — no lingering. */
+    --dur-reveal: 620ms;
+  }
+
+  html.zelda-theme .card::before,
+  html.zelda-theme .cred-cell::before,
+  html.zelda-theme .frame::before {
+    transition: none;
+  }
+}

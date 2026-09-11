@@ -14,6 +14,7 @@ import { AcademicJourney } from './academic-journey';
 import { CredentialsPreview } from './credentials-preview';
 import { SoundEffects, SoundToggle } from './sound-effects';
 import { ThemeToggle } from './theme-toggle';
+import { ZeldaEmblem } from './zelda-emblem';
 import { SectionHeading } from './section-heading';
 import { LocalTime } from './local-time';
 import { MotionProvider, fadeIn, riseIn, stagger, staggerSlow, viewport } from './motion';
@@ -226,6 +227,7 @@ function Hero() {
           <div className="flex items-center gap-5 md:gap-7">
             <ThemeToggle />
             <SoundToggle />
+            <ZeldaEmblem />
           </div>
         </motion.div>
 

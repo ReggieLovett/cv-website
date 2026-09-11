@@ -32,7 +32,7 @@ const SOUND_MAP: Array<[selector: string, sound: SoundName]> = [
 
 // Controls that own their feedback on `click` rather than the press — playing
 // on pointerdown here would double up with the click handler's playback.
-const SILENT = ['.sound-toggle', '[data-sound="close"]'];
+const SILENT = ['.sound-toggle', '.zelda-emblem', '[data-sound="close"]'];
 
 export function SoundEffects() {
   useEffect(() => {

@@ -1,8 +1,11 @@
 import './globals.css';
+// After globals.css, so the Zelda palette override wins on source order.
+import './zelda-theme.css';
 import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { profile, contactInfo } from '@/data/portfolio';
+import { ZeldaEmblem } from '@/components/zelda-emblem';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://reggielovett.vercel.app';
 const title = `${profile.name} — BSIT, Artificial Intelligence`;
@@ -106,7 +109,7 @@ export default function RootLayout({
                returning visitor seeing nothing and seeing a flash. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `document.documentElement.classList.add('js');try{if(localStorage.getItem('theme')==='light')document.documentElement.dataset.theme='light';if(sessionStorage.getItem('entrance-played')==='1')document.documentElement.dataset.entrance='played'}catch(e){}`,
+            __html: `document.documentElement.classList.add('js');try{if(localStorage.getItem('theme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('zelda-theme')==='1')document.documentElement.classList.add('zelda-theme');if(sessionStorage.getItem('entrance-played')==='1')document.documentElement.dataset.entrance='played'}catch(e){}`,
           }}
         />
       </head>
@@ -123,6 +126,9 @@ export default function RootLayout({
         {/* Print tooth over the whole document. Fixed and inert — see `.grain`
             in globals.css for why it sits below the lightbox. */}
         <div className="grain" aria-hidden="true" />
+        {/* Zelda 40th anniversary theme toggle. Positions itself; owns only a
+            class on <html>, so it touches nothing else in the tree. */}
+        <ZeldaEmblem />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
