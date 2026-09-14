@@ -13,7 +13,10 @@
 export type Theme = 'dark' | 'light';
 
 const STORAGE_KEY = 'theme';
-const CHROME_COLOR = { dark: '#08090B', light: '#F8F7F4' } as const;
+// Browser chrome colour per ground. The Zelda values apply only while that
+// theme is switched on (see lib/zelda.ts).
+const CHROME_COLOR = { dark: '#0A0D14', light: '#F7F9FC' } as const;
+const ZELDA_CHROME_COLOR = { dark: '#000E0C', light: '#F1E9D2' } as const;
 
 let theme: Theme | null = null;
 
@@ -50,17 +53,25 @@ export function setTheme(next: Theme): void {
   } catch {
     /* storage unavailable; the module flag still holds for this visit */
   }
-  syncChromeColor(next);
+  syncChromeColor();
   listeners.forEach((listener) => listener());
 }
 
-/** Paints the mobile browser chrome to match the active theme. */
-function syncChromeColor(next: Theme): void {
+/**
+ * Paints the mobile browser chrome to match what is on screen. Reads the
+ * document rather than taking arguments, so the light/dark switch and the Zelda
+ * crest can both call it without either needing to know the other's state.
+ */
+export function syncChromeColor(): void {
+  const root = document.documentElement;
+  const mode: Theme = root.dataset.theme === 'light' ? 'light' : 'dark';
+  const palette = root.classList.contains('zelda-theme') ? ZELDA_CHROME_COLOR : CHROME_COLOR;
+
   let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
   if (!meta) {
     meta = document.createElement('meta');
     meta.name = 'theme-color';
     document.head.appendChild(meta);
   }
-  meta.content = CHROME_COLOR[next];
+  meta.content = palette[mode];
 }

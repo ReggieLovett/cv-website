@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { credentials, credentialCategories, profile } from '@/data/portfolio';
-import { CredentialCell } from '@/components/credential-cell';
+import { CredentialGrid } from '@/components/credential-grid';
 
 /**
  * /certificates — the full credential index.
@@ -21,14 +21,14 @@ import { CredentialCell } from '@/components/credential-cell';
  * you would not want side by side; these are a list, and a list wants to be
  * read top to bottom.
  *
- * This is a server component — nothing here needs state, so nothing here needs
- * JavaScript. The cells are the only client code on the page.
+ * The page itself is a server component. The grids are the client islands —
+ * each owns the open/closed state of its certificate viewer.
  */
 
 const verifiable = credentials.filter((c) => c.verifyUrl).length;
 
 export const metadata: Metadata = {
-  title: 'Certificates',
+  title: 'Certifications',
   description: `Every credential held by ${profile.name} — ${credentials.length} in total across technical practice, leadership, and seminars, ${verifiable} of them independently verifiable.`,
   alternates: { canonical: '/certificates' },
 };
@@ -43,7 +43,7 @@ export default function CertificatesPage() {
 
       <header className="mt-12 md:mt-16">
         <p className="readout text-signal">Index</p>
-        <h1 className="balance mt-4 text-display font-semibold text-bone">Certificates</h1>
+        <h1 className="balance mt-4 text-display font-semibold text-bone">Certifications</h1>
         <p className="mt-6 max-w-[52ch] text-lead text-dim">
           Every credential on file — {credentials.length} in total, {verifiable} of them
           verifiable at their source.
@@ -64,13 +64,9 @@ export default function CertificatesPage() {
                 </span>
               </div>
 
-              {/* Gap-less on purpose — see `.cred-cell`. The negative inset
-                  pulls the row flush with the rule above it. */}
-              <div className="-mx-3.5 mt-6 grid grid-cols-2 gap-0 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                {items.map((item) => (
-                  <CredentialCell key={item.id} item={item} />
-                ))}
-              </div>
+              {/* Gap-less on purpose — see `.cred-cell`. Each card opens the
+                  full record; the grid owns that state (CredentialGrid). */}
+              <CredentialGrid items={items} className="mt-6" />
             </section>
           );
         })}

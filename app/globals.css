@@ -646,14 +646,14 @@
   }
 
   @media (hover: hover) and (pointer: fine) {
-    a.cred-cell:hover {
+    .cred-cell:hover {
       background: rgb(var(--panel));
       border-color: rgb(var(--line));
       transform: translate3d(0, -2px, 0);
     }
   }
 
-  a.cred-cell:active {
+  .cred-cell:active {
     transform: scale(0.985);
     transition-duration: var(--dur-press);
   }
@@ -1148,8 +1148,8 @@ html:not(.js) [style^='opacity:0;'] {
   }
 
   .cred-cell,
-  a.cred-cell:hover,
-  a.cred-cell:active,
+  .cred-cell:hover,
+  .cred-cell:active,
   .frame,
   .frame:hover,
   .frame:active,

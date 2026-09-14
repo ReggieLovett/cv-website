@@ -14,7 +14,7 @@ import { AcademicJourney } from './academic-journey';
 import { CredentialsPreview } from './credentials-preview';
 import { SoundEffects, SoundToggle } from './sound-effects';
 import { ThemeToggle } from './theme-toggle';
-import { ZeldaEmblem } from './zelda-emblem';
+import { ZeldaCornerEmblem, ZeldaCrest, useZeldaSwitch } from './zelda-emblem';
 import { SectionHeading } from './section-heading';
 import { LocalTime } from './local-time';
 import { MotionProvider, fadeIn, riseIn, stagger, staggerSlow, viewport } from './motion';
@@ -48,11 +48,11 @@ const SECTIONS = [
   { id: 'stack', label: 'Tech Stack' },
   { id: 'activity', label: 'GitHub Activity' },
   { id: 'academic', label: 'Academic Journey' },
-  { id: 'credentials', label: 'Certificates' },
+  { id: 'credentials', label: 'Certifications' },
   { id: 'contact', label: 'Contact' },
 ] as const;
 
-export function Console() {
+export function Console({ swordSoundSrc }: { swordSoundSrc: string | null }) {
   const [active, setActive] = useState<string>('top');
 
   useEffect(() => {
@@ -160,14 +160,15 @@ export function Console() {
               <p className="tag">
                 © {new Date().getFullYear()} {profile.name}
               </p>
-              <p className="tag mt-2 text-faint">Set in Geist · Next.js</p>
+              <p className="tag mt-2 text-faint">Set in Cinzel &amp; Geist · Next.js</p>
+              <p className="tag mt-2 max-w-[13rem] normal-case tracking-normal text-faint">A fan tribute to The Legend of Zelda&rsquo;s 40th anniversary. Not affiliated with or endorsed by Nintendo.</p>
             </footer>
           </div>
         </aside>
 
         {/* ===== The column ============================================ */}
         <main className="lg:py-12">
-          <Hero />
+          <Hero swordSoundSrc={swordSoundSrc} />
           <Gallery
             id="projects"
             index="01"
@@ -193,7 +194,8 @@ export function Console() {
             <p className="tag">
               © {new Date().getFullYear()} {profile.name}
             </p>
-            <p className="tag text-faint">Set in Geist · Next.js</p>
+            <p className="tag text-faint">Set in Cinzel &amp; Geist · Next.js</p>
+            <p className="tag w-full normal-case tracking-normal text-faint">A fan tribute to The Legend of Zelda&rsquo;s 40th anniversary. Not affiliated with or endorsed by Nintendo.</p>
           </footer>
         </main>
       </div>
@@ -203,8 +205,10 @@ export function Console() {
 
 /* ---- Hero ---------------------------------------------------------------- */
 
-function Hero() {
+function Hero({ swordSoundSrc }: { swordSoundSrc: string | null }) {
   const [given, ...family] = profile.name.split(' ');
+  // One switch shared by both crests — see components/zelda-emblem.tsx.
+  const zelda = useZeldaSwitch(swordSoundSrc);
 
   return (
     <header id="top" className="rail scroll-mt-24">
@@ -227,9 +231,24 @@ function Hero() {
           <div className="flex items-center gap-5 md:gap-7">
             <ThemeToggle />
             <SoundToggle />
-            <ZeldaEmblem />
+            {/* Theme off: the crest lives here, small, in the top-right corner. */}
+            <ZeldaCornerEmblem
+              active={zelda.active}
+              onToggle={zelda.toggle}
+              artRef={zelda.setCornerEl}
+            />
           </div>
         </motion.div>
+
+        {/* Theme on: the crest moves here — centred and large, the way Nintendo's
+            anniversary pages open. Hidden by CSS while the theme is off, so the
+            page does not reserve space for it. */}
+        <ZeldaCrest
+          active={zelda.active}
+          strikes={zelda.strikes}
+          onToggle={zelda.toggle}
+          artRef={zelda.setCrestEl}
+        />
 
         {/* The name. Big, unapologetic. */}
         <motion.h1

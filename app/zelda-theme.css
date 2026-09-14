@@ -1,123 +1,238 @@
 /* =========================================================================
    THE LEGEND OF ZELDA — 40th ANNIVERSARY
-   Additive. Nothing here edits the rest of the stylesheet; it re-points the
-   palette variables the system already reads, then adds ornament that only
-   exists while the theme is on.
+   A fan tribute, and opt-in. The site loads in its normal theme; pressing the
+   crest in the hero adds `zelda-theme` to <html> (lib/zelda.ts), and pressing
+   it again removes it. A stored choice is re-applied by the pre-paint script in
+   app/layout.tsx, so a returning visitor never sees a flash of the wrong theme.
 
-   WHY IT IS SAFE
-   The Tailwind palette is declared as `rgb(var(--space) / <alpha-value>)`, so
-   every `bg-space`, `text-bone`, `border-line` and `text-signal` resolves
-   through these variables at paint time. Re-pointing them recolours the site
-   without a component changing. No spacing, radius, type-size or layout value
-   is touched anywhere below, so the grid stays pixel-identical.
+   Everything that changes the look of the page is scoped under
+   `html.zelda-theme`. The only unscoped rules are for the crest itself and the
+   certificate viewer, which exist in both themes and draw their colours from
+   the tokens — blue in the normal theme, gold here.
 
-   FORMAT — IMPORTANT
-   Values are space-separated RGB channels, not hex, because Tailwind wraps them
-   in `rgb(... / <alpha-value>)`. Writing `#0A1410` would compile to
-   `rgb(#0A1410 / 1)` and break every themed colour at once.
+   PALETTE — taken from the official anniversary site, not approximated
+     ground  #000E0C   0 14 12    a green so deep it reads as black
+     gold    #B58F3E   181 143 62 antique, not metallic yellow
+   Nintendo's red appears on that page only as their corporate logo, so it is
+   deliberately absent here.
 
-   SPECIFICITY
-   `html.zelda-theme` is (0,1,1) and beats `:root` (0,1,0). The second selector
-   adds the attribute to reach (0,2,1) so it also beats `html[data-theme='light']`
-   outright — the theme therefore holds whether the visitor is in light or dark
-   mode, and regardless of import order.
+   HOW IT WORKS
+   The Tailwind palette resolves every colour through `rgb(var(--token))`, so
+   re-pointing the tokens recolours the whole site without a component
+   changing. Values are space-separated channels, not hex: Tailwind wraps them
+   as `rgb(... / <alpha-value>)`, and a hex value would break every colour.
+
+   This file is imported after globals.css, whose tokens sit inside
+   `@layer base`. Unlayered rules beat layered ones outright, so these tokens
+   win regardless of specificity.
+
+   MOTION CONTRACT (inherited from globals.css)
+   Only transform and opacity animate. Every animation here collapses under
+   prefers-reduced-motion at the end of the file.
    ========================================================================= */
 
-html.zelda-theme,
-html.zelda-theme[data-theme='light'] {
-  /* ---- Grounds: deep Hylian forest, never pure black -------------------
-     Same discipline as the site's navy — every grey is pulled toward green so
-     the gold belongs to the page instead of sitting on top of it. */
-  --space: 9 20 15;
-  --void: 5 12 9;
-  --panel: 16 32 24;
-  --panel2: 24 46 34;
-  --line: 34 60 44;
-  --line2: 58 92 68;
+/* ---------- Night: the default -------------------------------------------- */
+html.zelda-theme {
+  --space: 0 14 12;
+  --void: 0 8 7;
+  --panel: 8 27 23;
+  --panel2: 14 39 33;
+  --line: 52 54 36;
+  --line2: 112 92 50;
 
-  /* ---- Type: aged parchment rather than white ------------------------- */
-  --bone: 242 236 214; /* 15.9:1 on the ground */
-  --dim: 170 180 152; /*  8.7:1 */
-  --faint: 134 146 122; /*  5.8:1 — clears AA for the 11px mono tier */
+  /* Aged parchment rather than white. Contrast on the ground: */
+  --bone: 236 226 200; /* 15.2:1 */
+  --dim: 178 170 142; /*  8.4:1 */
+  --faint: 142 136 112; /*  5.5:1 — clears AA for the 11px mono tier */
 
-  /* ---- Accent: Triforce gold, one colour at three depths -------------- */
-  --signal: 212 175 55; /*  8.9:1 — type and marks */
-  --signal-deep: 166 129 30; /* filled surfaces */
-  --signal-soft: 46 38 14; /* tinted grounds */
-  --telemetry: 212 175 55;
+  /* The official gold, at three depths. 6.5:1 as type. */
+  --signal: 181 143 62;
+  --signal-deep: 138 104 38;
+  --signal-soft: 40 34 14;
+  --telemetry: 181 143 62;
+  /* A brighter gold, for light catching an edge. Never used for body text. */
+  --gilt: 222 190 112;
 
-  /* ---- Status: kept legible, shifted into the palette ----------------- */
   --ok: 124 196 124;
-  --warn: 230 176 60;
+  --warn: 214 170 70;
 
-  /* Told the OS this is a dark ground even if the visitor's own toggle says
-     light, so form controls and scrollbars do not invert underneath it. */
   color-scheme: dark;
 }
 
+/* ---------- Day: parchment -----------------------------------------------
+   The light toggle stays meaningful rather than becoming dead UI. A map of
+   Hyrule is ink on parchment, so that is what day is — the same identity
+   under different light, not a second design. */
+html.zelda-theme[data-theme='light'] {
+  --space: 241 233 210;
+  --void: 233 223 196;
+  --panel: 248 243 228;
+  --panel2: 236 226 200;
+  --line: 214 199 160;
+  --line2: 184 160 106;
+
+  --bone: 8 36 28; /* deep green ink */
+  --dim: 62 78 64; /*  7.3:1 on parchment */
+  --faint: 96 98 78; /*  5.2:1 */
+
+  /* The official gold is too light to read on parchment; this is the same hue
+     taken down to 4.8:1. */
+  --signal: 130 96 28;
+  --signal-deep: 104 76 20;
+  --signal-soft: 236 222 184;
+  --telemetry: 130 96 28;
+  --gilt: 166 128 48;
+
+  color-scheme: light;
+}
+
 /* =========================================================================
-   ORNAMENT
-   Everything below is scoped to the theme and exists only while it is on.
-   All of it is colour, gradient, or a pseudo-element — no element in the
-   document is moved, resized, or re-spaced.
+   ATMOSPHERE
+   One fixed, inert layer behind the whole page: pigment washes and a faint
+   crest watermark.
+
+   Why a layer and not body backgrounds: the previous version stacked seven
+   background images on `body` with `background-attachment: fixed`. Fixed
+   backgrounds on body force the browser to repaint the entire background on
+   every scroll frame, which is exactly the jank the rest of this site is built
+   to avoid — and a second `body` block later in the file silently replaced the
+   first.
+
+   Why `z-index: -1` is safe: in the root stacking context a negative layer
+   paints above the canvas background and below all in-flow content, so no
+   element has to be lifted over it — which is what broke `.grain` and
+   `.progress` the first time around.
    ========================================================================= */
-
-/* ---------- Ground wash and Triforce watermark ---------------------------
-   Both are background LAYERS on body, not fixed pseudo-elements.
-   
-   That distinction matters, and I got it wrong first. A fixed pseudo-element
-   with `z-index: 0` paints in the positioned layer, which is above normal text,
-   so the content has to be lifted above it — and lifting it with
-   `body > * { position: relative }` has specificity (0,1,2), which outranks
-   `.grain` and `.progress` at (0,1,0) and silently rewrites their
-   `position: fixed` to `relative`. The grain overlay and the reading-progress
-   bar both break, only while the theme is on, which is exactly the kind of bug
-   that ships.
-
-   Background images have none of that hazard: they paint above the
-   background-colour and below every piece of content, by definition. No child is
-   touched, no stacking context is created, nothing can be overridden.
-   `background-attachment: fixed` keeps them viewport-anchored, which is the one
-   thing the pseudo-element was actually buying.
-
-   The Triforce is an inline SVG data URI — three filled triangles around an
-   empty fourth, which is the whole point of the mark. No asset to ship. */
-html.zelda-theme body {
+.zelda-atmos {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* Hidden in the normal theme. Opacity rather than display so switching the
+     theme on can crossfade it instead of snapping it in. */
+  opacity: 0;
+  transition: opacity 900ms var(--ease-out);
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 87' fill='%23D4AF37' fill-opacity='0.04'%3E%3Cpath d='M50 0 25 43.5h50z'/%3E%3Cpath d='M25 43.5 0 87h50z'/%3E%3Cpath d='M75 43.5 50 87h50z'/%3E%3C/svg%3E"),
-    radial-gradient(58rem 34rem at 50% -12%, rgb(212 175 55 / 0.11), transparent 68%),
-    radial-gradient(40rem 30rem at 88% 8%, rgb(124 196 124 / 0.05), transparent 70%);
+    /* Triforce watermark, faint, under the pigment. */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 87' fill='%23B58F3E' fill-opacity='0.035'%3E%3Cpath d='M50 0 25 43.5h50z'/%3E%3Cpath d='M25 43.5 0 87h50z'/%3E%3Cpath d='M75 43.5 50 87h50z'/%3E%3C/svg%3E"),
+    /* Gold light from above — the page's light source. */
+    radial-gradient(46rem 26rem at 50% -8%, rgb(181 143 62 / 0.16), transparent 66%),
+    radial-gradient(28rem 20rem at 62% 0%, rgb(222 190 112 / 0.06), transparent 70%),
+    /* Forest green pooling right, cooler teal settling low left. */
+    radial-gradient(38rem 30rem at 96% 18%, rgb(40 110 80 / 0.12), transparent 68%),
+    radial-gradient(34rem 34rem at 0% 62%, rgb(20 80 76 / 0.1), transparent 70%),
+    /* A last gold low on the page, so it never goes flat as you scroll. */
+    radial-gradient(42rem 26rem at 72% 108%, rgb(181 143 62 / 0.08), transparent 72%);
   background-position:
-    center 12vh,
+    center 14vh,
     center top,
-    right top;
+    center top,
+    right top,
+    left center,
+    center bottom;
   background-size:
-    min(38rem, 72vw) auto,
+    min(34rem, 70vw) auto,
+    auto,
+    auto,
+    auto,
     auto,
     auto;
   background-repeat: no-repeat;
-  background-attachment: fixed;
 }
 
-/* ---------- Gilded display type -----------------------------------------
-   The one place the gold becomes a gradient rather than a flat colour: a
-   brushed-metal fall across the largest type on the page. Scoped to the hero so
-   it stays an event, not a texture applied to every heading. */
+/* A vignette so the gold reads as lit from the centre, not painted flat. */
+.zelda-atmos::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgb(0 4 3 / 0.55) 100%);
+}
+
+html.zelda-theme .zelda-atmos {
+  opacity: 1;
+}
+
+html.zelda-theme[data-theme='light'] .zelda-atmos {
+  opacity: 0.7;
+}
+
+html.zelda-theme[data-theme='light'] .zelda-atmos::after {
+  background: radial-gradient(ellipse at 50% 40%, transparent 60%, rgb(120 96 50 / 0.12) 100%);
+}
+
+/* Paper tooth: the site's grain, warmed. Static — never animated. */
+html.zelda-theme .grain {
+  opacity: 0.075;
+  filter: sepia(0.55) saturate(1.3) contrast(1.1);
+}
+
+html.zelda-theme[data-theme='light'] .grain {
+  opacity: 0.05;
+}
+
+/* =========================================================================
+   TYPE
+   Display lines are set in Cinzel — inscriptional Roman capitals in the
+   Trajan tradition. Body, labels and UI stay in Geist: ceremony for headings,
+   legibility for everything you actually read.
+   ========================================================================= */
+html.zelda-theme .text-hero,
+html.zelda-theme .text-display {
+  font-family: var(--font-display), 'Trajan Pro', Georgia, serif;
+  font-weight: 600;
+  /* Geist's tight display tracking crushes Roman capitals together. */
+  letter-spacing: 0.015em;
+}
+
+html.zelda-theme .text-hero {
+  line-height: 0.95;
+}
+
+/* The eyebrow over the crest and inside the certificate viewer. */
+.zelda-eyebrow {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(var(--signal));
+}
+
+html.zelda-theme .zelda-eyebrow {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+}
+
+/* Gilded display type: a brushed-metal fall across the name only, so the gold
+   gradient stays an event instead of a texture on every heading. */
 html.zelda-theme .text-hero {
   background: linear-gradient(
     172deg,
-    rgb(250 240 200) 0%,
-    rgb(212 175 55) 34%,
-    rgb(166 129 30) 62%,
-    rgb(232 205 120) 100%
+    rgb(248 234 192) 0%,
+    rgb(222 190 112) 30%,
+    rgb(181 143 62) 58%,
+    rgb(232 206 138) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* The stroke fallback matters: if background-clip: text is unsupported the
-   heading would render fully transparent — an invisible name. */
+html.zelda-theme[data-theme='light'] .text-hero {
+  background: linear-gradient(
+    172deg,
+    rgb(166 128 48) 0%,
+    rgb(120 88 24) 45%,
+    rgb(84 60 14) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Without background-clip:text the name would render transparent — invisible.
+   Fall back to flat gold. */
 @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
   html.zelda-theme .text-hero {
     background: none;
@@ -125,9 +240,8 @@ html.zelda-theme .text-hero {
   }
 }
 
-/* ---------- Rules and selection ------------------------------------------ */
 html.zelda-theme ::selection {
-  background: rgb(212 175 55 / 0.3);
+  background: rgb(181 143 62 / 0.35);
   color: rgb(var(--bone));
 }
 
@@ -135,185 +249,280 @@ html.zelda-theme ::-webkit-scrollbar-thumb {
   background: rgb(var(--signal-deep));
 }
 
-/* ---------- The badge ----------------------------------------------------
-   Styled to match `.toggle-arm` — its siblings in the control cluster — so the
-   crest reads as one of the site's controls. The theme being off is the default
-   state, so the badge is legible before it has ever been pressed. */
-.zelda-emblem {
-  /* No positioning here on purpose: the badge is a flex child of the control
-     cluster in the hero, and it must not opt out of that layout. */
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
+/* =========================================================================
+   THE CREST
+   The emblem band at the head of the page — see components/zelda-emblem.tsx.
+   ========================================================================= */
+/* ---------- Two homes -----------------------------------------------------
+   One crest, shown in exactly one of two places, chosen by the theme class:
+
+     off → .zelda-corner   small, in the top-right control cluster
+     on  → .zelda-band     large, centred above the name
+
+   CSS decides, not React: the pre-paint script sets `zelda-theme` before first
+   paint, while React only learns it after hydrating. A React-chosen layout would
+   flash the corner crest and then jump for a returning visitor with Zelda on.
+   The crest's flight between the two is a FLIP in components/zelda-emblem.tsx. */
+.zelda-band {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 3rem;
 }
 
-.zelda-emblem__crest {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 1.375rem;
-  height: 1.375rem;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  transition:
-    filter var(--dur-hover, 200ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
-    box-shadow var(--dur-hover, 200ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-}
-
-/* The emblem is portrait (184 × 274), so it is constrained by height and left
-   to find its own width. Setting both would letterbox it. */
-.zelda-emblem__img {
-  height: 100%;
-  width: auto;
-  object-fit: contain;
-  /* removebg output is transparent — nothing is painted behind it. */
-  background: none;
-  /* Dormant: desaturated and dimmed, so the lit state has somewhere to go. */
-  filter: grayscale(1) opacity(0.5);
-  transition: filter var(--dur-panel, 240ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-}
-
-/* Lit. Full colour plus a gold bloom — the crest is the indicator, so it says
-   "on" without the label having to be read. */
-.zelda-emblem[aria-pressed='true'] .zelda-emblem__img {
-  filter: none;
-}
-
-.zelda-emblem[aria-pressed='true'] .zelda-emblem__crest {
-  box-shadow: 0 0 0.75rem rgb(212 175 55 / 0.45);
-}
-
-/* Hover is gated: a touch device fires hover on tap, which would leave the
-   brightened state stuck on after the finger lifts. */
-@media (hover: hover) and (pointer: fine) {
-  .zelda-emblem:hover .zelda-emblem__img {
-    filter: grayscale(0) opacity(1);
+@media (min-width: 768px) {
+  .zelda-band {
+    margin-top: 4rem;
   }
+}
 
-  .zelda-emblem:hover .tag {
+html.zelda-theme .zelda-band {
+  display: flex;
+}
+
+html.zelda-theme .zelda-corner {
+  display: none;
+}
+
+/* ---------- The corner crest ---------------------------------------------
+   Sized to hold its own beside the light/dark and sound switches: large enough
+   to read as the banner, small enough to sit in the control row. */
+.zelda-corner {
+  gap: 0.625rem;
+}
+
+.zelda-corner__art {
+  position: relative;
+  display: block;
+  height: clamp(2.5rem, 3.6vw, 3.25rem);
+  aspect-ratio: 184 / 274;
+  /* The FLIP scales from the top-left corner. */
+  transform-origin: 0 0;
+}
+
+.zelda-corner__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 8px rgb(0 0 0 / 0.45));
+  transition: transform 320ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .zelda-corner:hover .zelda-corner__img {
+    transform: translate3d(0, -2px, 0);
+  }
+  .zelda-corner:hover .tag {
     color: rgb(var(--signal));
   }
 }
 
-.zelda-emblem[aria-pressed='true'] .tag {
-  color: rgb(var(--signal));
+/* ---------- The centred crest --------------------------------------------- */
+.zelda-crest__flip {
+  display: block;
+  transform-origin: 0 0;
 }
 
-/* ---------- Draw flourish -----------------------------------------------
-   One pass of light across the crest when the theme is switched on, timed to
-   land with the blade sound. It runs once — `animation` on a state change, not a
-   loop, because a permanently animating control in a header is a distraction
-   rather than a detail. */
-.zelda-emblem[aria-pressed='true'] .zelda-emblem__crest::after {
+.zelda-crest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 4vw, 2.75rem);
+  width: 100%;
+  max-width: 46rem;
+}
+
+/* Gilded rules either side, drawn outward from the crest on entry. The
+   transform-origin is the inner end, so each grows away from the emblem. */
+.zelda-crest__rule {
+  position: relative;
+  flex: 1 1 0;
+  height: 1px;
+}
+
+.zelda-crest__rule--left {
+  background: linear-gradient(to left, rgb(var(--signal) / 0.9), transparent);
+  transform-origin: right center;
+}
+
+.zelda-crest__rule--right {
+  background: linear-gradient(to right, rgb(var(--signal) / 0.9), transparent);
+  transform-origin: left center;
+}
+
+/* A small lozenge at the inner end of each rule. */
+.zelda-crest__rule::after {
   content: '';
   position: absolute;
-  inset: -0.3125rem;
-  border-radius: 999px;
-  border: 1px solid rgb(212 175 55 / 0.9);
-  animation: zelda-draw 620ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)) 1 both;
-  pointer-events: none;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgb(var(--signal));
+  background: rgb(var(--space));
+  transform: translateY(-50%) rotate(45deg);
 }
 
-@keyframes zelda-draw {
-  from {
-    /* Never from scale(0) — nothing in the real world appears from nothing. */
+.zelda-crest__rule--left::after {
+  right: -4px;
+}
+
+.zelda-crest__rule--right::after {
+  left: -4px;
+}
+
+.zelda-crest__button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  /* Framer Motion owns this element's transform (entrance and tap), so hover
+     motion lives on the image below instead of fighting it here. */
+}
+
+.zelda-crest__button:focus-visible {
+  outline: 2px solid rgb(var(--signal));
+  outline-offset: 4px;
+}
+
+.zelda-crest__art {
+  position: relative;
+  display: block;
+  height: clamp(6rem, 13vw, 8rem);
+  aspect-ratio: 184 / 274;
+}
+
+.zelda-crest__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 20px rgb(0 0 0 / 0.5));
+  transition:
+    transform 420ms var(--ease-out),
+    opacity 400ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .zelda-crest__button:hover .zelda-crest__img {
+    transform: translate3d(0, -3px, 0);
+  }
+  .zelda-crest__button:hover .zelda-crest__halo {
     opacity: 1;
-    transform: scale(0.72);
+  }
+}
+
+/* A slow breath of gold behind the crest. Opacity only, and slow enough to be
+   felt rather than watched. */
+.zelda-crest__halo {
+  position: absolute;
+  inset: -30% -70%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgb(var(--signal) / 0.3), transparent 72%);
+  /* Dark until the theme is on: the glow is the crest saying "lit". */
+  opacity: 0;
+  transition: opacity 400ms var(--ease-out);
+}
+
+.zelda-crest__button[aria-pressed='true'] .zelda-crest__halo {
+  opacity: 0.6;
+  animation: zelda-breathe 5.5s var(--ease-in-out) infinite;
+}
+
+
+@keyframes zelda-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+/* ---- The strike ---------------------------------------------------------
+   Remounted on every press (React key), so each animation replays from its
+   first frame and a second press restarts the flourish instead of waiting. */
+
+/* Light running across the banner. The span is masked to the emblem's own
+   alpha, so the glint only ever crosses the cloth. The moving bar is a child,
+   translated — the mask stays still while the light travels through it. */
+.zelda-crest__glint {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask: url('/images/zelda-emblem.png') center / contain no-repeat;
+  mask: url('/images/zelda-emblem.png') center / contain no-repeat;
+}
+
+.zelda-crest__glint::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -60%;
+  width: 60%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgb(255 246 214 / 0.95) 50%,
+    transparent
+  );
+  transform: translate3d(0, 0, 0) skewX(-12deg);
+  /* Held until the crest has landed from its flight. */
+  animation: zelda-glint 720ms var(--ease-out) 520ms forwards;
+}
+
+@keyframes zelda-glint {
+  to {
+    transform: translate3d(360%, 0, 0) skewX(-12deg);
+  }
+}
+
+/* A ring of gold released from the crest. Starts from 55%, never from zero —
+   nothing in the world appears from nothing. */
+.zelda-crest__ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9rem;
+  height: 9rem;
+  margin: -4.5rem 0 0 -4.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(var(--gilt) / 0.9);
+  pointer-events: none;
+  /* Invisible during its delay: fill-mode is forwards only, so this base value
+     holds until the crest lands and the animation starts. */
+  opacity: 0;
+  animation: zelda-ring 820ms var(--ease-out) 560ms forwards;
+}
+
+@keyframes zelda-ring {
+  from {
+    opacity: 0.95;
+    transform: scale(0.55);
   }
   to {
     opacity: 0;
-    transform: scale(1.5);
-  }
-}
-
-/* ---------- Reduced motion ----------------------------------------------
-   Fewer and gentler, not none. The colour change survives because it carries
-   the state; the expanding ring and the wash animation do not. */
-@media (prefers-reduced-motion: reduce) {
-  .zelda-emblem[aria-pressed='true'] .zelda-emblem__crest::after {
-    animation: none;
-  }
-
-  .zelda-emblem__img,
-  .zelda-emblem__crest {
-    transition: none;
+    transform: scale(1.75);
   }
 }
 
 /* =========================================================================
-   WATERCOLOUR
-   Pigment on cold-press paper, which is a painting technique rather than any
-   particular game's artwork: translucent washes that pool and darken where they
-   overlap, a visible paper tooth breaking every edge, and colour that sits *in*
-   the sheet instead of on top of it.
-
-   All of it is background layers, masks, and pseudo-elements on surfaces that
-   already exist. No element is moved, resized, or re-spaced — the earlier
-   attempt at a fixed overlay taught me that lifting content above a wash is how
-   you silently break `position: fixed` on someone else's overlay.
+   SURFACES
+   Mitred gold corner brackets on cards — an original geometric ornament, drawn
+   with gradients on a pseudo-element so there is no asset and no reflow.
    ========================================================================= */
-
-/* ---------- Pigment pools ------------------------------------------------
-   Six washes at low alpha, deliberately off-centre from one another. Where two
-   overlap the alpha compounds and the paper reads as darker — which is exactly
-   how wet pigment behaves, and why this looks painted rather than gradient-ed.
-   Replaces the two-layer wash set from earlier in this file. */
-html.zelda-theme body {
-  background-image:
-    /* Triforce watermark, faint, sitting under the pigment. */
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 87' fill='%23D4AF37' fill-opacity='0.035'%3E%3Cpath d='M50 0 25 43.5h50z'/%3E%3Cpath d='M25 43.5 0 87h50z'/%3E%3Cpath d='M75 43.5 50 87h50z'/%3E%3C/svg%3E"),
-    /* Gold bloom, top centre — the light source. */
-    radial-gradient(46rem 26rem at 48% -8%, rgb(212 175 55 / 0.13), transparent 66%),
-    radial-gradient(30rem 22rem at 62% 2%, rgb(232 205 120 / 0.07), transparent 70%),
-    /* Sap green pooling right. */
-    radial-gradient(38rem 30rem at 92% 14%, rgb(96 150 108 / 0.09), transparent 68%),
-    /* Teal settling left, lower — the cool counterweight. */
-    radial-gradient(34rem 34rem at 4% 46%, rgb(74 132 138 / 0.08), transparent 70%),
-    /* A second gold, far down, so the page does not go flat as you scroll. */
-    radial-gradient(42rem 28rem at 70% 88%, rgb(196 158 62 / 0.07), transparent 72%),
-    radial-gradient(30rem 26rem at 18% 96%, rgb(96 150 108 / 0.06), transparent 74%);
-  background-position:
-    center 11vh,
-    center top,
-    center top,
-    right top,
-    left center,
-    center bottom,
-    left bottom;
-  background-size:
-    min(36rem, 70vw) auto,
-    auto, auto, auto, auto, auto, auto;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-}
-
-/* ---------- Paper tooth --------------------------------------------------
-   The site already has a grain overlay; the theme just asks more of it. Turned
-   up and warmed, so the noise reads as the raised fibres of cold-press stock
-   catching pigment rather than as film grain. Only opacity and filter change —
-   position and z-index are left exactly as they were, which is what keeps this
-   from becoming the bug I hit earlier. */
-html.zelda-theme .grain {
-  opacity: 0.085;
-  filter: sepia(0.55) saturate(1.4) contrast(1.15);
-}
-
-/* =========================================================================
-   FRAMES
-   Ornamental corner brackets in an original geometric idiom — a mitred gold
-   hairline that turns in on itself. Drawn with gradients on two pseudo-elements
-   so there is no asset, no DOM node, and no reflow: the brackets are inset
-   *over* the surface, never added to its box.
-   ========================================================================= */
-
 html.zelda-theme .card,
 html.zelda-theme .cred-cell,
 html.zelda-theme .frame {
   position: relative;
 }
 
-/* Top-left and bottom-right brackets. */
 html.zelda-theme .card::before,
 html.zelda-theme .cred-cell::before,
 html.zelda-theme .frame::before {
@@ -322,13 +531,11 @@ html.zelda-theme .frame::before {
   inset: 0.4375rem;
   pointer-events: none;
   z-index: 2;
-  /* Four thin bars, clipped to the corners by background-size, which is far
-     cheaper than four elements and gives a crisp mitre. */
   background-image:
-    linear-gradient(to right, rgb(212 175 55 / 0.55), transparent),
-    linear-gradient(to bottom, rgb(212 175 55 / 0.55), transparent),
-    linear-gradient(to left, rgb(212 175 55 / 0.55), transparent),
-    linear-gradient(to top, rgb(212 175 55 / 0.55), transparent);
+    linear-gradient(to right, rgb(var(--signal) / 0.6), transparent),
+    linear-gradient(to bottom, rgb(var(--signal) / 0.6), transparent),
+    linear-gradient(to left, rgb(var(--signal) / 0.6), transparent),
+    linear-gradient(to top, rgb(var(--signal) / 0.6), transparent);
   background-size:
     1.25rem 1px,
     1px 1.25rem,
@@ -340,72 +547,298 @@ html.zelda-theme .frame::before {
     right bottom,
     right bottom;
   background-repeat: no-repeat;
-  transition: opacity var(--dur-panel, 240ms) var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  opacity: 0.55;
+  transition: opacity var(--dur-panel) var(--ease-out);
 }
 
-/* A watercolour bloom inside the surface — pigment gathering toward one corner,
-   masked with fractal noise so the edge breaks like a wet wash drying rather
-   than fading out on a clean radius. */
-html.zelda-theme .card::after,
-html.zelda-theme .cred-cell::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(120% 90% at 8% 4%, rgb(212 175 55 / 0.07), transparent 62%);
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
-  -webkit-mask-size: cover;
-  mask-size: cover;
+/* The credential cells are quiet at rest; their brackets appear only under the
+   pointer, with the card surface. */
+html.zelda-theme .cred-cell::before {
+  opacity: 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
   html.zelda-theme .card:hover::before,
-  html.zelda-theme .cred-cell:hover::before {
+  html.zelda-theme .cred-cell:hover::before,
+  html.zelda-theme .frame:hover::before {
     opacity: 1;
   }
 }
 
-/* ---------- Illuminated rules -------------------------------------------
-   Section rules stop being flat hairlines and gain a bright centre, like a
-   gilded line ruled by hand — heavier in the middle where the nib pressed. */
+html.zelda-theme .cred-cell:focus-visible::before {
+  opacity: 1;
+}
+
+/* Section rules gain a bright centre, like a gilded line ruled by hand. */
 html.zelda-theme .rule-top,
 html.zelda-theme .rule-bottom {
   border-color: transparent;
   border-image: linear-gradient(
       to right,
       transparent,
-      rgb(212 175 55 / 0.42) 18%,
-      rgb(212 175 55 / 0.6) 50%,
-      rgb(212 175 55 / 0.42) 82%,
+      rgb(var(--signal) / 0.45) 18%,
+      rgb(var(--signal) / 0.7) 50%,
+      rgb(var(--signal) / 0.45) 82%,
       transparent
     )
     1;
 }
 
-/* ---------- Ceremonial timing -------------------------------------------
-   Zelda's interfaces are unhurried where the site's are brisk: menus settle,
-   they do not snap. So the scroll reveals get a longer, softer curve while the
-   theme is on.
-
-   Note what is NOT touched — press feedback, hover, and the tab indicator all
-   keep their original sub-300ms timings. Slowing a control you operate is how an
-   interface starts feeling laggy; this only slows things you *watch*. */
-html.zelda-theme {
-  --dur-reveal: 900ms;
+/* The magnifier over a credential's artwork — the only hint that it opens. */
+.cred-cell__peek {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(var(--void) / 0.72);
+  color: rgb(var(--signal));
+  opacity: 0;
+  transition: opacity var(--dur-hover) var(--ease-out);
 }
 
-/* ---------- Reduced motion ---------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  .cred-cell:hover .cred-cell__peek {
+    opacity: 1;
+  }
+}
+
+.cred-cell:focus-visible .cred-cell__peek {
+  opacity: 1;
+}
+
+/* =========================================================================
+   CERTIFICATE VIEWER — components/certificate-modal.tsx
+   ========================================================================= */
+.cert-modal {
+  position: fixed;
+  inset: 0;
+  /* Above the grain (60) and progress bar (70), below the preloader (100). */
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.75rem, 3vw, 2rem);
+  background: rgb(0 6 5 / 0.8);
+  /* Blur is allowed here: a fixed overlay, painted once, never scrolled. */
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+html.zelda-theme[data-theme='light'] .cert-modal {
+  background: rgb(40 32 16 / 0.55);
+}
+
+.cert-modal__panel {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(72rem, 100%);
+  max-height: min(92dvh, 58rem);
+  overflow: hidden;
+  background: rgb(var(--panel));
+  border: 1px solid rgb(var(--line2));
+  border-radius: 16px;
+  box-shadow:
+    0 40px 90px -20px rgb(0 0 0 / 0.6),
+    inset 0 1px 0 rgb(255 240 200 / 0.06);
+}
+
+/* Gilded corner brackets on the panel itself. */
+.cert-modal__panel::before {
+  content: '';
+  position: absolute;
+  inset: 0.625rem;
+  pointer-events: none;
+  z-index: 2;
+  background-image:
+    linear-gradient(to right, rgb(var(--signal) / 0.8), transparent),
+    linear-gradient(to bottom, rgb(var(--signal) / 0.8), transparent),
+    linear-gradient(to left, rgb(var(--signal) / 0.8), transparent),
+    linear-gradient(to top, rgb(var(--signal) / 0.8), transparent);
+  background-size:
+    2rem 1px,
+    1px 2rem,
+    2rem 1px,
+    1px 2rem;
+  background-position:
+    left top,
+    left top,
+    right bottom,
+    right bottom;
+  background-repeat: no-repeat;
+}
+
+@media (min-width: 1024px) {
+  .cert-modal__panel {
+    grid-template-rows: none;
+    grid-template-columns: minmax(0, 1.7fr) minmax(19rem, 1fr);
+  }
+}
+
+.cert-modal__stage {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: clamp(1rem, 2.5vw, 2.25rem);
+  background:
+    radial-gradient(ellipse at center, rgb(var(--signal) / 0.1), transparent 70%),
+    rgb(var(--void));
+}
+
+.cert-modal__frame {
+  position: relative;
+  width: 100%;
+  /* Every certificate here is A4 landscape. */
+  aspect-ratio: 1.414 / 1;
+  max-height: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.7);
+}
+
+.cert-modal__info {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  border-top: 1px solid rgb(var(--line));
+}
+
+@media (min-width: 1024px) {
+  .cert-modal__info {
+    border-top: 0;
+    border-left: 1px solid rgb(var(--line));
+  }
+}
+
+.cert-modal__title {
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: rgb(var(--bone));
+  text-wrap: balance;
+}
+
+html.zelda-theme .cert-modal__title {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+.cert-modal__divider {
+  display: block;
+  height: 1px;
+  margin: 1.5rem 0 0.5rem;
+  background: linear-gradient(to right, rgb(var(--signal) / 0.75), transparent);
+}
+
+.cert-modal__close {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  border: 1px solid rgb(var(--line2));
+  color: rgb(var(--dim));
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out);
+}
+
+.cert-modal__close:active {
+  transform: scale(0.94);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cert-modal__close:hover {
+    border-color: rgb(var(--signal));
+    color: rgb(var(--signal));
+  }
+}
+
+/* ---- The gold button ----------------------------------------------------
+   Pill with its arrow in its own well, which steps up and out on hover. */
+.zelda-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.5rem 0.5rem 1.1rem;
+  border-radius: 9999px;
+  /* Token-driven: blue in the normal theme, gold in this one. */
+  background: linear-gradient(180deg, rgb(var(--signal)), rgb(var(--signal-deep)));
+  color: rgb(var(--void));
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 8px 20px -10px rgb(var(--signal) / 0.7);
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.zelda-button:active {
+  transform: scale(0.97);
+}
+
+.zelda-button__well {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background: rgb(var(--void) / 0.2);
+  transition: transform 240ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .zelda-button:hover .zelda-button__well {
+    transform: translate3d(2px, -2px, 0);
+  }
+}
+
+/* =========================================================================
+   REDUCED MOTION
+   Fewer and gentler, not none: colour and opacity that carry state survive;
+   travel, scaling, and looping do not. The design is complete standing still.
+   ========================================================================= */
 @media (prefers-reduced-motion: reduce) {
-  html.zelda-theme {
-    /* Back to the site's own value — no lingering. */
-    --dur-reveal: 620ms;
+  .zelda-crest__button[aria-pressed='true'] .zelda-crest__halo {
+    animation: none;
+    opacity: 0.75;
+  }
+
+  .zelda-atmos {
+    transition: none;
+  }
+
+  .zelda-crest__glint,
+  .zelda-crest__ring {
+    display: none;
+  }
+
+  .zelda-crest__img,
+  .zelda-corner__img,
+  .zelda-button,
+  .zelda-button__well,
+  .cert-modal__close {
+    transition: none;
+  }
+
+  .zelda-button:active,
+  .cert-modal__close:active,
+  .zelda-crest__button:hover .zelda-crest__img,
+  .zelda-corner:hover .zelda-corner__img,
+  .zelda-button:hover .zelda-button__well {
+    transform: none;
   }
 
   html.zelda-theme .card::before,
   html.zelda-theme .cred-cell::before,
-  html.zelda-theme .frame::before {
+  html.zelda-theme .frame::before,
+  .cred-cell__peek {
     transition: none;
   }
 }

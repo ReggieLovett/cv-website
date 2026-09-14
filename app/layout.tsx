@@ -4,8 +4,26 @@ import './zelda-theme.css';
 import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
+import { Cinzel } from 'next/font/google';
 import { profile, contactInfo } from '@/data/portfolio';
-import { ZeldaEmblem } from '@/components/zelda-emblem';
+
+/**
+ * Cinzel — the display face for the anniversary theme.
+ *
+ * Inscriptional Roman capitals in the Trajan tradition: the letterform family
+ * the franchise's own title lettering descends from, without borrowing any of
+ * its artwork. Used for display type only; body and UI stay in Geist.
+ *
+ * `next/font/google` fetches at build time and self-hosts the files, so a
+ * visitor's browser never contacts Google — the no-third-party-font-request
+ * rule this site keeps still holds.
+ */
+const cinzel = Cinzel({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-display',
+  display: 'swap',
+});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://reggielovett.vercel.app';
 const title = `${profile.name} — BSIT, Artificial Intelligence`;
@@ -62,7 +80,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   // The theme-color meta is repainted at runtime by the theme store; this
   // static default just voices the dark ground until that runs.
-  themeColor: '#08090B',
+  themeColor: '#0A0D14',
   colorScheme: 'dark light',
 };
 
@@ -86,7 +104,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${cinzel.variable}`}
       // The pre-paint script below mutates the documentElement's class and
       // data-entrance before React hydrates it, so hydration must not try to
       // reconcile attributes it no longer owns.
@@ -126,9 +144,10 @@ export default function RootLayout({
         {/* Print tooth over the whole document. Fixed and inert — see `.grain`
             in globals.css for why it sits below the lightbox. */}
         <div className="grain" aria-hidden="true" />
-        {/* Zelda 40th anniversary theme toggle. Positions itself; owns only a
-            class on <html>, so it touches nothing else in the tree. */}
-        <ZeldaEmblem />
+        {/* The anniversary atmosphere — washes and the watermark on one fixed
+            layer. Invisible until the crest turns the Zelda theme on; see
+            `.zelda-atmos` in zelda-theme.css. */}
+        <div className="zelda-atmos" aria-hidden="true" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}

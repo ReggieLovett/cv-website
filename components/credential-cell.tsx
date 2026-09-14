@@ -1,32 +1,44 @@
 'use client';
 
 import Image from 'next/image';
-import { ArrowUpRight } from 'lucide-react';
+import { Maximize2 } from 'lucide-react';
 import { type Credential } from '@/data/portfolio';
 
 /**
- * CredentialCell — one credential, compact.
+ * CredentialCell — one credential, compact. Pressing it opens the full record.
  *
  * Artwork, name, issuer, state. Centred, and small enough that a dozen of them
  * read as an index rather than a wall.
  *
- * ---- On the gap-less grid ----
- * The cells sit flush against each other with no gutter, and the card surface
- * only appears under the pointer. A grid of twenty bordered boxes is a table
- * nobody reads; a grid of twenty quiet blocks that light up one at a time is a
- * list you can scan. The padding inside each cell does the separating that a
- * gutter would otherwise do.
+ * It is a `<button>`, not a link. It used to navigate straight to the
+ * verification page, which meant the certificate itself — the scan, the
+ * number, the date — was only ever visible as a 72px thumbnail. Now the whole
+ * record opens in CertificateModal, and the verification link lives there,
+ * next to the evidence it verifies.
  *
- * The whole cell is the link when there is something to verify — a bigger,
- * more forgiving target than a "verify" hyperlink, and it means the hover
- * surface and the hit area are the same shape.
+ * ---- On the gap-less grid ----
+ * Cells sit flush with no gutter, and the card surface only appears under the
+ * pointer. A grid of bordered boxes is a table nobody reads; quiet blocks that
+ * light up one at a time are a list you can scan.
  */
-export function CredentialCell({ item }: { item: Credential }) {
+export function CredentialCell({
+  item,
+  onOpen,
+}: {
+  item: Credential;
+  onOpen: (item: Credential) => void;
+}) {
   const isBadge = item.kind === 'Badge';
   const verifiable = Boolean(item.verifyUrl);
 
-  const inner = (
-    <>
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(item)}
+      className="cred-cell group w-full"
+      aria-haspopup="dialog"
+      aria-label={`${item.title}, ${item.issuer} — view certificate`}
+    >
       <span className="cred-cell__art">
         {item.image ? (
           <Image
@@ -50,46 +62,28 @@ export function CredentialCell({ item }: { item: Credential }) {
             <path d="M9 13h6M9 17h4" />
           </svg>
         )}
+        <span className="cred-cell__peek" aria-hidden="true">
+          <Maximize2 className="h-4 w-4" strokeWidth={1.5} />
+        </span>
       </span>
 
       {/* Three reserved lines: names here run from two words to eleven, and a
-          gap-less grid shows every height difference as a broken row. */}
-      <h3 className="line-3 mt-4 text-center text-[0.8125rem] font-semibold leading-snug text-bone">
+          gap-less grid shows every height difference as a broken row. Do not
+          add Tailwind's `block` here — it overrides the `-webkit-box` display
+          that line-clamp needs, and the clamp silently stops working. */}
+      <span className="line-3 mt-4 text-center text-[0.8125rem] font-semibold leading-snug text-bone">
         {item.title}
-      </h3>
+      </span>
 
-      <p className="tag mt-2 line-1 text-center">{item.issuer}</p>
+      <span className="tag line-1 mt-2 text-center">{item.issuer}</span>
 
       <span
         className={`readout mt-3 inline-flex items-center gap-1.5 ${
           verifiable ? 'text-signal' : 'text-faint'
         }`}
       >
-        {verifiable ? 'Verify' : 'On file'}
-        {verifiable && (
-          <ArrowUpRight
-            className="h-3 w-3 transition-transform duration-hover ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-            strokeWidth={1.5}
-            aria-hidden="true"
-          />
-        )}
+        {item.featured ? 'New' : verifiable ? 'Verifiable' : 'On file'}
       </span>
-    </>
-  );
-
-  if (!verifiable) {
-    return <div className="cred-cell group">{inner}</div>;
-  }
-
-  return (
-    <a
-      href={item.verifyUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="cred-cell group"
-      aria-label={`${item.title}, ${item.issuer} — verify (opens in a new tab)`}
-    >
-      {inner}
-    </a>
+    </button>
   );
 }

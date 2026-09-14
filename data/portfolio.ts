@@ -137,14 +137,57 @@ export type Credential = {
   image: string;
   /** A public record anyone can check. Empty when the credential has none. */
   verifyUrl: string;
-  /** Badges carry a line on what the credential actually covers. */
+  /** One factual line on what the credential covers, taken from the document. */
   summary?: string;
+  /** The number printed on the certificate itself, shown in the viewer. */
+  credentialNo?: string;
+  /** Leads the homepage preview regardless of verifiability. */
+  featured?: boolean;
 };
 
 const credly = (id: string) => `https://www.credly.com/badges/${id}`;
 
 export const credentials: Credential[] = [
   // ---- Technical ----------------------------------------------------------
+  {
+    id: 'mapua-ai-literacy-2026',
+    title: 'Introduction to AI Literacy and Responsible Use',
+    issuer: 'Mapúa University with Arizona State University — CHED ACHIEVE',
+    date: 'September 14, 2026',
+    category: 'Technical',
+    kind: 'Certificate',
+    image: '/certs/mapua-ai-literacy.png',
+    verifyUrl: '',
+    credentialNo: '64GRL43BNKWW0',
+    summary: 'Micro-credentials course on AI literacy and the responsible use of AI.',
+    featured: true,
+  },
+  {
+    id: 'tesda-azure-ai-fundamentals-2026',
+    title: 'Microsoft Artificial Intelligence Course: Azure AI Fundamentals',
+    issuer: 'TESDA Online Program',
+    date: 'September 10, 2026',
+    category: 'Technical',
+    kind: 'Certificate',
+    image: '/certs/tesda-azure-ai-fundamentals.png',
+    verifyUrl: '',
+    credentialNo: 'BAG8M9zyqH',
+    summary: 'Completed the Microsoft Azure AI Fundamentals course through the TESDA Online Program.',
+    featured: true,
+  },
+  {
+    id: 'simplilearn-genai-literacy-2026',
+    title: 'SkillQuest — Generative AI Literacy',
+    issuer: 'Simplilearn SkillUP',
+    date: 'September 12, 2026',
+    category: 'Technical',
+    kind: 'Certificate',
+    image: '/certs/simplilearn-genai-literacy.png',
+    verifyUrl: '',
+    credentialNo: '67612874',
+    summary: 'Passed the SkillQuest assessment in generative AI literacy.',
+    featured: true,
+  },
   {
     id: '2ca928e6-c77b-45ae-a358-59aade74c6af',
     title: 'Building RAG Apps Using MongoDB',
