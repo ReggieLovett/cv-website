@@ -758,8 +758,22 @@ export type WorkEntry = {
  */
 export const projects: WorkEntry[] = [
   {
-    id: 'digital-twin',
+    id: 'flowstate',
     index: '01',
+    title: 'FlowState',
+    client: 'Personal',
+    discipline: 'Product Design',
+    year: '2026',
+    summary:
+      'A multi-user scheduling app for students and working professionals. It plans study sessions around every deadline and exam, then lets you drag them into place on a week calendar.',
+    image: '/flowstate-bay-zeta.vercel.app_schedule.png',
+    alt: 'The FlowState week calendar with lectures, lab sessions, and deep work blocks',
+    ratio: '16 / 10',
+    href: 'https://flowstate-bay-zeta.vercel.app',
+  },
+  {
+    id: 'digital-twin',
+    index: '02',
     title: 'Digital Twin',
     client: 'ECA Final Project',
     discipline: 'Product Design',
@@ -773,7 +787,7 @@ export const projects: WorkEntry[] = [
   },
   {
     id: 'healthcare',
-    index: '02',
+    index: '03',
     title: 'Wellness & Medical Center',
     client: 'HealthCare',
     discipline: 'Product Design',
@@ -787,7 +801,7 @@ export const projects: WorkEntry[] = [
   },
   {
     id: 'portfolio-2024',
-    index: '03',
+    index: '04',
     title: 'Portfolio, 2nd year',
     client: 'Personal',
     discipline: 'Web',

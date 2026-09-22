@@ -20,6 +20,18 @@ import { SectionHeading } from './section-heading';
  * would be the one colour on the site that belongs to another brand; running
  * the ramp through `signal` makes the graph read as part of the system.
  *
+ * The ramp itself lives in CSS (`.gh-cal` in globals.css), mixed from the live
+ * `--line` and `--signal` tokens, so it follows light, dark, and the Zelda
+ * theme's gold without this file knowing any of them exist. The hex values
+ * passed below are the dark/light blues as a fallback for a browser without
+ * `color-mix()` — CSS beats the SVG `fill` attribute, so they only show when
+ * the stylesheet rule cannot apply.
+ *
+ * ---- The width ----
+ * The SVG carries a viewBox, so from md up it is scaled to the column rather
+ * than stopping two thirds of the way across it. On a phone it keeps its
+ * native size and scrolls in its own track.
+ *
  * ---- The theme ----
  * `react-github-calendar` picks its scheme from `prefers-color-scheme` unless
  * told otherwise, but this site's theme is driven by a `data-theme` attribute
@@ -38,24 +50,34 @@ const GitHubCalendar = dynamic(
   { ssr: false, loading: () => <CalendarSkeleton /> },
 );
 
+/**
+ * Same grid as the calendar, drawn as an SVG with a viewBox so it scales to
+ * the column exactly as the real one does (`.gh-cal__skeleton`).
+ */
 function CalendarSkeleton() {
+  const step = BLOCK_SIZE + BLOCK_MARGIN;
+  const width = WEEKS * step - BLOCK_MARGIN;
+  const height = DAYS * step - BLOCK_MARGIN;
   return (
-    <div
-      className="grid w-max grid-flow-col opacity-60"
-      style={{
-        gridTemplateRows: `repeat(${DAYS}, ${BLOCK_SIZE}px)`,
-        gap: `${BLOCK_MARGIN}px`,
-      }}
+    <svg
+      className="gh-cal__skeleton opacity-60"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
       aria-hidden="true"
     >
       {Array.from({ length: WEEKS * DAYS }).map((_, i) => (
-        <span
+        <rect
           key={i}
-          className="block rounded-[2px] bg-line"
-          style={{ width: BLOCK_SIZE, height: BLOCK_SIZE }}
+          x={Math.floor(i / DAYS) * step}
+          y={(i % DAYS) * step}
+          width={BLOCK_SIZE}
+          height={BLOCK_SIZE}
+          rx={2}
+          className="fill-line"
         />
       ))}
-    </div>
+    </svg>
   );
 }
 
@@ -87,10 +109,17 @@ export function GitHubActivity() {
 
         {/* The graph is wider than a phone; it scrolls in its own track so the
             page body never picks up a horizontal scrollbar. */}
-        <div className="-mx-5 mt-10 overflow-x-auto px-5 pb-2 md:mx-0 md:px-0">
+        <div className="gh-cal -mx-5 mt-10 overflow-x-auto px-5 pb-2 md:mx-0 md:px-0">
           <GitHubCalendar
             username={username}
             colorScheme={theme}
+            // The legend squares carry no level of their own; tagging them
+            // lets the same CSS ramp colour the key and the graph.
+            renderColorLegend={(swatch, level) => (
+              <span key={level} data-level={level} className="inline-flex">
+                {swatch}
+              </span>
+            )}
             errorMessage="Contribution graph is taking a break — check the live profile instead."
             throwOnError={false}
             fontSize={11}
@@ -98,8 +127,8 @@ export function GitHubActivity() {
             blockSize={BLOCK_SIZE}
             blockMargin={BLOCK_MARGIN}
             theme={{
-              light: ['#eeece7', '#f6dccb', '#eeae86', '#e07a41', '#d64a10'],
-              dark: ['#16181c', '#3a2318', '#75381a', '#b34d1c', '#f05c26'],
+              light: ['#dfe6ef', '#bcb5ee', '#9285e3', '#6a5bdb', '#4434d4'],
+              dark: ['#222a3a', '#34457f', '#4b62b6', '#5b77dc', '#6a8dff'],
             }}
             labels={{ totalCount: '{{count}} contributions in the last year' }}
           />

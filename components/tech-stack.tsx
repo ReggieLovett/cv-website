@@ -20,8 +20,10 @@ import { riseIn, riseInTight, stagger, viewport } from './motion';
  * glance from across the page, and makes the section the typographic set
  * piece it should be: the names of the tools ARE the graphic.
  *
- * The icon is a mark, not a badge. It sits faint until the row is hovered, so
- * the resting composition is pure type.
+ * The icon is a mark, not a badge. It rests a step below the name (`dim`) and
+ * takes the accent on hover, so the resting composition still reads as type.
+ * It used to rest at `faint`, where the thinner marks (PHP, C++) dissolved
+ * into the ground and looked like rendering faults rather than restraint.
  */
 export function TechStack() {
   return (
@@ -62,7 +64,7 @@ export function TechStack() {
                     <TechIcon
                       name={item.icon}
                       aria-hidden="true"
-                      className="h-[0.85em] w-[0.85em] shrink-0 text-faint transition-colors duration-hover ease-out group-hover:text-signal"
+                      className="h-[0.85em] w-[0.85em] shrink-0 text-dim transition-colors duration-hover ease-out group-hover:text-signal"
                     />
                     {item.name}
                   </span>

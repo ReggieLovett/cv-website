@@ -1041,11 +1041,85 @@
     }
   }
 
+  /* ---------- GitHub calendar -------------------------------------
+     The contribution ramp, mixed from the live tokens so it is blue in the
+     normal theme and gold under the Zelda one without a second palette. CSS
+     `fill` outranks the SVG attribute the library writes; if color-mix() is
+     unsupported the declaration drops and that attribute shows instead. */
+  .gh-cal [data-level='0'] rect,
+  .gh-cal rect[data-level='0'] {
+    fill: rgb(var(--line));
+  }
+  .gh-cal [data-level='1'] rect,
+  .gh-cal rect[data-level='1'] {
+    fill: color-mix(in srgb, rgb(var(--signal)) 32%, rgb(var(--line)));
+  }
+  .gh-cal [data-level='2'] rect,
+  .gh-cal rect[data-level='2'] {
+    fill: color-mix(in srgb, rgb(var(--signal)) 56%, rgb(var(--line)));
+  }
+  .gh-cal [data-level='3'] rect,
+  .gh-cal rect[data-level='3'] {
+    fill: color-mix(in srgb, rgb(var(--signal)) 78%, rgb(var(--line)));
+  }
+  .gh-cal [data-level='4'] rect,
+  .gh-cal rect[data-level='4'] {
+    fill: rgb(var(--signal));
+  }
+
+  /* Month and weekday labels, and the count/legend line, in the site's own
+     label voice instead of the library's default sans. */
+  .gh-cal .react-activity-calendar__calendar text {
+    fill: rgb(var(--faint));
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    letter-spacing: 0.04em;
+  }
+  .gh-cal .react-activity-calendar__footer {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(var(--faint));
+  }
+
+  /* Below md the graph scrolls in its own track. An RTL scroll container makes
+     that track open at its right-hand end — the most recent weeks — instead of
+     last October; the SVG inside is set back to LTR so nothing is mirrored. */
+  @media (max-width: 767px) {
+    .gh-cal .react-activity-calendar__scroll-container {
+      direction: rtl;
+    }
+    .gh-cal .react-activity-calendar__calendar {
+      direction: ltr;
+    }
+  }
+
+  /* From md the graph (and its loading skeleton) is scaled to the column so it
+     spans the same measure as the rule above it. Below md it keeps its native
+     size and scrolls in its own track. */
+  @media (min-width: 768px) {
+    /* The library sets `width: max-content` inline on its wrapper, which the
+       SVG's percentage width would otherwise resolve against. */
+    .gh-cal .react-activity-calendar {
+      width: 100% !important;
+    }
+    .gh-cal .react-activity-calendar__scroll-container {
+      overflow: visible;
+    }
+    .gh-cal .react-activity-calendar__calendar,
+    .gh-cal .gh-cal__skeleton {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+  }
+
   /* ---------- Toggle arms (sound + theme) ------------------------ */
   .toggle-arm {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
+    white-space: nowrap;
   }
 
   .toggle-arm__glyphs {

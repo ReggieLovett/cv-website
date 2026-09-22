@@ -25,6 +25,11 @@ import { riseInTight, stagger, viewport } from './motion';
  * claims more attention than it earned, and each image lands at roughly a
  * third of its former size, which is the size a thumbnail should be.
  *
+ * The one exception is a count that would strand a card: four in three columns
+ * leaves the last one alone on a row of empty space, which reads as a gap in
+ * the work rather than a layout. When two columns divide the set evenly and
+ * three do not, the grid drops to two. Every card is still identical.
+ *
  * ---- Fitting mixed artwork ----
  * The well is a fixed ratio, so a portrait poster and a landscape screenshot
  * still produce identical cards. Landscape art covers the well; portrait and
@@ -53,6 +58,7 @@ export function Gallery({
   entries: WorkEntry[];
 }) {
   const [open, setOpen] = useState<number | null>(null);
+  const twoUp = entries.length % 3 !== 0 && entries.length % 2 === 0;
 
   // The whole set is browsable from whichever card was opened.
   const lightboxItems: LightboxItem[] = entries.map((entry) => ({
@@ -71,11 +77,21 @@ export function Gallery({
         initial="hidden"
         whileInView="show"
         viewport={viewport}
-        className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 md:mt-20"
+        className={`mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 md:mt-20 ${
+          twoUp ? 'lg:gap-8' : 'lg:grid-cols-3'
+        }`}
       >
         {entries.map((entry, i) => (
           <motion.li key={entry.id} variants={riseInTight} className="flex">
-            <Plate entry={entry} onOpen={() => setOpen(i)} />
+            <Plate
+              entry={entry}
+              sizes={
+                twoUp
+                  ? '(max-width: 640px) 92vw, 46vw'
+                  : '(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 30vw'
+              }
+              onOpen={() => setOpen(i)}
+            />
           </motion.li>
         ))}
       </motion.ul>
@@ -94,9 +110,11 @@ export function Gallery({
 
 function Plate({
   entry,
+  sizes,
   onOpen,
 }: {
   entry: WorkEntry;
+  sizes: string;
   onOpen: () => void;
 }) {
   const upright = isUpright(entry.ratio);
@@ -113,7 +131,7 @@ function Plate({
           src={entry.image}
           alt={entry.alt}
           fill
-          sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 30vw"
+          sizes={sizes}
           className={upright ? 'object-contain p-6' : 'object-cover object-top'}
         />
       </button>

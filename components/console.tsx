@@ -128,7 +128,9 @@ export function Console({ swordSoundSrc }: { swordSoundSrc: string | null }) {
                             active === section.id ? 'text-signal' : 'text-faint'
                           }`}
                         >
-                          {String(i + 1).padStart(2, '0')}
+                          {/* Counted from 00 so each number matches the index
+                              on its section heading — the intro has none. */}
+                          {String(i).padStart(2, '0')}
                         </span>
                         <span
                           className={`readout transition-colors duration-hover ${
@@ -219,7 +221,13 @@ function Hero({ swordSoundSrc }: { swordSoundSrc: string | null }) {
         className="pt-12 md:pt-16 lg:pt-4"
       >
         {/* Top strip: identity line + controls. */}
-        <motion.div variants={fadeIn} className="flex items-center justify-between gap-6">
+        {/* On a phone the controls take their own row above the identity
+            line — sharing one row squeezed the line into five wrapped lines
+            beside them. DOM order stays identity-first for screen readers. */}
+        <motion.div
+          variants={fadeIn}
+          className="flex flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between"
+        >
           {/* Reserved height so the clock arriving after hydration does not
               nudge the row it sits in. */}
           <p className="readout flex min-h-[1.35em] flex-wrap items-center gap-x-4 gap-y-1 text-dim">
@@ -228,7 +236,7 @@ function Hero({ swordSoundSrc }: { swordSoundSrc: string | null }) {
             </span>
             <LocalTime />
           </p>
-          <div className="flex items-center gap-5 md:gap-7">
+          <div className="flex items-center gap-5 self-end sm:self-auto md:gap-7">
             <ThemeToggle />
             <SoundToggle />
             {/* Theme off: the crest lives here, small, in the top-right corner. */}
@@ -330,6 +338,21 @@ function Hero({ swordSoundSrc }: { swordSoundSrc: string | null }) {
 
 /* ---- Contact ------------------------------------------------------------- */
 
+/**
+ * An address that wraps where a person would break it: before the `@`, after
+ * each `/`. `break-all` used to split these mid-word ("reggielovett143@g" /
+ * "mail.com") whenever the card was narrower than the address.
+ */
+function Breakable({ text }: { text: string }) {
+  const parts = text.split(/(?=@)|(?<=\/)/);
+  return parts.map((part, i) => (
+    <span key={i}>
+      {i > 0 && <wbr />}
+      {part}
+    </span>
+  ));
+}
+
 function Contact() {
   const rows = [
     { term: 'Email', value: contactInfo.email, href: `mailto:${contactInfo.email}` },
@@ -362,8 +385,8 @@ function Contact() {
             className="card group p-6 md:p-7"
           >
             <span className="tag">{row.term}</span>
-            <span className="mt-10 break-all text-title font-medium tracking-tight text-bone transition-colors duration-hover ease-out group-hover:text-signal">
-              {row.value}
+            <span className="mt-10 break-words text-title font-medium tracking-tight text-bone transition-colors duration-hover ease-out group-hover:text-signal">
+              <Breakable text={row.value} />
             </span>
           </motion.a>
         ))}
