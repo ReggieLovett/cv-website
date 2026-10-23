@@ -1,0 +1,1843 @@
+.companion {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 75;
+  width: 64px;
+  color: rgb(var(--bone));
+  transition: opacity var(--dur-panel) var(--ease-out);
+}
+
+.companion[data-open='true'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.launcher {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-end;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.comment {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: var(--speech-x, -144px);
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  width: min(208px, calc(100vw - 32px));
+  min-height: 54px;
+  border: 1px solid rgb(var(--line2));
+  border-radius: var(--r-sm);
+  padding: 12px 13px;
+  background: rgb(var(--panel));
+  font-size: 12px;
+  line-height: 1.5;
+  text-wrap: pretty;
+  transition:
+    opacity var(--dur-panel) var(--ease-out),
+    border-color var(--dur-hover) ease;
+}
+
+.comment > svg {
+  flex: none;
+  margin-top: 3px;
+  color: rgb(var(--signal));
+}
+
+.comment::after {
+  position: absolute;
+  left: var(--speech-tail-x, 171px);
+  bottom: -5px;
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  border-right: 1px solid rgb(var(--line2));
+  border-bottom: 1px solid rgb(var(--line2));
+  background: rgb(var(--panel));
+  content: '';
+}
+
+.character {
+  position: relative;
+  display: block;
+  width: 64px;
+  height: 84px;
+  margin-top: 0;
+  transform-origin: center;
+}
+
+.character::after {
+  position: absolute;
+  right: 10px;
+  bottom: 1px;
+  left: 10px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgb(var(--bone) / 0.12);
+  content: '';
+}
+
+/* Effects share the actor's floor. Leave room above and along the bottom
+   edge for attacks, but keep arcs and falling particles above the feet. The
+   pose and all completed form equipment retain their native footprint. */
+.character > span:not(.pose) {
+  clip-path: inset(-192px -180px 0 -180px);
+}
+
+.pose {
+  position: absolute;
+  inset: 0;
+  transform-origin: center bottom;
+}
+
+.spriteIdle,
+.spriteWalk {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 8px;
+  display: block;
+  width: 48px;
+  height: 84px;
+  background-image: url('/sprites/dungeon-tileset.png');
+  background-size: 1536px 1536px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.spriteIdle {
+  background-position: -384px -300px;
+  animation: knightIdle 1400ms steps(4) infinite;
+}
+
+.companion[data-persona='zelda'] .spriteIdle {
+  background-position: -384px -108px;
+  animation-name: elfIdle;
+}
+
+@keyframes knightIdle {
+  to { background-position: -576px -300px; }
+}
+
+@keyframes elfIdle {
+  to { background-position: -576px -108px; }
+}
+
+.spriteWalk {
+  display: none;
+  background-position: -576px -300px;
+  animation: spriteWalk var(--walk-cycle, 560ms) steps(4) infinite;
+}
+
+.companion[data-persona='zelda'] .spriteWalk {
+  background-position: -576px -108px;
+  animation-name: elfWalk;
+}
+
+@keyframes spriteWalk {
+  to { background-position: -768px -300px; }
+}
+
+@keyframes elfWalk {
+  to { background-position: -768px -108px; }
+}
+
+.companion[data-direction='left'] .character {
+  transform: scaleX(-1);
+}
+
+.companion[data-phase='walking'] .spriteIdle {
+  display: none;
+}
+
+.companion[data-phase='walking'] .spriteWalk {
+  display: block;
+}
+
+.companion[data-phase='walking'] .comment {
+  opacity: 0;
+}
+
+.companion[data-speech-side='below'] .comment {
+  top: calc(100% + 12px);
+  bottom: auto;
+}
+
+.companion[data-speech-side='below'] .comment::after {
+  top: -5px;
+  bottom: auto;
+  transform: rotate(225deg);
+}
+
+.companion::after {
+  position: absolute;
+  top: -38px;
+  left: var(--attack-x, -58px);
+  width: 180px;
+  color: rgb(var(--signal));
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: center;
+  text-shadow: 0 1px 2px rgb(var(--space));
+  pointer-events: none;
+  opacity: 0;
+  content: attr(data-battle-label);
+}
+
+.companion[data-phase='battling']::after { opacity: 1; }
+.companion[data-speech-side='below']::after { top: auto; bottom: -22px; }
+.companion[data-form='chakra-mode'] { --walk-cycle: 320ms; }
+.companion[data-form='baryon-mode'] { --walk-cycle: 220ms; }
+
+.caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 64px;
+  margin-top: 5px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 10px;
+  line-height: 1.5;
+  color: rgb(var(--dim));
+}
+
+.caption > svg {
+  color: rgb(var(--signal));
+}
+
+.launcher:active .character {
+  opacity: 0.75;
+}
+
+.companion:has(:focus-visible) .comment {
+  opacity: 1;
+  border-color: rgb(var(--signal));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .companion:hover .comment {
+    opacity: 1;
+    border-color: rgb(var(--signal));
+  }
+
+}
+
+@media (max-width: 600px) {
+  .companion {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Power-ups stay local to the sprite. The original CC0 sword and silhouette
+   share the same pixel grid; a charge, hold, and release leave a quiet idle. */
+.sageAura,
+.chakraAura,
+.afterimages,
+.slash,
+.lightning,
+.powerMotes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.pose { z-index: 1; isolation: isolate; }
+
+.sageAura {
+  bottom: 2px;
+  top: auto;
+  left: -13px;
+  width: 90px;
+  height: 90px;
+  border: 1px solid rgb(170 206 115 / 0.75);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(151 198 106 / 0.16), transparent 68%);
+  opacity: 0;
+}
+
+.sageAura i {
+  position: absolute;
+  inset: 8px;
+  border: 1px dashed rgb(225 175 86 / 0.7);
+  border-radius: 50%;
+}
+
+.sageAura i:nth-child(2) { inset: -12px; border-style: solid; border-color: rgb(170 206 115 / 0.35); }
+.sageAura i:nth-child(3) { inset: 19px; border-color: rgb(225 175 86 / 0.35); }
+
+.companion[data-effect='sage'] .sageAura { animation: sageAwakening var(--moment-duration) var(--ease-out) both; }
+.companion[data-effect='sage'] .sageAura i { animation: sageOrbit var(--moment-duration) var(--ease-in-out) both; }
+
+@keyframes sageAwakening {
+  0%, 10% { opacity: 0; transform: translateY(8px) scale(0.45, 0.2); }
+  32% { opacity: 0.8; transform: translateY(0) scale(0.8, 0.25); }
+  52%, 78% { opacity: 1; transform: translateY(-10px) scale(1, 0.92); }
+  100% { opacity: 0; transform: translateY(-17px) scale(1.15); }
+}
+
+@keyframes sageOrbit {
+  from { transform: rotate(-35deg); }
+  to { transform: rotate(90deg); }
+}
+
+.sageEyes {
+  position: absolute;
+  top: 35px;
+  left: 25px;
+  width: 5px;
+  height: 3px;
+  background: rgb(247 160 69);
+  box-shadow: 12px 0 0 rgb(247 160 69);
+  opacity: 0;
+  z-index: 3;
+}
+
+.companion[data-effect='sage'] .sageEyes { animation: powerHold var(--moment-duration) var(--ease-out) both; }
+
+.chakraAura {
+  inset: -17px -11px 2px;
+  opacity: 0;
+  transform-origin: 50% 100%;
+}
+
+.chakraAura::before,
+.chakraAura::after {
+  position: absolute;
+  inset: 0;
+  background: rgb(250 176 46 / 0.4);
+  clip-path: polygon(50% 0, 60% 20%, 76% 9%, 76% 37%, 96% 24%, 88% 59%, 100% 72%, 82% 96%, 51% 100%, 18% 96%, 0 75%, 11% 56%, 5% 32%, 26% 42%, 23% 16%, 40% 24%);
+  content: '';
+}
+
+.chakraAura::after { inset: 13px 12px 3px; background: rgb(255 222 124 / 0.65); }
+.chakraAura i {
+  position: absolute;
+  bottom: 8px;
+  left: var(--flame-left);
+  width: 11px;
+  height: var(--flame-height);
+  transform-origin: 50% 100%;
+  background: rgb(255 202 73 / 0.85);
+  clip-path: polygon(55% 0, 100% 70%, 65% 100%, 0 84%, 22% 38%);
+}
+.chakraAura i:nth-child(1) { --flame-left: 2px; --flame-height: 67px; }
+.chakraAura i:nth-child(2) { --flame-left: 14px; --flame-height: 94px; }
+.chakraAura i:nth-child(3) { --flame-left: 37px; --flame-height: 110px; }
+.chakraAura i:nth-child(4) { --flame-left: 60px; --flame-height: 89px; }
+.chakraAura i:nth-child(5) { --flame-left: 73px; --flame-height: 64px; }
+
+.companion[data-effect='chakra'] .chakraAura { animation: chakraBloom var(--moment-duration) var(--ease-out) both; }
+.companion[data-effect='chakra'] .chakraAura i { animation: chakraFlame var(--moment-duration) var(--ease-in-out) both; }
+.companion[data-effect='chakra'] .chakraAura i:nth-child(even) { animation-direction: reverse; }
+
+@keyframes chakraBloom {
+  0%, 12% { opacity: 0; transform: scale(0.65, 0.25); }
+  30% { opacity: 0.55; transform: scale(0.8, 0.7); }
+  44%, 76% { opacity: 1; transform: translateY(-9px) scale(1); }
+  88% { opacity: 0.7; transform: translateY(-2px) scale(0.85, 0.95); }
+  100% { opacity: 0; transform: scale(0.75, 0.5); }
+}
+
+@keyframes chakraFlame {
+  0%, 20%, 100% { transform: scale(0.8, 0.7) rotate(-7deg); }
+  42%, 72% { transform: scale(1, 1.08) rotate(5deg); }
+  56%, 86% { transform: scale(0.92, 0.9) rotate(-4deg); }
+}
+
+.chakraCloak {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  width: 48px;
+  height: 84px;
+  background: rgb(255 199 65);
+  mask-image: url('/sprites/dungeon-tileset.png');
+  mask-size: 1536px 1536px;
+  mask-position: -384px -300px;
+  mask-repeat: no-repeat;
+  image-rendering: pixelated;
+  opacity: 0;
+}
+.companion[data-persona='zelda'] .chakraCloak { mask-position: -384px -108px; }
+.companion[data-effect='chakra'] .chakraCloak { animation: powerHold var(--moment-duration) var(--ease-out) both; }
+
+@keyframes powerHold {
+  0%, 28%, 100% { opacity: 0; }
+  42%, 78% { opacity: 0.8; }
+  90% { opacity: 0.35; }
+}
+
+.weapon {
+  position: absolute;
+  top: -3px;
+  left: 40px;
+  width: 20px;
+  height: 58px;
+  background: url('/sprites/dungeon-tileset.png') -678px -196px / 1024px 1024px no-repeat;
+  image-rendering: pixelated;
+  transform-origin: 50% 91%;
+  opacity: 0;
+  z-index: 3;
+}
+.companion[data-persona='zelda'] .weapon {
+  top: 10px;
+  height: 44px;
+  background-position: -582px -274px;
+}
+.companion[data-effect='sword'] .weapon { animation: swordDraw var(--moment-duration) var(--ease-out) both; }
+
+@keyframes swordDraw {
+  0%, 9% { opacity: 0; transform: translate3d(-14px, 21px, 0) rotate(-35deg) scale(0.5); }
+  20% { opacity: 1; transform: translate3d(-8px, 6px, 0) rotate(-30deg) scale(0.85); }
+  36% { opacity: 1; transform: translate3d(-6px, -6px, 0) rotate(-52deg) scale(1); }
+  48%, 60% { opacity: 1; transform: translate3d(0, -3px, 0) rotate(79deg) scale(1); }
+  80%, 100% { opacity: 1; transform: translate3d(-4px, 2px, 0) rotate(0deg) scale(1); }
+}
+
+.slash i {
+  position: absolute;
+  top: -4px;
+  left: -12px;
+  width: 100px;
+  height: 85px;
+  border-top: 4px solid rgb(var(--bone) / 0.9);
+  border-right: 2px solid rgb(var(--signal) / 0.7);
+  border-radius: 50%;
+  opacity: 0;
+  transform-origin: 44% 66%;
+}
+.slash i:nth-child(2) { inset: 5px auto auto -5px; width: 82px; height: 68px; border-width: 2px; }
+.companion[data-effect='sword'] .slash i { animation: swordSlash var(--moment-duration) var(--ease-out) both; }
+
+@keyframes swordSlash {
+  0%, 34% { opacity: 0; transform: rotate(-95deg) scale(0.45); }
+  41% { opacity: 0.9; }
+  59% { opacity: 0; transform: rotate(95deg) scale(1.08); }
+  100% { opacity: 0; transform: rotate(95deg) scale(1.08); }
+}
+
+.afterimages i {
+  position: absolute;
+  top: 0;
+  left: 8px;
+  width: 48px;
+  height: 84px;
+  background: url('/sprites/dungeon-tileset.png') -384px -300px / 1536px 1536px no-repeat;
+  image-rendering: pixelated;
+  opacity: 0;
+}
+.companion[data-persona='zelda'] .afterimages i { background-position: -384px -108px; }
+.afterimages i:first-child { --echo-x: -17px; --echo-scale: 0.98; }
+.afterimages i:last-child { --echo-x: -32px; --echo-scale: 0.94; }
+.companion[data-effect='lightning'] .afterimages i { animation: lightningEcho var(--moment-duration) var(--ease-out) both; }
+
+@keyframes lightningEcho {
+  0%, 31% { opacity: 0; transform: translateX(0) scale(1); }
+  43%, 54% { opacity: 0.35; transform: translateX(var(--echo-x)) scale(var(--echo-scale)); }
+  76%, 100% { opacity: 0; transform: translateX(calc(var(--echo-x) - 10px)) scale(var(--echo-scale)); }
+}
+
+.lightning i {
+  position: absolute;
+  top: 10px;
+  left: -5px;
+  width: 17px;
+  height: 65px;
+  background: rgb(136 214 255);
+  clip-path: polygon(68% 0, 25% 43%, 51% 45%, 0 100%, 100% 35%, 64% 34%, 95% 0);
+  opacity: 0;
+}
+.lightning i:nth-child(2) { left: 55px; top: 1px; transform: rotate(16deg); }
+.lightning i:nth-child(3) { left: 23px; top: 52px; width: 52px; height: 15px; transform: rotate(81deg); }
+.companion[data-effect='lightning'] .lightning i { animation: lightningCharge var(--moment-duration) var(--ease-out) both; }
+
+@keyframes lightningCharge {
+  0%, 18%, 100% { opacity: 0; }
+  30% { opacity: 0.45; }
+  40%, 57% { opacity: 0.95; }
+  79% { opacity: 0; }
+}
+
+.powerMotes i {
+  position: absolute;
+  bottom: 5px;
+  left: var(--mote-left);
+  width: 3px;
+  height: 6px;
+  background: rgb(255 200 79);
+  opacity: 0;
+}
+.powerMotes i:nth-child(1) { --mote-left: -7px; --mote-x: -8px; --mote-y: -68px; }
+.powerMotes i:nth-child(2) { --mote-left: 7px; --mote-x: -5px; --mote-y: -92px; }
+.powerMotes i:nth-child(3) { --mote-left: 20px; --mote-x: 5px; --mote-y: -110px; }
+.powerMotes i:nth-child(4) { --mote-left: 43px; --mote-x: -4px; --mote-y: -98px; }
+.powerMotes i:nth-child(5) { --mote-left: 57px; --mote-x: 8px; --mote-y: -77px; }
+.powerMotes i:nth-child(6) { --mote-left: 68px; --mote-x: 10px; --mote-y: -56px; }
+.companion[data-effect='sage'] .powerMotes i { background: rgb(174 204 103); border-radius: 0 80% 0 80%; }
+.companion[data-effect='lightning'] .powerMotes i { background: rgb(136 214 255); height: 2px; }
+.companion:is([data-effect='sage'], [data-effect='chakra'], [data-effect='lightning']) .powerMotes i {
+  animation: risingEnergy var(--moment-duration) var(--ease-out) both;
+}
+
+@keyframes risingEnergy {
+  0%, 18% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-20deg) scale(0.65); }
+  37%, 66% { opacity: 0.85; }
+  100% { opacity: 0; transform: translate3d(var(--mote-x), var(--mote-y), 0) rotate(65deg) scale(0.7); }
+}
+
+/* Completed powers change the character's equipment. These are static layers,
+   independent of the one-shot charge effects and the native idle/walk frames. */
+.formCape,
+.formCrown,
+.formMark,
+.formOrbs {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.formCape {
+  z-index: -1;
+  top: 42px;
+  left: 12px;
+  width: 39px;
+  height: 37px;
+  background: rgb(var(--form-cloth));
+  clip-path: polygon(18% 0, 82% 0, 82% 12%, 91% 12%, 91% 55%, 100% 55%, 100% 90%, 78% 90%, 78% 100%, 55% 100%, 55% 90%, 25% 90%, 25% 100%, 0 100%, 0 55%, 9% 55%, 9% 12%, 18% 12%);
+}
+
+.formCape::before {
+  position: absolute;
+  inset: 3px 7px 0;
+  border-right: 3px solid rgb(var(--form-trim));
+  border-left: 3px solid rgb(var(--form-trim));
+  opacity: 0.7;
+  content: '';
+}
+
+.formCrown {
+  z-index: 2;
+  top: 28px;
+  left: 18px;
+  width: 31px;
+  height: 6px;
+  background: rgb(var(--form-trim));
+}
+
+.formCrown::before {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  width: 11px;
+  height: 6px;
+  background: rgb(227 224 194);
+  box-shadow: inset 0 -2px 0 rgb(68 72 63);
+  content: '';
+}
+
+.formMark {
+  z-index: 3;
+  top: 48px;
+  left: 30px;
+  width: 6px;
+  height: 10px;
+  background: rgb(var(--form-trim));
+}
+
+.formOrbs {
+  z-index: -2;
+  inset: 0;
+}
+
+.formOrbs i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: rgb(var(--form-trim));
+}
+
+.formOrbs i:nth-child(1) { top: 43px; left: 9px; }
+.formOrbs i:nth-child(2) { top: 55px; left: 53px; }
+.formOrbs i:nth-child(3) { top: 72px; left: 8px; }
+
+.companion:is([data-form='sage-mode'], [data-form='chakra-mode'], [data-form='lightning-dash'], [data-form='fire-mode'], [data-form='ice-mode'], [data-form='shadow-mode']) .formCape,
+.companion:is([data-form='sage-mode'], [data-form='chakra-mode'], [data-form='lightning-dash'], [data-form='fire-mode'], [data-form='ice-mode'], [data-form='shadow-mode']) .formCrown,
+.companion:is([data-form='chakra-mode'], [data-form='lightning-dash'], [data-form='fire-mode'], [data-form='ice-mode'], [data-form='shadow-mode']) .formMark {
+  opacity: 1;
+}
+
+.companion[data-form='sage-mode'] {
+  --form-cloth: 159 57 35;
+  --form-trim: 235 153 64;
+}
+
+.companion[data-form='sage-mode'] :is(.spriteIdle, .spriteWalk) {
+  filter: sepia(0.18) saturate(1.3) contrast(1.04);
+}
+
+.companion[data-form='sage-mode'] .sageEyes {
+  opacity: 1;
+  animation: none;
+}
+
+.companion[data-form='sage-mode'] .formCape {
+  top: 40px;
+  height: 42px;
+}
+
+.companion[data-form='chakra-mode'] {
+  --form-cloth: 246 174 42;
+  --form-trim: 255 222 119;
+}
+
+.companion[data-form='chakra-mode'] :is(.spriteIdle, .spriteWalk) {
+  filter: sepia(0.95) saturate(2.8) hue-rotate(351deg) brightness(1.15);
+}
+
+.companion[data-form='chakra-mode'] .formCape {
+  left: 10px;
+  top: 38px;
+  width: 45px;
+  height: 45px;
+  clip-path: polygon(18% 0, 82% 0, 82% 15%, 90% 15%, 90% 48%, 100% 48%, 100% 67%, 87% 67%, 87% 100%, 67% 100%, 67% 80%, 52% 80%, 52% 100%, 30% 100%, 30% 82%, 8% 82%, 8% 67%, 0 67%, 0 35%, 10% 35%, 10% 15%, 18% 15%);
+}
+
+.companion[data-form='chakra-mode'] .formCape::before {
+  border-color: rgb(124 73 21);
+  opacity: 0.6;
+}
+
+.companion[data-form='chakra-mode'] .formCape::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 20px;
+  background: rgb(255 222 119);
+  clip-path: polygon(0 0, 35% 0, 35% 35%, 70% 35%, 70% 65%, 100% 65%, 100% 100%, 50% 100%, 50% 80%, 15% 80%, 15% 40%, 0 40%);
+  content: '';
+}
+
+.companion[data-form='chakra-mode'] .formMark {
+  width: 8px;
+  height: 8px;
+  border: 2px solid rgb(103 63 23);
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: 0 10px 0 -2px rgb(103 63 23);
+}
+
+.companion[data-form='sword-draw'] .weapon {
+  opacity: 1;
+  transform: translate3d(-4px, 2px, 0) rotate(0deg) scale(1);
+}
+
+.companion[data-form='lightning-dash'] {
+  --form-cloth: 35 91 130;
+  --form-trim: 147 230 255;
+}
+
+.companion[data-form='lightning-dash'] :is(.spriteIdle, .spriteWalk) {
+  filter: sepia(0.45) saturate(2.3) hue-rotate(145deg) brightness(1.18);
+}
+
+.companion[data-form='lightning-dash'] .formCape {
+  top: 44px;
+  height: 29px;
+}
+
+.companion[data-form='lightning-dash'] .formCrown::before {
+  background: rgb(232 250 255);
+  box-shadow: none;
+}
+
+.companion[data-form='lightning-dash'] .formMark {
+  top: 44px;
+  left: 30px;
+  width: 10px;
+  height: 17px;
+  clip-path: polygon(50% 0, 100% 0, 60% 42%, 100% 42%, 15% 100%, 35% 56%, 0 56%);
+}
+
+.companion:is([data-form='lightning-dash'], [data-form='fire-mode']) .formOrbs {
+  opacity: 0.75;
+}
+
+.companion[data-form='fire-mode'] {
+  --form-cloth: 169 43 44;
+  --form-trim: 255 172 77;
+}
+
+.companion[data-form='fire-mode'] :is(.spriteIdle, .spriteWalk) {
+  filter: sepia(0.75) saturate(2.8) hue-rotate(331deg) brightness(1.12);
+}
+
+.companion[data-form='fire-mode'] .formCape {
+  left: 10px;
+  width: 44px;
+  height: 40px;
+  clip-path: polygon(20% 0, 80% 0, 80% 15%, 90% 15%, 90% 60%, 100% 60%, 100% 100%, 75% 80%, 65% 100%, 45% 80%, 25% 100%, 15% 80%, 0 100%, 0 60%, 10% 60%, 10% 15%, 20% 15%);
+}
+
+.companion[data-form='fire-mode'] .formMark {
+  top: 45px;
+  left: 31px;
+  width: 7px;
+  height: 14px;
+  clip-path: polygon(50% 0, 100% 55%, 65% 100%, 0 75%, 15% 35%);
+}
+
+.companion[data-form='ice-mode'] {
+  --form-cloth: 93 165 186;
+  --form-trim: 211 250 255;
+}
+
+.companion[data-form='ice-mode'] :is(.spriteIdle, .spriteWalk) {
+  filter: sepia(1) saturate(1.35) hue-rotate(145deg) brightness(1.25);
+}
+
+.companion[data-form='ice-mode'] .formCape {
+  left: 12px;
+  top: 43px;
+  width: 39px;
+  height: 34px;
+}
+
+.companion[data-form='ice-mode'] .formCrown {
+  top: 15px;
+  left: 18px;
+  width: 31px;
+  height: 17px;
+  clip-path: polygon(0 20%, 26% 55%, 50% 0, 74% 55%, 100% 20%, 89% 100%, 11% 100%);
+}
+
+.companion[data-form='ice-mode'] .formCrown::before {
+  top: 8px;
+  background: rgb(115 201 228);
+  box-shadow: none;
+}
+
+.companion[data-form='ice-mode'] .formMark {
+  width: 8px;
+  height: 13px;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.companion[data-form='shadow-mode'] {
+  --form-cloth: 77 49 116;
+  --form-trim: 193 151 234;
+}
+
+.companion[data-form='shadow-mode'] :is(.spriteIdle, .spriteWalk) {
+  filter: sepia(0.5) saturate(2) hue-rotate(210deg) brightness(0.82) contrast(1.1);
+}
+
+.companion[data-form='shadow-mode'] .formMark {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: inset 3px -1px 0 rgb(var(--form-trim));
+}
+
+.companion[data-form='shadow-mode'] .formOrbs {
+  opacity: 1;
+}
+
+.companion[data-form='shadow-mode'] .formOrbs i {
+  top: 0;
+  left: 8px;
+  width: 48px;
+  height: 84px;
+  background: url('/sprites/dungeon-tileset.png') -384px -300px / 1536px 1536px no-repeat;
+  image-rendering: pixelated;
+  filter: sepia(0.7) saturate(2.5) hue-rotate(210deg) brightness(0.8);
+  opacity: 0.3;
+}
+
+.companion[data-form='shadow-mode'][data-persona='zelda'] .formOrbs i { background-position: -384px -108px; }
+.companion[data-form='shadow-mode'][data-phase='walking'] .formOrbs i { background-position: -576px -300px; }
+.companion[data-form='shadow-mode'][data-phase='walking'][data-persona='zelda'] .formOrbs i { background-position: -576px -108px; }
+.companion[data-form='shadow-mode'] .formOrbs i:nth-child(1) { transform: translateX(-12px) scale(0.94); }
+.companion[data-form='shadow-mode'] .formOrbs i:nth-child(2) { transform: translateX(12px) scale(0.94); }
+.companion[data-form='shadow-mode'] .formOrbs i:nth-child(3) { display: none; }
+
+/* New charges use bounded, one-shot geometry around the original sprite.
+   After each charge, only the completed equipment above remains visible. */
+.fireBurst,
+.iceBurst,
+.shadowBurst {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fireBurst i,
+.iceBurst i,
+.shadowBurst i {
+  position: absolute;
+  opacity: 0;
+  transform-origin: 50% 100%;
+}
+
+.fireBurst i {
+  bottom: 2px;
+  width: 16px;
+  height: 62px;
+  background: rgb(247 133 58 / 0.85);
+  clip-path: polygon(50% 0, 70% 23%, 63% 40%, 100% 56%, 88% 83%, 55% 100%, 15% 93%, 0 65%, 24% 75%, 15% 35%, 41% 51%);
+}
+
+.fireBurst i:nth-child(1) { left: -10px; height: 62px; }
+.fireBurst i:nth-child(2) { left: 24px; height: 93px; background: rgb(255 195 91 / 0.75); }
+.fireBurst i:nth-child(3) { left: 58px; height: 72px; }
+.companion[data-effect='fire'] .fireBurst i { animation: phoenixCharge var(--moment-duration) var(--ease-out) both; }
+
+@keyframes phoenixCharge {
+  0%, 12% { opacity: 0; transform: translateY(6px) scale(0.8, 0.65); }
+  32% { opacity: 0.65; transform: translateY(0) scale(0.95, 0.85); }
+  48%, 70% { opacity: 0.95; transform: translateY(-2px) scale(1); }
+  100% { opacity: 0; transform: translateY(-5px) scale(0.9, 0.95); }
+}
+
+.iceBurst i {
+  bottom: 0;
+  width: 18px;
+  height: 49px;
+  background: rgb(161 231 249 / 0.8);
+  clip-path: polygon(50% 0, 100% 28%, 84% 100%, 16% 100%, 0 28%);
+}
+
+.iceBurst i::after {
+  position: absolute;
+  inset: 0 50% 0 0;
+  background: rgb(233 253 255 / 0.7);
+  content: '';
+}
+
+.iceBurst i:nth-child(1) { left: -12px; height: 51px; }
+.iceBurst i:nth-child(2) { left: 23px; height: 86px; }
+.iceBurst i:nth-child(3) { left: 59px; height: 62px; }
+.companion[data-effect='ice'] .iceBurst i { animation: frostCharge var(--moment-duration) var(--ease-out) both; }
+
+@keyframes frostCharge {
+  0%, 10% { opacity: 0; transform: translateY(8px) scale(0.9, 0.8); }
+  34% { opacity: 0.65; transform: translateY(0) scale(0.95); }
+  50%, 74% { opacity: 0.95; transform: translateY(-3px) scale(1); }
+  100% { opacity: 0; transform: translateY(-7px) scale(0.95); }
+}
+
+.shadowBurst i {
+  top: 0;
+  left: 8px;
+  width: 48px;
+  height: 84px;
+  background: url('/sprites/dungeon-tileset.png') -384px -300px / 1536px 1536px no-repeat;
+  image-rendering: pixelated;
+  filter: sepia(0.8) saturate(2.5) hue-rotate(210deg) brightness(0.8);
+}
+
+.companion[data-persona='zelda'] .shadowBurst i { background-position: -384px -108px; }
+.shadowBurst i:nth-child(1) { --shadow-x: -18px; --shadow-y: 0px; }
+.shadowBurst i:nth-child(2) { --shadow-x: 18px; --shadow-y: 0px; }
+.shadowBurst i:nth-child(3) { --shadow-x: 0px; --shadow-y: -7px; }
+.companion[data-effect='shadow'] .shadowBurst i { animation: shadowCharge var(--moment-duration) var(--ease-out) both; }
+
+@keyframes shadowCharge {
+  0%, 12% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.97); }
+  38%, 70% { opacity: 0.5; transform: translate3d(var(--shadow-x), var(--shadow-y), 0) scale(0.97); }
+  100% { opacity: 0; transform: translate3d(var(--shadow-x), var(--shadow-y), 0) scale(0.94); }
+}
+
+/* Four more completed forms, with small pieces of equipment rather than
+   continuous spectacle. All gear shares the native character's facing. */
+.formWings,
+.formHorns,
+.formStars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.formWings { z-index: -2; }
+.formHorns { z-index: 2; }
+.formStars { z-index: 3; }
+
+.formWings i,
+.formHorns i,
+.formStars i {
+  position: absolute;
+  display: block;
+}
+
+.companion:is([data-form='zetten-mode'], [data-form='devil-union'], [data-form='star-magic'], [data-form='spirit-dive']) :is(.formCape, .formMark),
+.companion:is([data-form='zetten-mode'], [data-form='star-magic'], [data-form='spirit-dive']) .formCrown {
+  opacity: 1;
+}
+
+.companion[data-form='zetten-mode'] {
+  --form-cloth: 45 34 46;
+  --form-trim: 185 64 73;
+}
+
+.companion[data-form='zetten-mode'] :is(.spriteIdle, .spriteWalk) {
+  filter: saturate(0.5) brightness(0.86) contrast(1.13);
+}
+
+.companion[data-form='zetten-mode'] .formCape {
+  left: 15px;
+  width: 34px;
+  height: 33px;
+}
+
+.companion[data-form='zetten-mode'] .formCrown {
+  height: 4px;
+  background: rgb(44 31 43);
+}
+
+.companion[data-form='zetten-mode'] .formCrown::before {
+  left: 12px;
+  width: 9px;
+  height: 4px;
+  background: rgb(185 64 73);
+  box-shadow: none;
+}
+
+.companion[data-form='zetten-mode'] .formMark {
+  top: 43px;
+  left: 40px;
+  width: 10px;
+  height: 21px;
+  background: rgb(36 27 38);
+  clip-path: polygon(20% 0, 80% 0, 100% 35%, 80% 100%, 10% 100%, 0 50%);
+}
+
+.companion[data-form='zetten-mode'] .formMark::before {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 2px;
+  height: 14px;
+  background: rgb(220 76 84);
+  transform: rotate(18deg);
+  content: '';
+}
+
+.companion[data-form='zetten-mode'] .weapon {
+  top: -3px;
+  left: 43px;
+  width: 12px;
+  height: 58px;
+  background-position: -586px -132px;
+  filter: brightness(0.4) sepia(0.8) saturate(2.5) hue-rotate(310deg);
+  opacity: 1;
+  transform: translate3d(-4px, 2px, 0) rotate(0deg) scale(1);
+}
+
+.companion[data-form='devil-union'] {
+  --form-cloth: 35 24 34;
+  --form-trim: 201 63 77;
+}
+
+.companion[data-form='devil-union'] :is(.spriteIdle, .spriteWalk) {
+  filter: sepia(1) saturate(1.7) hue-rotate(310deg) brightness(0.68) contrast(1.15);
+}
+
+.companion[data-form='devil-union'] .formCape {
+  left: 10px;
+  top: 40px;
+  width: 44px;
+  height: 40px;
+}
+
+.companion[data-form='devil-union'] .formMark {
+  top: 45px;
+  width: 8px;
+  height: 14px;
+  clip-path: polygon(35% 0, 65% 0, 65% 30%, 100% 30%, 100% 55%, 65% 55%, 65% 100%, 35% 100%, 35% 55%, 0 55%, 0 30%, 35% 30%);
+}
+
+.companion[data-form='devil-union'] :is(.formHorns, .formWings) {
+  opacity: 1;
+}
+
+.companion[data-form='devil-union'] .formHorns i {
+  top: 12px;
+  left: 14px;
+  width: 10px;
+  height: 19px;
+  background: rgb(43 24 35);
+  clip-path: polygon(0 0, 40% 10%, 50% 42%, 100% 72%, 100% 100%, 45% 100%, 25% 66%, 15% 30%);
+}
+
+.companion[data-form='devil-union'] .formHorns i::after {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  width: 4px;
+  height: 6px;
+  background: rgb(201 63 77);
+  content: '';
+}
+
+.companion[data-form='devil-union'] .formHorns i:nth-child(2) {
+  left: 40px;
+  transform: scaleX(-1);
+}
+
+.companion[data-form='devil-union'] .formWings i {
+  top: 36px;
+  left: -7px;
+  width: 25px;
+  height: 32px;
+  background: rgb(59 29 47);
+  clip-path: polygon(100% 20%, 50% 0, 10% 0, 0 15%, 10% 80%, 35% 58%, 45% 100%, 68% 70%, 100% 100%);
+}
+
+.companion[data-form='devil-union'] .formWings i::after {
+  position: absolute;
+  top: 8px;
+  right: 2px;
+  width: 17px;
+  height: 3px;
+  background: rgb(169 52 70);
+  transform: rotate(29deg);
+  content: '';
+}
+
+.companion[data-form='devil-union'] .formWings i:nth-child(2) {
+  left: 46px;
+  transform: scaleX(-1);
+}
+
+.companion[data-form='star-magic'] {
+  --form-cloth: 35 52 79;
+  --form-trim: 237 198 104;
+}
+
+.companion[data-form='star-magic'] :is(.spriteIdle, .spriteWalk) {
+  filter: sepia(0.65) saturate(1.2) hue-rotate(160deg) brightness(0.94);
+}
+
+.companion[data-form='star-magic'] .formCape {
+  left: 11px;
+  top: 41px;
+  width: 42px;
+  height: 40px;
+}
+
+.companion[data-form='star-magic'] .formCrown {
+  height: 4px;
+}
+
+.companion[data-form='star-magic'] .formCrown::before {
+  background: rgb(255 227 156);
+  box-shadow: none;
+}
+
+.companion[data-form='star-magic'] .formMark,
+.companion[data-form='star-magic'] .formStars i {
+  width: 8px;
+  height: 8px;
+  background: rgb(247 211 130);
+  clip-path: polygon(50% 0, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0 50%, 35% 35%);
+}
+
+.companion[data-form='star-magic'] .formStars { opacity: 1; }
+.companion[data-form='star-magic'] .formStars i:nth-child(1) { top: 13px; left: 4px; }
+.companion[data-form='star-magic'] .formStars i:nth-child(2) { top: 23px; left: 54px; }
+.companion[data-form='star-magic'] .formStars i:nth-child(3) { top: 60px; left: 2px; }
+.companion[data-form='star-magic'] .formStars i:nth-child(4) { top: 72px; left: 55px; }
+
+.companion[data-form='spirit-dive'] {
+  --form-cloth: 39 116 87;
+  --form-trim: 173 242 203;
+}
+
+.companion[data-form='spirit-dive'] :is(.spriteIdle, .spriteWalk) {
+  filter: sepia(1) saturate(1.9) hue-rotate(85deg) brightness(1.03);
+}
+
+.companion[data-form='spirit-dive'] .formCape {
+  left: 14px;
+  top: 43px;
+  width: 36px;
+  height: 31px;
+}
+
+.companion[data-form='spirit-dive'] .formCrown {
+  top: 19px;
+  left: 19px;
+  width: 30px;
+  height: 12px;
+  background: rgb(209 255 229);
+  clip-path: polygon(0 55%, 25% 65%, 35% 25%, 50% 60%, 65% 0, 75% 65%, 100% 40%, 90% 100%, 10% 100%);
+}
+
+.companion[data-form='spirit-dive'] .formCrown::before { display: none; }
+.companion[data-form='spirit-dive'] .formMark {
+  width: 7px;
+  height: 12px;
+  clip-path: polygon(50% 0, 100% 65%, 75% 100%, 25% 100%, 0 65%);
+}
+
+.companion[data-form='spirit-dive'] .formWings { opacity: 1; }
+.companion[data-form='spirit-dive'] .formWings i {
+  top: 30px;
+  left: -7px;
+  width: 33px;
+  height: 43px;
+  background: rgb(135 227 183 / 0.7);
+  clip-path: polygon(0 0, 45% 12%, 85% 45%, 100% 100%, 40% 80%, 9% 48%);
+}
+
+.companion[data-form='spirit-dive'] .formWings i::after {
+  position: absolute;
+  top: 4px;
+  left: 14px;
+  width: 2px;
+  height: 37px;
+  background: rgb(211 255 231 / 0.6);
+  transform: rotate(-32deg);
+  content: '';
+}
+
+.companion[data-form='spirit-dive'] .formWings i:nth-child(2) {
+  top: 38px;
+  left: 45px;
+  width: 18px;
+  height: 28px;
+  opacity: 0.7;
+  transform: scaleX(-1);
+}
+
+.zettenBurst,
+.devilBurst,
+.starBurst,
+.spiritBurst {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+}
+
+.zettenBurst i,
+.devilBurst i,
+.starBurst i,
+.spiritBurst i {
+  position: absolute;
+  display: block;
+  opacity: 0;
+}
+
+.zettenBurst i {
+  left: -10px;
+  width: 84px;
+  height: 7px;
+  background: rgb(45 27 40);
+  border-bottom: 2px solid rgb(211 67 78);
+  clip-path: polygon(0 30%, 25% 0, 75% 15%, 100% 50%, 75% 100%, 35% 70%, 10% 100%);
+}
+
+.zettenBurst i:nth-child(1) { top: 25px; --cut-angle: -32deg; }
+.zettenBurst i:nth-child(2) { top: 45px; --cut-angle: 10deg; background: rgb(196 60 72); }
+.zettenBurst i:nth-child(3) { top: 63px; --cut-angle: 37deg; width: 72px; }
+.companion[data-effect='zetten'] .zettenBurst i { animation: zettenCharge var(--moment-duration) var(--ease-out) both; }
+
+@keyframes zettenCharge {
+  0%, 22% { opacity: 0; transform: translateX(-5px) rotate(var(--cut-angle)) scaleX(0.8); }
+  43%, 66% { opacity: 0.95; transform: translateX(0) rotate(var(--cut-angle)) scaleX(1); }
+  100% { opacity: 0; transform: translateX(5px) rotate(var(--cut-angle)) scaleX(0.95); }
+}
+
+.devilBurst i {
+  bottom: 1px;
+  width: 28px;
+  height: 70px;
+  background: rgb(100 32 54 / 0.85);
+  clip-path: polygon(50% 0, 64% 22%, 100% 12%, 78% 55%, 100% 80%, 65% 100%, 20% 100%, 0 70%, 19% 42%, 8% 13%, 40% 30%);
+  transform-origin: 50% 100%;
+}
+
+.devilBurst i::after {
+  position: absolute;
+  inset: 15px 9px 4px;
+  background: rgb(223 61 83 / 0.75);
+  clip-path: polygon(40% 0, 100% 35%, 70% 100%, 0 80%, 30% 30%);
+  content: '';
+}
+
+.devilBurst i:nth-child(1) { left: -9px; height: 68px; }
+.devilBurst i:nth-child(2) { left: 18px; height: 93px; }
+.devilBurst i:nth-child(3) { left: 47px; height: 76px; }
+.companion[data-effect='devil'] .devilBurst i { animation: devilCharge var(--moment-duration) var(--ease-out) both; }
+
+@keyframes devilCharge {
+  0%, 14% { opacity: 0; transform: translateY(5px) scale(0.85, 0.65); }
+  34% { opacity: 0.55; transform: translateY(0) scale(0.95, 0.85); }
+  48%, 75% { opacity: 0.95; transform: translateY(-1px) scale(1); }
+  100% { opacity: 0; transform: translateY(-4px) scale(0.95); }
+}
+
+.starBurst i {
+  width: 13px;
+  height: 13px;
+  background: rgb(255 220 140);
+  clip-path: polygon(50% 0, 63% 36%, 100% 50%, 63% 64%, 50% 100%, 37% 64%, 0 50%, 37% 36%);
+}
+
+.starBurst i:nth-child(1) { top: 16px; left: -4px; --star-x: -4px; --star-y: -4px; }
+.starBurst i:nth-child(2) { top: 6px; left: 53px; --star-x: 4px; --star-y: -4px; }
+.starBurst i:nth-child(3) { top: 62px; left: -7px; --star-x: -4px; --star-y: 3px; }
+.starBurst i:nth-child(4) { top: 61px; left: 59px; --star-x: 3px; --star-y: 3px; }
+.companion[data-effect='star'] .starBurst i { animation: starCharge var(--moment-duration) var(--ease-out) both; }
+
+@keyframes starCharge {
+  0%, 16% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-20deg) scale(0.9); }
+  38%, 72% { opacity: 1; transform: translate3d(var(--star-x), var(--star-y), 0) rotate(0deg) scale(1); }
+  100% { opacity: 0; transform: translate3d(var(--star-x), var(--star-y), 0) rotate(25deg) scale(0.95); }
+}
+
+.spiritBurst i {
+  top: 13px;
+  left: -7px;
+  width: 76px;
+  height: 29px;
+  border-top: 2px solid rgb(183 248 210 / 0.9);
+  border-left: 1px solid rgb(105 209 158 / 0.75);
+  border-radius: 50%;
+}
+
+.spiritBurst i:nth-child(1) { --wind-angle: -18deg; }
+.spiritBurst i:nth-child(2) { top: 34px; left: -10px; width: 84px; height: 32px; --wind-angle: 15deg; }
+.spiritBurst i:nth-child(3) { top: 59px; left: -5px; width: 74px; height: 24px; --wind-angle: -12deg; }
+.spiritBurst i:nth-child(4) { top: 3px; left: -8px; width: 82px; height: 76px; border-top-width: 1px; --wind-angle: 9deg; }
+.companion[data-effect='spirit'] .spiritBurst i { animation: spiritCharge var(--moment-duration) var(--ease-out) both; }
+
+@keyframes spiritCharge {
+  0%, 12% { opacity: 0; transform: translate3d(-4px, 3px, 0) rotate(calc(var(--wind-angle) - 12deg)) scale(0.9); }
+  38%, 72% { opacity: 0.9; transform: translate3d(0, 0, 0) rotate(var(--wind-angle)) scale(1); }
+  100% { opacity: 0; transform: translate3d(4px, -4px, 0) rotate(calc(var(--wind-angle) + 12deg)) scale(1.03); }
+}
+
+/* A few local pixels of dust or magic; every particle is inert and bounded
+   to the character, so a performance never changes the launcher's hit area. */
+.dust,
+.sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dust i {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  background: rgb(var(--dim));
+  opacity: 0;
+}
+
+.dust i:nth-child(1) { --dust-x: -18px; --dust-y: -6px; }
+.dust i:nth-child(2) { --dust-x: 15px; --dust-y: -10px; }
+.dust i:nth-child(3) { --dust-x: 22px; --dust-y: -3px; }
+
+.companion[data-effect='dust'] .dust i {
+  animation: landingDust var(--moment-duration) var(--ease-out) both;
+}
+
+@keyframes landingDust {
+  0%, 60% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.8); }
+  70% { opacity: 0.7; }
+  100% { opacity: 0; transform: translate3d(var(--dust-x), var(--dust-y), 0) scale(1.1); }
+}
+
+.ring {
+  position: absolute;
+  bottom: 5px;
+  left: -4px;
+  width: 72px;
+  height: 22px;
+  border: 1px solid rgb(var(--signal));
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.companion[data-effect='ring'] .ring {
+  animation: woodlandRing var(--moment-duration) var(--ease-out) both;
+}
+
+@keyframes woodlandRing {
+  0% { opacity: 0; transform: scale(0.65) rotate(-14deg); }
+  35% { opacity: 0.7; }
+  100% { opacity: 0; transform: scale(1.15) rotate(14deg); }
+}
+
+.sparks i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: rgb(var(--signal));
+  box-shadow: 0 -3px 0 rgb(var(--signal)), 0 3px 0 rgb(var(--signal)), -3px 0 0 rgb(var(--signal)), 3px 0 0 rgb(var(--signal));
+  opacity: 0;
+}
+
+.sparks i:nth-child(1) { left: 9px; top: 32px; --spark-x: -10px; --spark-y: -18px; }
+.sparks i:nth-child(2) { left: 54px; top: 22px; --spark-x: 7px; --spark-y: -10px; }
+.sparks i:nth-child(3) { left: 16px; top: 68px; --spark-x: -5px; --spark-y: -24px; }
+.sparks i:nth-child(4) { left: 50px; top: 61px; --spark-x: 10px; --spark-y: -15px; }
+.sparks i:nth-child(5) { left: 32px; top: 10px; --spark-x: 0px; --spark-y: -12px; }
+
+.companion[data-action='levitate'] .sparks i {
+  animation: floatingSpark var(--moment-duration) var(--ease-out) both;
+}
+
+.companion[data-action='sparkle'] .sparks i {
+  animation: magicSpark var(--moment-duration) var(--ease-out) both;
+}
+
+@keyframes floatingSpark {
+  0% { opacity: 0; transform: translate3d(0, 5px, 0) scale(0.7); }
+  35% { opacity: 0.8; }
+  100% { opacity: 0; transform: translate3d(var(--spark-x), var(--spark-y), 0) scale(0.9); }
+}
+
+@keyframes magicSpark {
+  0%, 15% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.8) rotate(0deg); }
+  40%, 65% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate3d(var(--spark-x), var(--spark-y), 0) scale(1.2) rotate(45deg); }
+}
+
+/* Fox-cloak and paired-eye forms remain equipment after the charge ends. */
+.foxTails,
+.powerEyes { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.foxTails { z-index: -2; }
+.powerEyes { z-index: 4; }
+.foxTails i,
+.powerEyes i { position: absolute; display: block; }
+.companion:is([data-form='baryon-mode'], [data-form='six-paths-eyes']) :is(.formCape, .formCrown, .formMark, .powerEyes) { opacity: 1; }
+.companion[data-form='baryon-mode'] { --form-cloth: 194 64 31; --form-trim: 255 164 64; }
+.companion[data-form='baryon-mode'] :is(.spriteIdle, .spriteWalk) { filter: sepia(1) saturate(3) hue-rotate(330deg) brightness(1.08); }
+.companion[data-form='baryon-mode'] .formCape { left: 10px; width: 44px; top: 39px; height: 42px; }
+.companion[data-form='baryon-mode'] .formCrown { top: 17px; left: 18px; width: 31px; height: 16px; clip-path: polygon(0 0, 32% 45%, 68% 45%, 100% 0, 90% 100%, 10% 100%); }
+.companion[data-form='baryon-mode'] .formCrown::before { display: none; }
+.companion[data-form='baryon-mode'] .formMark { width: 8px; height: 13px; background: rgb(76 33 26); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.companion[data-form='baryon-mode'] .foxTails { opacity: 1; }
+.foxTails i { top: 42px; width: 11px; height: 35px; background: rgb(236 111 40); transform-origin: 50% 100%; clip-path: polygon(50% 0, 100% 30%, 85% 85%, 50% 100%, 15% 85%, 0 30%); }
+.foxTails i::after { position: absolute; inset: 9px 4px 4px; background: rgb(255 186 74); content: ''; }
+.foxTails i:nth-child(1) { left: 12px; transform: rotate(-35deg); }
+.foxTails i:nth-child(2) { left: 22px; transform: rotate(-12deg); }
+.foxTails i:nth-child(3) { left: 32px; transform: rotate(15deg); }
+.foxTails i:nth-child(4) { left: 40px; transform: rotate(35deg); }
+.powerEyes i { top: 35px; left: 26px; width: 4px; height: 3px; background: rgb(255 171 69); box-shadow: inset 1px 0 0 rgb(66 25 32); }
+.powerEyes i:nth-child(2) { left: 38px; }
+.companion[data-form='six-paths-eyes'] { --form-cloth: 36 29 48; --form-trim: 145 111 187; }
+.companion[data-form='six-paths-eyes'] :is(.spriteIdle, .spriteWalk) { filter: sepia(0.55) saturate(1.8) hue-rotate(210deg) brightness(0.85); }
+.companion[data-form='six-paths-eyes'] .formCape { left: 10px; width: 44px; top: 40px; height: 42px; overflow: visible; }
+.companion[data-form='six-paths-eyes'] .formCape::after { position: absolute; left: 7px; top: 0; width: 30px; height: 11px; background: rgb(69 48 84); clip-path: polygon(0 0, 35% 35%, 65% 35%, 100% 0, 85% 100%, 15% 100%); content: ''; }
+.companion[data-form='six-paths-eyes'] .formCrown { height: 4px; background: rgb(53 35 61); }
+.companion[data-form='six-paths-eyes'] .formCrown::before { height: 4px; background: rgb(121 91 151); box-shadow: none; }
+.companion[data-form='six-paths-eyes'] .formMark { border: 2px solid rgb(181 137 223); border-radius: 50%; background: transparent; width: 9px; height: 9px; }
+.companion[data-form='six-paths-eyes'] .powerEyes i:first-child { background: rgb(191 143 255); }
+.companion[data-form='six-paths-eyes'] .powerEyes i:nth-child(2) { background: rgb(255 72 98); }
+
+.baryonBurst,
+.sixPathsBurst,
+.battleOrb,
+.battleFire,
+.battleSlash,
+.battleLightning,
+.battleStars,
+.battleWind,
+.battleIce,
+.battleShadow,
+.battleImpact,
+.battleAfterimages { position: absolute; z-index: 2; inset: 0; pointer-events: none; }
+.baryonBurst,
+.sixPathsBurst { z-index: 0; }
+.baryonBurst i,
+.sixPathsBurst i,
+.battleOrb i,
+.battleFire i,
+.battleSlash i,
+.battleLightning i,
+.battleStars i,
+.battleWind i,
+.battleIce i,
+.battleShadow i,
+.battleImpact i,
+.battleAfterimages i { position: absolute; display: block; opacity: 0; }
+.baryonBurst i { bottom: 1px; width: 25px; height: 83px; background: rgb(245 111 42 / 0.8); clip-path: polygon(50% 0, 100% 30%, 80% 63%, 100% 85%, 50% 100%, 0 80%, 20% 55%, 0 20%); transform-origin: 50% 100%; }
+.baryonBurst i:nth-child(1) { left: -8px; height: 65px; }
+.baryonBurst i:nth-child(2) { left: 20px; height: 94px; background: rgb(255 179 65 / 0.85); }
+.baryonBurst i:nth-child(3) { left: 48px; height: 74px; }
+.companion[data-effect='baryon'] .baryonBurst i { animation: foxCharge var(--moment-duration) var(--ease-out) both; }
+@keyframes foxCharge { 0%, 12% { opacity: 0; transform: scale(0.85, 0.65); } 38%, 74% { opacity: 0.95; transform: translateY(-2px) scale(1); } 100% { opacity: 0; transform: translateY(-4px) scale(0.95); } }
+.sixPathsBurst i { left: -8px; top: 0; width: 80px; height: 80px; border: 2px solid rgb(177 119 232 / 0.8); border-radius: 50%; }
+.sixPathsBurst i:nth-child(2) { inset: 9px auto auto 1px; width: 62px; height: 62px; border-color: rgb(226 77 108 / 0.8); }
+.sixPathsBurst i:nth-child(3) { inset: 20px auto auto 12px; width: 40px; height: 40px; border-style: dashed; }
+.companion[data-effect='six-paths'] .sixPathsBurst i { animation: pairedEyesCharge var(--moment-duration) var(--ease-out) both; }
+@keyframes pairedEyesCharge { 0%, 15% { opacity: 0; transform: rotate(-25deg) scale(0.9); } 40%, 73% { opacity: 0.85; transform: rotate(15deg) scale(1); } 100% { opacity: 0; transform: rotate(35deg) scale(1.05); } }
+
+/* Battle effects stay attached to the character; world travel is owned by
+   the motion hook. Native facing is right, mirrored with the character. */
+.companion[data-phase='battling'] .comment { opacity: 0; }
+.companion[data-phase='battling'][data-battle='dash'] .spriteIdle { display: none; }
+.companion[data-phase='battling'][data-battle='dash'] .spriteWalk { display: block; }
+.battleOrb i { top: 39px; left: 43px; width: 21px; height: 21px; border: 2px solid rgb(190 245 255); border-radius: 50%; background: rgb(66 167 248 / 0.9); box-shadow: inset 3px -3px 0 rgb(19 103 209); }
+.battleOrb i:nth-child(2) { top: 35px; left: 39px; width: 29px; height: 29px; border-color: rgb(109 219 255); background: transparent; box-shadow: none; }
+.battleOrb i:nth-child(3) { top: 42px; left: 40px; width: 27px; height: 15px; border-color: rgb(232 253 255); background: transparent; box-shadow: none; }
+.companion[data-battle='rasengan'] .battleOrb i { animation: orbThrow var(--battle-duration) var(--ease-out) both; }
+@keyframes orbThrow { 0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-40deg) scale(0.9); } 24%, 52% { opacity: 1; transform: translate3d(0, 0, 0) rotate(130deg) scale(1); } 84% { opacity: 0.95; transform: translate3d(90px, -7px, 0) rotate(260deg) scale(0.9); } 100% { opacity: 0; transform: translate3d(100px, -8px, 0) rotate(310deg) scale(0.85); } }
+.battleFire i { top: 37px; left: 43px; width: 30px; height: 23px; background: rgb(246 116 36); clip-path: polygon(0 0, 42% 15%, 80% 10%, 100% 50%, 80% 90%, 35% 100%, 0 78%, 25% 55%); }
+.battleFire i:nth-child(2) { top: 40px; width: 21px; height: 16px; background: rgb(255 211 94); }
+.battleFire i:nth-child(3) { top: 33px; left: 36px; width: 11px; height: 10px; background: rgb(226 75 33); }
+.companion[data-battle='fireball'] .battleFire i { animation: fireThrow var(--battle-duration) var(--ease-out) both; }
+@keyframes fireThrow { 0%, 10% { opacity: 0; transform: translateX(0) scale(0.9); } 28%, 40% { opacity: 1; transform: translateX(0) scale(1); } 83% { opacity: 0.95; transform: translateX(86px) scale(0.95); } 100% { opacity: 0; transform: translateX(90px) scale(0.9); } }
+.battleSlash i { left: 5px; top: 9px; width: 75px; height: 65px; border-top: 4px solid rgb(236 251 255); border-right: 2px solid rgb(159 201 255); border-radius: 50%; transform-origin: 30% 75%; }
+.battleSlash i:nth-child(2) { left: 14px; top: 17px; width: 61px; height: 51px; border-width: 2px; }
+.companion[data-battle='slash'] .battleSlash i { animation: battleCut var(--battle-duration) var(--ease-out) both; }
+@keyframes battleCut { 0%, 15% { opacity: 0; transform: rotate(-80deg) scale(0.9); } 35% { opacity: 1; } 65% { opacity: 0.9; transform: rotate(70deg) scale(1); } 100% { opacity: 0; transform: rotate(85deg) scale(1); } }
+.battleLightning i { left: 39px; top: 38px; width: 65px; height: 19px; background: rgb(144 211 255); clip-path: polygon(0 30%, 38% 0, 34% 33%, 100% 8%, 60% 65%, 68% 100%, 5% 72%, 38% 52%); transform-origin: 0 50%; }
+.battleLightning i:nth-child(2) { top: 29px; width: 52px; height: 13px; background: rgb(190 151 250); }
+.battleLightning i:nth-child(3) { top: 56px; width: 57px; height: 10px; }
+.companion[data-battle='lightning'] .battleLightning i { animation: boltThrow var(--battle-duration) var(--ease-out) both; }
+@keyframes boltThrow { 0%, 12% { opacity: 0; transform: translateX(0) scaleX(0.85); } 34%, 58% { opacity: 1; transform: translateX(18px) scaleX(1); } 100% { opacity: 0; transform: translateX(50px) scaleX(0.95); } }
+.battleStars i { left: 45px; top: 37px; width: 13px; height: 13px; background: rgb(255 219 136); clip-path: polygon(50% 0, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0 50%, 35% 35%); }
+.battleStars i:nth-child(1) { --battle-y: -18px; }
+.battleStars i:nth-child(2) { --battle-y: 0px; }
+.battleStars i:nth-child(3) { --battle-y: 18px; }
+.companion[data-battle='star-bolt'] .battleStars i { animation: starThrow var(--battle-duration) var(--ease-out) both; }
+@keyframes starThrow { 0%, 12% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-20deg) scale(0.9); } 30% { opacity: 1; } 82% { opacity: 1; transform: translate3d(91px, var(--battle-y), 0) rotate(130deg) scale(1); } 100% { opacity: 0; transform: translate3d(100px, var(--battle-y), 0) rotate(170deg) scale(0.9); } }
+.battleWind i { left: 42px; top: 32px; width: 48px; height: 30px; border-top: 3px solid rgb(173 246 205); border-right: 2px solid rgb(96 208 153); border-radius: 50%; }
+.battleWind i:nth-child(2) { top: 27px; width: 42px; height: 39px; }
+.battleWind i:nth-child(3) { top: 40px; width: 52px; height: 20px; border-width: 1px; }
+.companion[data-battle='wind-blade'] .battleWind i { animation: windThrow var(--battle-duration) var(--ease-out) both; }
+@keyframes windThrow { 0%, 12% { opacity: 0; transform: translateX(0) rotate(-25deg) scale(0.9); } 30% { opacity: 0.95; } 82% { opacity: 0.9; transform: translateX(59px) rotate(15deg) scale(1); } 100% { opacity: 0; transform: translateX(65px) rotate(20deg) scale(0.95); } }
+.battleIce i { left: 39px; top: 36px; width: 15px; height: 38px; background: rgb(167 234 253); clip-path: polygon(50% 0, 100% 30%, 80% 100%, 20% 100%, 0 30%); }
+.battleIce i:nth-child(2) { left: 49px; top: 25px; height: 49px; background: rgb(219 251 255); }
+.battleIce i:nth-child(3) { left: 59px; top: 42px; height: 32px; }
+.companion[data-battle='ice-spike'] .battleIce i { animation: iceThrow var(--battle-duration) var(--ease-out) both; }
+@keyframes iceThrow { 0%, 14% { opacity: 0; transform: translateX(0) rotate(20deg) scale(0.9); } 35% { opacity: 1; } 82% { opacity: 0.9; transform: translateX(65px) rotate(75deg) scale(1); } 100% { opacity: 0; transform: translateX(80px) rotate(80deg) scale(0.95); } }
+.battleShadow i,
+.battleAfterimages i { left: 8px; top: 0; width: 48px; height: 84px; background: url('/sprites/dungeon-tileset.png') -384px -300px / 1536px 1536px no-repeat; image-rendering: pixelated; }
+.companion[data-persona='zelda'] :is(.battleShadow i, .battleAfterimages i) { background-position: -384px -108px; }
+.battleShadow i { filter: sepia(0.8) saturate(2.5) hue-rotate(210deg) brightness(0.8); }
+.battleShadow i:nth-child(1) { --strike-x: 48px; }
+.battleShadow i:nth-child(2) { --strike-x: 80px; }
+.companion[data-battle='shadow-strike'] .battleShadow i { animation: shadowStrike var(--battle-duration) var(--ease-out) both; }
+@keyframes shadowStrike { 0%, 10% { opacity: 0; transform: translateX(0) scale(0.97); } 35%, 65% { opacity: 0.5; transform: translateX(var(--strike-x)) scale(0.97); } 100% { opacity: 0; transform: translateX(var(--strike-x)) scale(0.94); } }
+.battleAfterimages i:nth-child(1) { --echo-depth: 1; }
+.battleAfterimages i:nth-child(2) { --echo-depth: 1.8; }
+.companion[data-form='baryon-mode'] .battleAfterimages i { filter: sepia(1) saturate(3) hue-rotate(330deg) brightness(1.08); }
+.companion[data-form='chakra-mode'] .battleAfterimages i { filter: sepia(1) saturate(2.3) brightness(1.3); }
+.companion:is([data-battle='dash'], [data-battle='baryon-rasengan'], [data-battle='black-meteorite'], [data-battle='chidori'], [data-battle='conjunction']) .battleAfterimages i { animation: battleDashEcho var(--battle-duration) var(--ease-out) both; }
+@keyframes battleDashEcho {
+  0% { opacity: 0; transform: translate3d(0, 0, 0); }
+  25%, 65% { opacity: 0.35; transform: translate3d(calc(var(--dash-trail-x, -24px) * var(--echo-depth)), calc(var(--dash-trail-y, 0px) * var(--echo-depth)), 0); }
+  100% { opacity: 0; transform: translate3d(calc(var(--dash-trail-x, -24px) * var(--echo-depth)), calc(var(--dash-trail-y, 0px) * var(--echo-depth)), 0); }
+}
+.battleImpact i { left: 52px; top: 42px; width: 5px; height: 5px; background: rgb(255 224 166); --impact-x: 23px; --impact-y: 0px; }
+.battleImpact i:nth-child(2) { --impact-x: 16px; --impact-y: -14px; }
+.battleImpact i:nth-child(3) { --impact-x: 17px; --impact-y: 14px; }
+.companion[data-battle='punch'] .battleImpact i { animation: punchImpact var(--battle-duration) var(--ease-out) both; }
+@keyframes punchImpact { 0%, 30% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg) scale(0.9); } 48% { opacity: 1; } 100% { opacity: 0; transform: translate3d(var(--impact-x), var(--impact-y), 0) rotate(45deg) scale(0.95); } }
+
+/* Named techniques use separate silhouettes, build phases, and release paths.
+   Their wrappers all share the floor clip above; no effect moves the actor. */
+.battleConstellation,
+.battleArms,
+.battleTails,
+.battleDarkFlame,
+.battleSusanoo { position: absolute; z-index: 2; inset: 0; pointer-events: none; }
+.battleConstellation i,
+.battleConstellation b,
+.battleArms i,
+.battleTails i,
+.battleDarkFlame i,
+.battleSusanoo i { position: absolute; display: block; opacity: 0; }
+
+/* Anti-magic: a compressed draw, a traveling crescent, a charged thrust,
+   a vertical cut, an extended native blade, and a rotating slash ring. */
+.companion:is([data-battle='anti-magic-zetten'], [data-battle='black-slash'], [data-battle='infinite-slash-equinox'], [data-battle='black-hurricane']) .battleSlash i {
+  border-top-color: rgb(38 21 35);
+  border-right-color: rgb(220 66 85);
+  border-top-width: 8px;
+}
+.companion[data-battle='anti-magic-zetten'] .battleSlash i { animation: zettenCut var(--battle-duration) var(--ease-out) both; }
+@keyframes zettenCut {
+  0%, 30% { opacity: 0; transform: translateX(-4px) rotate(-110deg) scale(0.9); }
+  44% { opacity: 1; }
+  70% { opacity: 1; transform: translateX(7px) rotate(85deg) scale(1.1); }
+  100% { opacity: 0; transform: translateX(9px) rotate(95deg) scale(1.1); }
+}
+.companion[data-battle='black-slash'] .battleSlash i { animation: blackCrescent var(--battle-duration) var(--ease-out) both; }
+@keyframes blackCrescent {
+  0%, 12% { opacity: 0; transform: translateX(12px) rotate(-65deg) scale(0.9); }
+  30% { opacity: 1; }
+  83% { opacity: 0.95; transform: translateX(80px) rotate(25deg) scale(1); }
+  100% { opacity: 0; transform: translateX(90px) rotate(35deg) scale(0.95); }
+}
+.companion[data-battle='black-meteorite'] .battleLightning i {
+  top: 35px; height: 27px; background: rgb(42 22 38); border-bottom: 3px solid rgb(225 66 88);
+  clip-path: polygon(0 20%, 66% 0, 100% 50%, 66% 100%, 0 80%, 24% 50%);
+  animation: meteorThrust var(--battle-duration) var(--ease-out) both;
+}
+.companion[data-battle='black-meteorite'] .battleLightning i:nth-child(2) { top: 21px; height: 12px; width: 43px; }
+.companion[data-battle='black-meteorite'] .battleLightning i:nth-child(3) { top: 68px; height: 8px; width: 50px; }
+@keyframes meteorThrust {
+  0%, 20% { opacity: 0; transform: translateX(-7px) scaleX(0.85); }
+  42% { opacity: 1; transform: translateX(0) scaleX(1); }
+  76% { opacity: 0.95; transform: translateX(65px) scaleX(1.1); }
+  100% { opacity: 0; transform: translateX(70px) scaleX(1); }
+}
+.companion[data-battle='infinite-slash-equinox'] .battleSlash i {
+  top: -60px; left: 51px; width: 15px; height: 145px; border: 0; border-left: 3px solid rgb(236 73 98);
+  border-radius: 0; background: rgb(35 21 35); transform-origin: center bottom;
+  clip-path: polygon(45% 0, 100% 28%, 72% 100%, 0 100%, 20% 22%);
+  animation: equinoxCut var(--battle-duration) var(--ease-out) both;
+}
+.companion[data-battle='infinite-slash-equinox'] .battleSlash i:nth-child(2) { left: 69px; width: 4px; height: 132px; background: rgb(221 62 86); }
+@keyframes equinoxCut {
+  0%, 24% { opacity: 0; transform: translateY(-12px) scaleY(0.9); }
+  43%, 66% { opacity: 1; transform: translateY(0) scaleY(1); }
+  100% { opacity: 0; transform: translateY(4px) scaleY(0.97); }
+}
+.companion[data-battle='black-divider'] .battleSlash i:first-child {
+  top: -44px; left: 39px; width: 24px; height: 116px; border: 0; border-radius: 0;
+  background: url('/sprites/dungeon-tileset.png') -1172px -264px / 2048px 2048px no-repeat;
+  image-rendering: pixelated; filter: brightness(0.35) sepia(1) saturate(3) hue-rotate(310deg);
+  transform-origin: 50% 91%; animation: dividerCut var(--battle-duration) var(--ease-out) both;
+}
+.companion[data-battle='black-divider'] .battleSlash i:nth-child(2) { border-color: rgb(168 51 73); animation: zettenCut var(--battle-duration) var(--ease-out) both; }
+@keyframes dividerCut {
+  0%, 12% { opacity: 0; transform: rotate(-35deg) scale(0.9); }
+  33% { opacity: 1; transform: rotate(-45deg) scale(1); }
+  72% { opacity: 1; transform: rotate(76deg) scale(1); }
+  100% { opacity: 0; transform: rotate(81deg) scale(0.97); }
+}
+.companion[data-battle='black-hurricane'] .battleSlash i { left: -13px; top: 8px; width: 91px; height: 68px; border-bottom: 4px solid rgb(151 44 64); transform-origin: center; animation: hurricaneSpin var(--battle-duration) var(--ease-in-out) both; }
+@keyframes hurricaneSpin {
+  0% { opacity: 0; transform: rotate(-35deg) scale(0.9); }
+  22% { opacity: 1; }
+  78% { opacity: 1; transform: rotate(600deg) scale(1); }
+  100% { opacity: 0; transform: rotate(710deg) scale(0.97); }
+}
+
+/* Four actual constellation anchors assemble a beam, a shield, or the
+   endpoints of a horizontal conjunction. */
+.battleConstellation i { width: 10px; height: 10px; background: rgb(255 220 137); clip-path: polygon(50% 0, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0 50%, 35% 35%); }
+.battleConstellation i:nth-child(1) { left: 7px; top: 17px; }
+.battleConstellation i:nth-child(2) { left: 57px; top: 17px; }
+.battleConstellation i:nth-child(3) { left: 7px; top: 65px; }
+.battleConstellation i:nth-child(4) { left: 57px; top: 65px; }
+.battleConstellation b { left: 12px; top: 22px; width: 50px; height: 48px; border: 1px solid rgb(246 204 113 / 0.8); }
+.companion:is([data-battle='quartile-hasta'], [data-battle='quartile-scutum']) .battleConstellation :is(i, b) { animation: constellationHold var(--battle-duration) var(--ease-out) both; }
+@keyframes constellationHold {
+  0%, 10% { opacity: 0; transform: scale(0.92); }
+  29%, 79% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.98); }
+}
+.companion[data-battle='quartile-hasta'] .battleConstellation b::after { position: absolute; left: 46px; top: 18px; width: 102px; height: 7px; border-block: 1px solid rgb(255 239 189); background: rgb(236 183 67); transform-origin: left center; opacity: 0; content: ''; animation: hastaBeam var(--battle-duration) var(--ease-out) both; }
+@keyframes hastaBeam {
+  0%, 42% { opacity: 0; transform: scaleX(0.9); }
+  54%, 78% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(0.97); }
+}
+.companion[data-battle='quartile-scutum'] .battleConstellation b { left: 41px; top: 9px; width: 42px; height: 70px; border-width: 3px; background: rgb(234 190 89 / 0.13); }
+.companion[data-battle='quartile-scutum'] .battleConstellation i:nth-child(1) { left: 36px; top: 4px; }
+.companion[data-battle='quartile-scutum'] .battleConstellation i:nth-child(2) { left: 78px; top: 4px; }
+.companion[data-battle='quartile-scutum'] .battleConstellation i:nth-child(3) { left: 36px; top: 74px; }
+.companion[data-battle='quartile-scutum'] .battleConstellation i:nth-child(4) { left: 78px; top: 74px; }
+.companion[data-battle='conjunction'] .battleConstellation i { animation: conjunctionStars var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='conjunction'] .battleConstellation i:nth-child(even) { left: 107px; }
+@keyframes conjunctionStars {
+  0% { opacity: 0; transform: rotate(-30deg) scale(0.9); }
+  20%, 40%, 76% { opacity: 1; transform: rotate(0deg) scale(1); }
+  52% { opacity: 0.3; transform: rotate(35deg) scale(0.95); }
+  100% { opacity: 0; transform: rotate(45deg) scale(0.9); }
+}
+
+/* Wind cannon, wind sword, and bow/arrow use different physical profiles. */
+.companion[data-battle='spirit-storm'] .battleWind i { left: 35px; top: 25px; width: 86px; height: 46px; border: 3px solid rgb(142 238 187); border-left-color: transparent; animation: windCannon var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='spirit-storm'] .battleWind i:nth-child(2) { left: 54px; top: 29px; width: 64px; height: 38px; border-width: 2px; }
+.companion[data-battle='spirit-storm'] .battleWind i:nth-child(3) { left: 48px; top: 41px; width: 99px; height: 17px; border-radius: 35%; border-width: 1px; background: rgb(173 246 205 / 0.18); }
+@keyframes windCannon {
+  0%, 15% { opacity: 0; transform: translateX(-7px) scaleX(0.85); }
+  37%, 64% { opacity: 0.95; transform: translateX(0) scaleX(1); }
+  100% { opacity: 0; transform: translateX(40px) scaleX(0.97); }
+}
+.companion[data-battle='spirit-of-zephyr'] .battleWind i:first-child { left: 40px; top: -3px; width: 30px; height: 87px; border: 0; border-radius: 0; background: url('/sprites/dungeon-tileset.png') -1017px -294px / 1536px 1536px no-repeat; image-rendering: pixelated; filter: sepia(1) saturate(2) hue-rotate(85deg) brightness(1.3); transform-origin: 50% 91%; animation: dividerCut var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='spirit-of-zephyr'] .battleWind i:not(:first-child) { animation: battleCut var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='spirit-of-euros'] .battleWind i:first-child { top: 23px; left: 42px; width: 24px; height: 53px; border: 3px solid rgb(171 251 210); border-left: 0; border-radius: 0 100% 100% 0; animation: constellationHold var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='spirit-of-euros'] .battleWind i:first-child::after { position: absolute; top: 0; left: 0; width: 1px; height: 47px; background: rgb(220 255 236); content: ''; }
+.companion[data-battle='spirit-of-euros'] .battleWind i:nth-child(2) { top: 48px; left: 44px; width: 40px; height: 2px; border: 0; border-radius: 0; background: rgb(171 251 210); animation: eurosArrow var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='spirit-of-euros'] .battleWind i:nth-child(2)::after { position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; background: rgb(207 255 228); clip-path: polygon(0 0, 100% 50%, 0 100%, 25% 50%); content: ''; }
+.companion[data-battle='spirit-of-euros'] .battleWind i:nth-child(3) { animation: windThrow var(--battle-duration) var(--ease-out) both; }
+@keyframes eurosArrow {
+  0%, 14% { opacity: 0; transform: translateX(-4px); }
+  30%, 46% { opacity: 1; transform: translateX(0); }
+  86% { opacity: 1; transform: translateX(75px); }
+  100% { opacity: 0; transform: translateX(80px); }
+}
+
+/* Sage: broad natural-energy pressure, a giant hand orb, and a four-bladed
+   spinning wind disc. The disc is deliberately unlike the compact Rasengan. */
+.companion[data-battle='frog-kumite'] .battleImpact i { left: 43px; top: 27px; width: 47px; height: 47px; background: transparent; border: 2px solid rgb(220 239 207 / 0.85); border-radius: 50%; animation: frogPressure var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='frog-kumite'] .battleImpact i:nth-child(2) { left: 55px; top: 34px; width: 37px; height: 31px; border-width: 1px; }
+.companion[data-battle='frog-kumite'] .battleImpact i:nth-child(3) { left: 63px; top: 45px; width: 24px; height: 2px; border: 0; background: rgb(236 245 222); }
+@keyframes frogPressure {
+  0%, 24% { opacity: 0; transform: translateX(0) scale(0.9); }
+  45% { opacity: 0.95; transform: translateX(9px) scale(1); }
+  100% { opacity: 0; transform: translateX(35px) scale(1.15); }
+}
+.companion[data-battle='sage-giant-rasengan'] .battleOrb i { left: 41px; top: 23px; width: 43px; height: 43px; animation: giantOrb var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='sage-giant-rasengan'] .battleOrb i:nth-child(2) { left: 35px; top: 17px; width: 55px; height: 55px; }
+.companion[data-battle='sage-giant-rasengan'] .battleOrb i:nth-child(3) { left: 34px; top: 36px; width: 56px; height: 17px; }
+@keyframes giantOrb {
+  0% { opacity: 0; transform: rotate(-35deg) scale(0.9); }
+  29%, 68% { opacity: 1; transform: rotate(150deg) scale(1); }
+  100% { opacity: 0; transform: translateX(23px) rotate(230deg) scale(1.05); }
+}
+.companion[data-battle='rasenshuriken'] .battleOrb i { animation: shurikenThrow var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='rasenshuriken'] .battleOrb i:nth-child(2) { left: 27px; top: 22px; width: 53px; height: 53px; border: 0; background: rgb(205 251 255); clip-path: polygon(50% 0, 59% 32%, 100% 50%, 68% 59%, 50% 100%, 41% 68%, 0 50%, 32% 41%); }
+.companion[data-battle='rasenshuriken'] .battleOrb i:nth-child(3) { left: 40px; top: 35px; width: 27px; height: 27px; border-color: rgb(138 227 255); }
+@keyframes shurikenThrow {
+  0% { opacity: 0; transform: translateX(0) rotate(-35deg) scale(0.9); }
+  28%, 42% { opacity: 1; transform: translateX(0) rotate(180deg) scale(1); }
+  85% { opacity: 1; transform: translateX(78px) rotate(680deg) scale(0.95); }
+  100% { opacity: 0; transform: translateX(85px) rotate(820deg) scale(0.9); }
+}
+
+/* Chakra arms are long gold fists, rather than silhouettes of the body. */
+.battleArms i { left: 37px; top: 35px; width: 62px; height: 12px; border: 2px solid rgb(255 223 130); border-radius: 4px; background: rgb(236 158 43 / 0.75); transform-origin: left center; }
+.battleArms i::after { position: absolute; right: -7px; top: -4px; width: 16px; height: 17px; border: 2px solid rgb(255 223 130); border-radius: 4px; background: rgb(245 176 58); content: ''; }
+.battleArms i:nth-child(2) { top: 52px; width: 77px; }
+.battleArms i:nth-child(3) { top: 24px; width: 51px; }
+.companion[data-battle='chakra-arm-barrage'] .battleArms i { animation: chakraFists var(--battle-duration) var(--ease-out) both; }
+@keyframes chakraFists {
+  0%, 12%, 46%, 78%, 100% { opacity: 0; transform: translateX(0) scaleX(0.85); }
+  28%, 63%, 89% { opacity: 0.95; transform: translateX(18px) scaleX(1); }
+}
+.companion[data-battle='tailed-beast-bomb'] .battleOrb i { left: 43px; top: 27px; width: 36px; height: 36px; border-color: rgb(246 202 102); background: rgb(33 23 47); box-shadow: inset 5px -4px 0 rgb(72 39 88); animation: bombThrow var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='tailed-beast-bomb'] .battleOrb i:nth-child(2) { left: 39px; top: 23px; width: 44px; height: 44px; background: transparent; box-shadow: none; border-width: 1px; }
+.companion[data-battle='tailed-beast-bomb'] .battleOrb i:nth-child(3) { left: 53px; top: 38px; width: 14px; height: 14px; background: rgb(18 14 27); border: 0; box-shadow: none; }
+@keyframes bombThrow {
+  0%, 8% { opacity: 0; transform: translateX(0) scale(0.9); }
+  32%, 58% { opacity: 1; transform: translateX(0) scale(1); }
+  89% { opacity: 1; transform: translateX(70px) scale(0.97); }
+  100% { opacity: 0; transform: translateX(76px) scale(0.95); }
+}
+/* A compact hand Rasengan for Baryon; KCM carries its orb on an
+   extended chakra hand. The blue core stays recognizable in both forms. */
+.companion[data-battle='baryon-rasengan'] .battleOrb i {
+  left: 45px; top: 31px; width: 34px; height: 34px;
+  animation: rasenganStrike var(--battle-duration) var(--ease-out) both;
+}
+.companion[data-battle='baryon-rasengan'] .battleOrb i:nth-child(2) {
+  left: 41px; top: 27px; width: 42px; height: 42px;
+  border-color: rgb(255 185 96);
+}
+.companion[data-battle='baryon-rasengan'] .battleOrb i:nth-child(3) {
+  left: 39px; top: 39px; width: 46px; height: 18px;
+}
+.companion[data-battle='chakra-arm-rasengan'] .battleArms i:first-child {
+  left: 37px; top: 43px; width: 73px;
+  animation: rasenganArm var(--battle-duration) var(--ease-out) both;
+}
+.companion[data-battle='chakra-arm-rasengan'] .battleOrb i {
+  left: 102px; top: 34px; width: 30px; height: 30px;
+  animation: rasenganStrike var(--battle-duration) var(--ease-out) both;
+}
+.companion[data-battle='chakra-arm-rasengan'] .battleOrb i:nth-child(2) {
+  left: 98px; top: 30px; width: 38px; height: 38px;
+  border-color: rgb(255 224 139);
+}
+.companion[data-battle='chakra-arm-rasengan'] .battleOrb i:nth-child(3) {
+  left: 97px; top: 42px; width: 40px; height: 14px;
+}
+@keyframes rasenganStrike {
+  0%, 10% { opacity: 0; transform: translateX(0) rotate(-30deg) scale(0.9); }
+  28% { opacity: 1; transform: translateX(0) rotate(120deg) scale(1); }
+  62% { opacity: 1; transform: translateX(10px) rotate(400deg) scale(1); }
+  82% { opacity: 1; transform: translateX(24px) rotate(660deg) scale(1); }
+  100% { opacity: 0; transform: translateX(24px) rotate(800deg) scale(0.95); }
+}
+@keyframes rasenganArm {
+  0%, 10% { opacity: 0; transform: translateX(0) scaleX(0.9); }
+  28% { opacity: 1; transform: translateX(0) scaleX(1); }
+  62% { opacity: 1; transform: translateX(10px) scaleX(1); }
+  82% { opacity: 1; transform: translateX(24px) scaleX(1); }
+  100% { opacity: 0; transform: translateX(24px) scaleX(0.98); }
+}
+
+/* Baryon retains its chakra-tail sweep and burst of speed. */
+.battleTails i { left: 17px; top: 37px; width: 15px; height: 48px; border-left: 3px solid rgb(255 180 74); background: rgb(213 74 38); transform-origin: 50% 100%; clip-path: polygon(50% 0, 100% 30%, 80% 90%, 40% 100%, 0 75%, 20% 35%); }
+.battleTails i:nth-child(1) { --tail-start: -45deg; --tail-end: 70deg; }
+.battleTails i:nth-child(2) { left: 28px; height: 59px; top: 26px; --tail-start: -20deg; --tail-end: 90deg; }
+.battleTails i:nth-child(3) { left: 37px; height: 64px; top: 21px; --tail-start: 5deg; --tail-end: 110deg; }
+.battleTails i:nth-child(4) { left: 43px; --tail-start: 25deg; --tail-end: 130deg; }
+.companion[data-battle='baryon-tail-breaker'] .battleTails i { animation: tailBreaker var(--battle-duration) var(--ease-out) both; }
+@keyframes tailBreaker {
+  0%, 12% { opacity: 0; transform: rotate(var(--tail-start)) scale(0.9); }
+  31% { opacity: 1; transform: rotate(var(--tail-start)) scale(1); }
+  77% { opacity: 1; transform: rotate(var(--tail-end)) scale(1); }
+  100% { opacity: 0; transform: rotate(var(--tail-end)) scale(0.97); }
+}
+.companion[data-battle='baryon-breakthrough'] .battleAfterimages i { filter: sepia(1) saturate(3) hue-rotate(330deg) brightness(1.08); animation: battleDashEcho var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='baryon-breakthrough'] .battleImpact i { width: 9px; height: 9px; background: rgb(255 159 71); animation: punchImpact var(--battle-duration) var(--ease-out) both; }
+
+/* Sasuke: hand lightning, black flames, and a large spectral armored arm. */
+.companion[data-battle='chidori'] .battleLightning i { left: 42px; top: 35px; width: 38px; height: 24px; background: rgb(195 237 255); animation: handChidori var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='chidori'] .battleLightning i:nth-child(2) { top: 22px; left: 39px; width: 29px; height: 44px; background: rgb(139 172 255); }
+.companion[data-battle='chidori'] .battleLightning i:nth-child(3) { top: 38px; left: 47px; width: 32px; height: 38px; }
+@keyframes handChidori {
+  0%, 10% { opacity: 0; transform: translateX(0) rotate(-15deg) scale(0.9); }
+  28%, 66% { opacity: 1; transform: translateX(3px) rotate(7deg) scale(1); }
+  100% { opacity: 0; transform: translateX(12px) rotate(15deg) scale(0.95); }
+}
+.battleDarkFlame i { left: 55px; top: 25px; width: 23px; height: 58px; background: rgb(24 16 35); border-right: 3px solid rgb(164 91 204); clip-path: polygon(50% 0, 70% 22%, 95% 8%, 80% 55%, 100% 80%, 65% 100%, 10% 92%, 0 65%, 20% 38%, 10% 10%, 40% 30%); transform-origin: center bottom; }
+.battleDarkFlame i:nth-child(2) { left: 77px; top: 11px; height: 72px; }
+.battleDarkFlame i:nth-child(3) { left: 98px; top: 31px; height: 52px; }
+.companion[data-battle='amaterasu'] .battleDarkFlame i { animation: blackFlames var(--battle-duration) var(--ease-out) both; }
+@keyframes blackFlames {
+  0%, 19% { opacity: 0; transform: scale(0.9, 0.8); }
+  43%, 83% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.97); }
+}
+.battleSusanoo i:first-child { left: 26px; top: 23px; width: 80px; height: 25px; border: 4px solid rgb(183 126 224); border-radius: 8px; background: rgb(113 66 151 / 0.55); transform-origin: 0 50%; }
+.battleSusanoo i:first-child::after { position: absolute; left: 19px; top: 0; width: 4px; height: 17px; background: rgb(212 166 241); box-shadow: 18px 0 0 rgb(212 166 241), 36px 0 0 rgb(212 166 241); content: ''; }
+.battleSusanoo i:nth-child(2) { left: 91px; top: -28px; width: 9px; height: 99px; background: rgb(202 163 235); border-left: 3px solid rgb(131 79 170); transform-origin: 50% 80%; clip-path: polygon(50% 0, 100% 13%, 80% 100%, 0 100%, 15% 13%); }
+.battleSusanoo i:nth-child(3) { left: 32px; top: -12px; width: 95px; height: 84px; border-top: 4px solid rgb(195 146 231); border-right: 2px solid rgb(141 88 181); border-radius: 50%; }
+.companion[data-battle='susanoo-slash'] .battleSusanoo i { animation: spectralSlash var(--battle-duration) var(--ease-out) both; }
+@keyframes spectralSlash {
+  0%, 12% { opacity: 0; transform: rotate(-24deg) scale(0.9); }
+  33% { opacity: 0.95; transform: rotate(-25deg) scale(1); }
+  77% { opacity: 1; transform: rotate(28deg) scale(1); }
+  100% { opacity: 0; transform: rotate(30deg) scale(0.98); }
+}
+
+/* Variants of the five original elemental kits preserve their own renderer
+   while changing the attack's path, timing, and silhouette. */
+.companion[data-battle-move='cross-slash'] .battleSlash i:nth-child(2) { animation: reverseCrossCut var(--battle-duration) var(--ease-out) both; }
+@keyframes reverseCrossCut { 0%, 12% { opacity: 0; transform: rotate(85deg) scale(0.9); } 35% { opacity: 1; } 73% { opacity: 0.95; transform: rotate(-75deg) scale(1); } 100% { opacity: 0; transform: rotate(-85deg) scale(1); } }
+.companion[data-battle-move='draw-slash'] .battleSlash i { width: 89px; height: 29px; top: 31px; border-top-width: 3px; }
+.companion[data-battle-move='guard-break'] .battleImpact i { width: 12px; height: 12px; clip-path: polygon(50% 0, 60% 35%, 100% 50%, 60% 65%, 50% 100%, 40% 65%, 0 50%, 40% 35%); }
+.companion[data-battle-move='lightning-thrust'] .battleLightning i { height: 11px; width: 88px; top: 43px; }
+.companion[data-battle-move='thunder-step'] .battleLightning i { width: 25px; height: 54px; left: 12px; top: 16px; animation: handChidori var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle-move='chain-lightning'] .battleLightning i:nth-child(2) { top: 16px; left: 65px; width: 64px; }
+.companion[data-battle-move='chain-lightning'] .battleLightning i:nth-child(3) { top: 63px; left: 80px; width: 65px; }
+.companion[data-battle-move='flame-burst'] .battleFire i { left: 49px; top: 29px; width: 26px; height: 34px; animation: flameFan var(--battle-duration) var(--ease-out) both; --fan-y: 0px; }
+.companion[data-battle-move='flame-burst'] .battleFire i:nth-child(2) { --fan-y: -23px; }
+.companion[data-battle-move='flame-burst'] .battleFire i:nth-child(3) { --fan-y: 21px; }
+@keyframes flameFan { 0%, 12% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); } 36% { opacity: 1; } 83% { opacity: 0.95; transform: translate3d(48px, var(--fan-y), 0) scale(1); } 100% { opacity: 0; transform: translate3d(55px, var(--fan-y), 0) scale(0.95); } }
+.companion[data-battle-move='flame-wave'] .battleFire i { left: 39px; top: 50px; width: 81px; height: 32px; clip-path: polygon(0 45%, 15% 0, 25% 40%, 40% 5%, 55% 45%, 70% 0, 80% 40%, 100% 30%, 92% 100%, 0 100%); }
+.companion[data-battle-move='flame-wave'] .battleFire i:nth-child(2) { top: 63px; height: 19px; width: 75px; }
+.companion[data-battle-move='flame-wave'] .battleFire i:nth-child(3) { display: none; }
+.companion[data-battle='frost-shield'] .battleIce i { left: 41px; top: 13px; width: 29px; height: 69px; animation: constellationHold var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='frost-shield'] .battleIce i:nth-child(2) { left: 58px; top: 4px; height: 78px; }
+.companion[data-battle='frost-shield'] .battleIce i:nth-child(3) { left: 75px; top: 19px; height: 63px; }
+.companion[data-battle-move='ice-shards'] .battleIce i { width: 8px; height: 26px; top: 38px; }
+.companion[data-battle-move='ice-shards'] .battleIce i:nth-child(2) { top: 20px; }
+.companion[data-battle-move='ice-shards'] .battleIce i:nth-child(3) { top: 57px; }
+.companion[data-battle-move='shadow-clone'] .battleShadow i { animation: cloneAppear var(--battle-duration) var(--ease-out) both; }
+@keyframes cloneAppear { 0%, 10% { opacity: 0; transform: translateX(0) scale(0.97); } 34%, 77% { opacity: 0.7; transform: translateX(var(--strike-x)) scale(1); } 100% { opacity: 0; transform: translateX(var(--strike-x)) scale(0.97); } }
+.companion[data-battle-move='shadow-feint'] .battleAfterimages i { filter: sepia(0.8) saturate(2.5) hue-rotate(210deg) brightness(0.8); }
+
+.companion:is([data-motion='paused'], [data-paused='true'], [data-open='true']) :is(
+  .spriteIdle, .spriteWalk, .ring, .dust i, .sparks i,
+  .sageAura, .sageAura i, .sageEyes, .chakraAura, .chakraAura i,
+  .chakraCloak, .weapon, .slash i, .afterimages i, .lightning i,
+  .powerMotes i, .fireBurst i, .iceBurst i, .shadowBurst i,
+  .zettenBurst i, .devilBurst i, .starBurst i, .spiritBurst i,
+  .baryonBurst i, .sixPathsBurst i, .battleOrb i, .battleFire i,
+  .battleSlash i, .battleLightning i, .battleStars i, .battleWind i,
+  .battleIce i, .battleShadow i, .battleImpact i, .battleAfterimages i,
+  .battleConstellation i, .battleConstellation b, .battleArms i,
+  .battleTails i, .battleDarkFlame i, .battleSusanoo i
+) {
+  animation-play-state: paused;
+}
+
+.companion:is([data-motion='paused'], [data-paused='true'], [data-open='true']) .battleConstellation b::after {
+  animation-play-state: paused;
+}
+
+.companion:is([data-battle='baryon-breakthrough'], [data-battle='baryon-rasengan'], [data-battle='black-meteorite'], [data-battle='chidori']) .spriteIdle { display: none; }
+.companion:is([data-battle='baryon-breakthrough'], [data-battle='baryon-rasengan'], [data-battle='black-meteorite'], [data-battle='chidori']) .spriteWalk { display: block; }
+
+@media (prefers-reduced-motion: reduce) {
+  .companion {
+    transform: none !important;
+  }
+
+  .spriteIdle,
+  .spriteWalk {
+    animation: none;
+  }
+
+  .companion .spriteIdle {
+    display: block;
+  }
+
+  .companion .spriteWalk {
+    display: none;
+  }
+
+  .ring,
+  .dust,
+  .sparks,
+  .sageAura,
+  .chakraAura,
+  .chakraCloak,
+  .slash,
+  .afterimages,
+  .lightning,
+  .powerMotes,
+  .fireBurst,
+  .iceBurst,
+  .shadowBurst,
+  .zettenBurst,
+  .devilBurst,
+  .starBurst,
+  .spiritBurst,
+  .baryonBurst,
+  .sixPathsBurst,
+  .battleOrb,
+  .battleFire,
+  .battleSlash,
+  .battleLightning,
+  .battleStars,
+  .battleWind,
+  .battleIce,
+  .battleShadow,
+  .battleImpact,
+  .battleAfterimages,
+  .battleConstellation,
+  .battleArms,
+  .battleTails,
+  .battleDarkFlame,
+  .battleSusanoo {
+    display: none;
+  }
+
+  .companion[data-effect] :is(.sageEyes, .weapon) { animation: none; }
+
+}

@@ -258,24 +258,48 @@ function Hero({ swordSoundSrc }: { swordSoundSrc: string | null }) {
           artRef={zelda.setCrestEl}
         />
 
-        {/* The name. Big, unapologetic. */}
-        <motion.h1
-          variants={riseIn}
-          className="mt-14 text-hero font-semibold uppercase text-bone md:mt-20"
-        >
-          <span className="block">{given}</span>
-          <span className="block text-dim">{family.join(' ')}</span>
-        </motion.h1>
+        {/* Name and portrait introduce the person together; neither depends
+            on scrolling past the full biography to come into view. */}
+        <div className="hero-intro">
+          <div className="min-w-0">
+            <motion.h1
+              variants={riseIn}
+              className="text-hero font-semibold uppercase text-bone md:text-[clamp(3.5rem,7.4vw,7rem)]"
+            >
+              <span className="block">{given}</span>
+              <span className="block text-dim">{family.join(' ')}</span>
+            </motion.h1>
 
-        <motion.p
-          variants={riseIn}
-          className="mt-10 max-w-[24ch] text-title font-medium uppercase tracking-tight text-bone md:mt-12"
-        >
-          {profile.tagline}
-        </motion.p>
+            <motion.p
+              variants={riseIn}
+              className="mt-8 max-w-[24ch] text-title font-medium uppercase tracking-tight text-bone md:mt-10"
+            >
+              {profile.tagline}
+            </motion.p>
+          </div>
 
-        <div className="mt-20 grid gap-12 md:mt-28 md:grid-cols-12 md:gap-8">
-          {/* Bio + meta. */}
+          <motion.figure variants={riseIn} className="portrait-figure">
+            <div className="portrait-frame">
+              <div className="portrait">
+                <Image
+                  src="/new profile.jpg"
+                  alt={`Portrait of ${profile.name}`}
+                  fill
+                  priority
+                  sizes="(max-width: 767px) 202px, (max-width: 1090px) 218px, (max-width: 1272px) calc(22vw - 22px), 258px"
+                />
+              </div>
+            </div>
+            <figcaption className="tag portrait-caption">
+              <span>{profile.initials} — Portrait</span>
+              <span>Philippines</span>
+            </figcaption>
+          </motion.figure>
+        </div>
+
+        <div className="hero-details grid gap-12 md:grid-cols-12 md:gap-8">
+          {/* Biography and contact on the left; the facts have their own
+              reading column beneath the portrait. */}
           <motion.div variants={riseIn} className="md:col-span-6">
             <p className="prose-measure text-lead text-bone">{profile.bio}</p>
 
@@ -297,39 +321,29 @@ function Hero({ swordSoundSrc }: { swordSoundSrc: string | null }) {
               ))}
             </div>
 
-            <dl className="mt-16">
-              <div className="disp-row">
-                <dt className="tag">Study</dt>
-                <dd className="readout text-bone">BSIT — Artificial Intelligence</dd>
-              </div>
-              <div className="disp-row">
-                <dt className="tag">Institution</dt>
-                <dd className="readout text-bone">St. Paul University Philippines</dd>
-              </div>
-              <div className="disp-row">
-                <dt className="tag">Based</dt>
-                <dd className="readout text-bone">Philippines</dd>
-              </div>
-              <div className="disp-row">
-                <dt className="tag">Focus</dt>
-                <dd className="readout text-bone">AI · Software · Brand</dd>
-              </div>
-            </dl>
           </motion.div>
 
-          {/* The portrait. */}
-          <motion.div variants={riseIn} className="md:col-span-5 md:col-start-8">
-            <div className="portrait aspect-[4/5]">
-              <Image
-                src="/new profile.jpg"
-                alt={`Portrait of ${profile.name}`}
-                fill
-                priority
-                sizes="(max-width: 768px) 92vw, 37vw"
-              />
+          <motion.dl
+            variants={riseIn}
+            className="hero-facts md:col-span-5 md:col-start-8"
+          >
+            <div className="disp-row">
+              <dt className="tag">Study</dt>
+              <dd className="readout text-bone">BSIT — Artificial Intelligence</dd>
             </div>
-            <p className="tag mt-4 text-faint">{profile.initials} — Portrait</p>
-          </motion.div>
+            <div className="disp-row">
+              <dt className="tag">Institution</dt>
+              <dd className="readout text-bone">St. Paul University Philippines</dd>
+            </div>
+            <div className="disp-row">
+              <dt className="tag">Based</dt>
+              <dd className="readout text-bone">Philippines</dd>
+            </div>
+            <div className="disp-row">
+              <dt className="tag">Focus</dt>
+              <dd className="readout text-bone">AI · Software · Brand</dd>
+            </div>
+          </motion.dl>
         </div>
       </motion.div>
     </header>

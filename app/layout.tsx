@@ -6,6 +6,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Cinzel } from 'next/font/google';
 import { profile, contactInfo } from '@/data/portfolio';
+import { PortfolioCompanion } from '@/components/portfolio-companion';
 
 /**
  * Cinzel — the display face for the anniversary theme.
@@ -139,6 +140,7 @@ export default function RootLayout({
           Skip to content
         </a>
         {children}
+        <PortfolioCompanion />
         {/* Reading position, painted by the compositor — see `.progress`. */}
         <div className="progress" aria-hidden="true" />
         {/* Print tooth over the whole document. Fixed and inert — see `.grain`
