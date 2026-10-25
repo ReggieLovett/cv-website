@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useId, useRef } from 'react';
 import {
-  Check, Eye, Flame, Ghost, Leaf, MoreHorizontal, Pause, Play, RotateCcw,
-  Skull, Snowflake, Sparkles, Star, Swords, Wind, Zap, type LucideIcon,
+  BicepsFlexed, Check, Eye, Flame, Droplets, Leaf, MoreHorizontal, Pause, Play, RotateCcw,
+  Skull, Sparkles, Swords, Wind, Zap, type LucideIcon,
 } from 'lucide-react';
 import { POWER_UPS, type PowerUpAction } from '@/lib/companion-motion';
+import { FORM_BATTLES } from '@/lib/companion-battle';
 import styles from './companion-controls.module.css';
 
 type CompanionControlsProps = {
@@ -21,31 +22,33 @@ type CompanionControlsProps = {
   onExpandedChange: (open: boolean) => void;
 };
 
-const POWER_ICONS: Record<string, LucideIcon> = {
+const POWER_ICONS: Record<PowerUpAction, LucideIcon> = {
   'sage-mode': Leaf,
   'chakra-mode': Flame,
   'sword-draw': Swords,
   'lightning-dash': Zap,
   'fire-mode': Flame,
-  'ice-mode': Snowflake,
-  'shadow-mode': Ghost,
+  'water-mode': Droplets,
   'zetten-mode': Swords,
   'devil-union': Skull,
-  'star-magic': Star,
   'spirit-dive': Wind,
   'baryon-mode': Flame,
   'six-paths-eyes': Eye,
+  'deku-overdrive': BicepsFlexed,
+  'hyper-sonic': Zap,
 };
 
-const BLACK_CLOVER_ACTIONS = new Set<PowerUpAction>(['zetten-mode', 'devil-union', 'star-magic', 'spirit-dive']);
+const BLACK_CLOVER_ACTIONS = new Set<PowerUpAction>(['zetten-mode', 'devil-union', 'spirit-dive', 'lightning-dash', 'fire-mode', 'water-mode']);
 const NINJA_ACTIONS = new Set<PowerUpAction>(['baryon-mode', 'six-paths-eyes', 'sage-mode', 'chakra-mode']);
+const HERO_ACTIONS = new Set<PowerUpAction>(['deku-overdrive', 'hyper-sonic']);
 const POWER_GROUPS = [
   { label: 'Ninja forms', powers: [
     ...POWER_UPS.filter(({ action }) => action === 'baryon-mode' || action === 'six-paths-eyes'),
     ...POWER_UPS.filter(({ action }) => action === 'sage-mode' || action === 'chakra-mode'),
   ] },
   { label: 'Black Clover', powers: POWER_UPS.filter(({ action }) => BLACK_CLOVER_ACTIONS.has(action)) },
-  { label: 'More forms', powers: POWER_UPS.filter(({ action }) => !BLACK_CLOVER_ACTIONS.has(action) && !NINJA_ACTIONS.has(action)) },
+  { label: 'Hero forms', powers: POWER_UPS.filter(({ action }) => HERO_ACTIONS.has(action)) },
+  { label: 'More forms', powers: POWER_UPS.filter(({ action }) => !BLACK_CLOVER_ACTIONS.has(action) && !NINJA_ACTIONS.has(action) && !HERO_ACTIONS.has(action)) },
 ];
 
 export function CompanionControls({
@@ -134,7 +137,7 @@ export function CompanionControls({
       <div ref={panelRef} id={`${id}-panel`} className={styles.panel} role="group" aria-labelledby={`${id}-heading`}>
         <p id={`${id}-heading`} className={styles.heading}>Sprite controls</p>
         {activePower ? (
-          <p className={styles.currentForm}>Current form <span>{activePower.label}</span></p>
+          <p className={styles.currentForm}>Current form <span>{activePower.label}</span><small>{form ? FORM_BATTLES[form].moves.length : 0} battle techniques · 1–3 per combo</small></p>
         ) : null}
 
         <button

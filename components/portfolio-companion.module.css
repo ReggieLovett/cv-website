@@ -87,11 +87,24 @@
   content: '';
 }
 
+.flight,
+.floatBody { position: absolute; inset: 0; }
+.flight { transform: translateY(0); transition: transform var(--dur-panel) var(--ease-out); }
+.companion[data-flight='true']:not([data-form='none']) .flight { transform: translateY(-15px); }
+.companion[data-flight='true']:not([data-form='none']) .floatBody { animation: companionHover 3200ms var(--ease-in-out) infinite; }
+.companion[data-flight='true']:not([data-form='none']) .character::after { opacity: 0.45; transform: scaleX(0.75); }
+.companion[data-flight='true']:not([data-form='none']) .spriteIdle { display: block !important; }
+.companion[data-flight='true']:not([data-form='none']) .spriteWalk { display: none !important; }
+@keyframes companionHover {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
 /* Effects share the actor's floor. Leave room above and along the bottom
    edge for attacks, but keep arcs and falling particles above the feet. The
    pose and all completed form equipment retain their native footprint. */
-.character > span:not(.pose) {
-  clip-path: inset(-192px -180px 0 -180px);
+.floatBody > span:not(.pose) {
+  clip-path: inset(-192px -92px 0 -92px);
 }
 
 .pose {
@@ -885,8 +898,8 @@
   display: block;
 }
 
-.companion:is([data-form='zetten-mode'], [data-form='devil-union'], [data-form='star-magic'], [data-form='spirit-dive']) :is(.formCape, .formMark),
-.companion:is([data-form='zetten-mode'], [data-form='star-magic'], [data-form='spirit-dive']) .formCrown {
+.companion:is([data-form='zetten-mode'], [data-form='devil-union'], [data-form='spirit-dive']) :is(.formCape, .formMark),
+.companion:is([data-form='zetten-mode'], [data-form='spirit-dive']) .formCrown {
   opacity: 1;
 }
 
@@ -1024,45 +1037,6 @@
   left: 46px;
   transform: scaleX(-1);
 }
-
-.companion[data-form='star-magic'] {
-  --form-cloth: 35 52 79;
-  --form-trim: 237 198 104;
-}
-
-.companion[data-form='star-magic'] :is(.spriteIdle, .spriteWalk) {
-  filter: sepia(0.65) saturate(1.2) hue-rotate(160deg) brightness(0.94);
-}
-
-.companion[data-form='star-magic'] .formCape {
-  left: 11px;
-  top: 41px;
-  width: 42px;
-  height: 40px;
-}
-
-.companion[data-form='star-magic'] .formCrown {
-  height: 4px;
-}
-
-.companion[data-form='star-magic'] .formCrown::before {
-  background: rgb(255 227 156);
-  box-shadow: none;
-}
-
-.companion[data-form='star-magic'] .formMark,
-.companion[data-form='star-magic'] .formStars i {
-  width: 8px;
-  height: 8px;
-  background: rgb(247 211 130);
-  clip-path: polygon(50% 0, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0 50%, 35% 35%);
-}
-
-.companion[data-form='star-magic'] .formStars { opacity: 1; }
-.companion[data-form='star-magic'] .formStars i:nth-child(1) { top: 13px; left: 4px; }
-.companion[data-form='star-magic'] .formStars i:nth-child(2) { top: 23px; left: 54px; }
-.companion[data-form='star-magic'] .formStars i:nth-child(3) { top: 60px; left: 2px; }
-.companion[data-form='star-magic'] .formStars i:nth-child(4) { top: 72px; left: 55px; }
 
 .companion[data-form='spirit-dive'] {
   --form-cloth: 39 116 87;
@@ -1205,7 +1179,7 @@
 .starBurst i:nth-child(2) { top: 6px; left: 53px; --star-x: 4px; --star-y: -4px; }
 .starBurst i:nth-child(3) { top: 62px; left: -7px; --star-x: -4px; --star-y: 3px; }
 .starBurst i:nth-child(4) { top: 61px; left: 59px; --star-x: 3px; --star-y: 3px; }
-.companion[data-effect='star'] .starBurst i { animation: starCharge var(--moment-duration) var(--ease-out) both; }
+.companion:is([data-effect='star'], [data-effect='spirit']) .starBurst i { animation: starCharge var(--moment-duration) var(--ease-out) both; }
 
 @keyframes starCharge {
   0%, 16% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-20deg) scale(0.9); }
@@ -1482,18 +1456,26 @@
   border-top-width: 8px;
 }
 .companion[data-battle='anti-magic-zetten'] .battleSlash i { animation: zettenCut var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='anti-magic-zetten'] .battleSlash i:nth-child(2) { animation: none; opacity: 0; }
+.companion[data-battle='anti-magic-zetten'] .battleImpact i:first-child { left: 43px; top: 49px; width: 24px; height: 24px; background: transparent; border: 2px solid rgb(190 63 80); border-radius: 50%; animation: zettenFocus var(--battle-duration) var(--ease-out) both; }
+@keyframes zettenFocus {
+  0% { opacity: 0; transform: scale(1.1); }
+  15% { opacity: 0.85; transform: scale(1); }
+  32% { opacity: 1; transform: scale(0.65); }
+  43%, 100% { opacity: 0; transform: scale(0.6); }
+}
 @keyframes zettenCut {
   0%, 30% { opacity: 0; transform: translateX(-4px) rotate(-110deg) scale(0.9); }
   44% { opacity: 1; }
   70% { opacity: 1; transform: translateX(7px) rotate(85deg) scale(1.1); }
   100% { opacity: 0; transform: translateX(9px) rotate(95deg) scale(1.1); }
 }
-.companion[data-battle='black-slash'] .battleSlash i { animation: blackCrescent var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='black-slash'] .battleSlash i { left: 28px; top: 17px; width: 56px; height: 54px; transform-origin: center; animation: blackCrescent var(--battle-duration) var(--ease-out) both; }
 @keyframes blackCrescent {
   0%, 12% { opacity: 0; transform: translateX(12px) rotate(-65deg) scale(0.9); }
   30% { opacity: 1; }
-  83% { opacity: 0.95; transform: translateX(80px) rotate(25deg) scale(1); }
-  100% { opacity: 0; transform: translateX(90px) rotate(35deg) scale(0.95); }
+  83% { opacity: 0.95; transform: translateX(57px) rotate(25deg) scale(0.95); }
+  100% { opacity: 0; transform: translateX(61px) rotate(35deg) scale(0.9); }
 }
 .companion[data-battle='black-meteorite'] .battleLightning i {
   top: 35px; height: 27px; background: rgb(42 22 38); border-bottom: 3px solid rgb(225 66 88);
@@ -1555,7 +1537,7 @@
   29%, 79% { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(0.98); }
 }
-.companion[data-battle='quartile-hasta'] .battleConstellation b::after { position: absolute; left: 46px; top: 18px; width: 102px; height: 7px; border-block: 1px solid rgb(255 239 189); background: rgb(236 183 67); transform-origin: left center; opacity: 0; content: ''; animation: hastaBeam var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='quartile-hasta'] .battleConstellation b::after { position: absolute; left: 46px; top: 18px; width: 96px; height: 7px; border-block: 1px solid rgb(255 239 189); background: rgb(236 183 67); transform-origin: left center; opacity: 0; content: ''; animation: hastaBeam var(--battle-duration) var(--ease-out) both; }
 @keyframes hastaBeam {
   0%, 42% { opacity: 0; transform: scaleX(0.9); }
   54%, 78% { opacity: 1; transform: scaleX(1); }
@@ -1576,9 +1558,9 @@
 }
 
 /* Wind cannon, wind sword, and bow/arrow use different physical profiles. */
-.companion[data-battle='spirit-storm'] .battleWind i { left: 35px; top: 25px; width: 86px; height: 46px; border: 3px solid rgb(142 238 187); border-left-color: transparent; animation: windCannon var(--battle-duration) var(--ease-out) both; }
-.companion[data-battle='spirit-storm'] .battleWind i:nth-child(2) { left: 54px; top: 29px; width: 64px; height: 38px; border-width: 2px; }
-.companion[data-battle='spirit-storm'] .battleWind i:nth-child(3) { left: 48px; top: 41px; width: 99px; height: 17px; border-radius: 35%; border-width: 1px; background: rgb(173 246 205 / 0.18); }
+.companion[data-battle='spirit-storm'] .battleWind i { left: 35px; top: 25px; width: 70px; height: 46px; border: 3px solid rgb(142 238 187); border-left-color: transparent; animation: windCannon var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='spirit-storm'] .battleWind i:nth-child(2) { left: 40px; top: 29px; width: 64px; height: 38px; border-width: 2px; }
+.companion[data-battle='spirit-storm'] .battleWind i:nth-child(3) { left: 40px; top: 41px; width: 72px; height: 17px; border-radius: 35%; border-width: 1px; background: rgb(173 246 205 / 0.18); }
 @keyframes windCannon {
   0%, 15% { opacity: 0; transform: translateX(-7px) scaleX(0.85); }
   37%, 64% { opacity: 0.95; transform: translateX(0) scaleX(1); }
@@ -1588,14 +1570,14 @@
 .companion[data-battle='spirit-of-zephyr'] .battleWind i:not(:first-child) { animation: battleCut var(--battle-duration) var(--ease-out) both; }
 .companion[data-battle='spirit-of-euros'] .battleWind i:first-child { top: 23px; left: 42px; width: 24px; height: 53px; border: 3px solid rgb(171 251 210); border-left: 0; border-radius: 0 100% 100% 0; animation: constellationHold var(--battle-duration) var(--ease-out) both; }
 .companion[data-battle='spirit-of-euros'] .battleWind i:first-child::after { position: absolute; top: 0; left: 0; width: 1px; height: 47px; background: rgb(220 255 236); content: ''; }
-.companion[data-battle='spirit-of-euros'] .battleWind i:nth-child(2) { top: 48px; left: 44px; width: 40px; height: 2px; border: 0; border-radius: 0; background: rgb(171 251 210); animation: eurosArrow var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='spirit-of-euros'] .battleWind i:nth-child(2) { top: 48px; left: 44px; width: 36px; height: 2px; border: 0; border-radius: 0; background: rgb(171 251 210); animation: eurosArrow var(--battle-duration) var(--ease-out) both; }
 .companion[data-battle='spirit-of-euros'] .battleWind i:nth-child(2)::after { position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; background: rgb(207 255 228); clip-path: polygon(0 0, 100% 50%, 0 100%, 25% 50%); content: ''; }
 .companion[data-battle='spirit-of-euros'] .battleWind i:nth-child(3) { animation: windThrow var(--battle-duration) var(--ease-out) both; }
 @keyframes eurosArrow {
   0%, 14% { opacity: 0; transform: translateX(-4px); }
   30%, 46% { opacity: 1; transform: translateX(0); }
-  86% { opacity: 1; transform: translateX(75px); }
-  100% { opacity: 0; transform: translateX(80px); }
+  86% { opacity: 1; transform: translateX(67px); }
+  100% { opacity: 0; transform: translateX(70px); }
 }
 
 /* Sage: broad natural-energy pressure, a giant hand orb, and a four-bladed
@@ -1622,8 +1604,8 @@
 @keyframes shurikenThrow {
   0% { opacity: 0; transform: translateX(0) rotate(-35deg) scale(0.9); }
   28%, 42% { opacity: 1; transform: translateX(0) rotate(180deg) scale(1); }
-  85% { opacity: 1; transform: translateX(78px) rotate(680deg) scale(0.95); }
-  100% { opacity: 0; transform: translateX(85px) rotate(820deg) scale(0.9); }
+  85% { opacity: 1; transform: translateX(65px) rotate(680deg) scale(0.95); }
+  100% { opacity: 0; transform: translateX(68px) rotate(820deg) scale(0.9); }
 }
 
 /* Chakra arms are long gold fists, rather than silhouettes of the body. */
@@ -1659,19 +1641,19 @@
   left: 39px; top: 39px; width: 46px; height: 18px;
 }
 .companion[data-battle='chakra-arm-rasengan'] .battleArms i:first-child {
-  left: 37px; top: 43px; width: 73px;
+  left: 37px; top: 58px; width: 73px;
   animation: rasenganArm var(--battle-duration) var(--ease-out) both;
 }
 .companion[data-battle='chakra-arm-rasengan'] .battleOrb i {
-  left: 102px; top: 34px; width: 30px; height: 30px;
+  left: 102px; top: 49px; width: 30px; height: 30px;
   animation: rasenganStrike var(--battle-duration) var(--ease-out) both;
 }
 .companion[data-battle='chakra-arm-rasengan'] .battleOrb i:nth-child(2) {
-  left: 98px; top: 30px; width: 38px; height: 38px;
+  left: 98px; top: 45px; width: 38px; height: 38px;
   border-color: rgb(255 224 139);
 }
 .companion[data-battle='chakra-arm-rasengan'] .battleOrb i:nth-child(3) {
-  left: 97px; top: 42px; width: 40px; height: 14px;
+  left: 97px; top: 57px; width: 40px; height: 14px;
 }
 @keyframes rasenganStrike {
   0%, 10% { opacity: 0; transform: translateX(0) rotate(-30deg) scale(0.9); }
@@ -1734,23 +1716,12 @@
   100% { opacity: 0; transform: rotate(30deg) scale(0.98); }
 }
 
-/* Variants of the five original elemental kits preserve their own renderer
+/* Variants of the three original fantasy kits preserve their own renderer
    while changing the attack's path, timing, and silhouette. */
 .companion[data-battle-move='cross-slash'] .battleSlash i:nth-child(2) { animation: reverseCrossCut var(--battle-duration) var(--ease-out) both; }
 @keyframes reverseCrossCut { 0%, 12% { opacity: 0; transform: rotate(85deg) scale(0.9); } 35% { opacity: 1; } 73% { opacity: 0.95; transform: rotate(-75deg) scale(1); } 100% { opacity: 0; transform: rotate(-85deg) scale(1); } }
 .companion[data-battle-move='draw-slash'] .battleSlash i { width: 89px; height: 29px; top: 31px; border-top-width: 3px; }
 .companion[data-battle-move='guard-break'] .battleImpact i { width: 12px; height: 12px; clip-path: polygon(50% 0, 60% 35%, 100% 50%, 60% 65%, 50% 100%, 40% 65%, 0 50%, 40% 35%); }
-.companion[data-battle-move='lightning-thrust'] .battleLightning i { height: 11px; width: 88px; top: 43px; }
-.companion[data-battle-move='thunder-step'] .battleLightning i { width: 25px; height: 54px; left: 12px; top: 16px; animation: handChidori var(--battle-duration) var(--ease-out) both; }
-.companion[data-battle-move='chain-lightning'] .battleLightning i:nth-child(2) { top: 16px; left: 65px; width: 64px; }
-.companion[data-battle-move='chain-lightning'] .battleLightning i:nth-child(3) { top: 63px; left: 80px; width: 65px; }
-.companion[data-battle-move='flame-burst'] .battleFire i { left: 49px; top: 29px; width: 26px; height: 34px; animation: flameFan var(--battle-duration) var(--ease-out) both; --fan-y: 0px; }
-.companion[data-battle-move='flame-burst'] .battleFire i:nth-child(2) { --fan-y: -23px; }
-.companion[data-battle-move='flame-burst'] .battleFire i:nth-child(3) { --fan-y: 21px; }
-@keyframes flameFan { 0%, 12% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); } 36% { opacity: 1; } 83% { opacity: 0.95; transform: translate3d(48px, var(--fan-y), 0) scale(1); } 100% { opacity: 0; transform: translate3d(55px, var(--fan-y), 0) scale(0.95); } }
-.companion[data-battle-move='flame-wave'] .battleFire i { left: 39px; top: 50px; width: 81px; height: 32px; clip-path: polygon(0 45%, 15% 0, 25% 40%, 40% 5%, 55% 45%, 70% 0, 80% 40%, 100% 30%, 92% 100%, 0 100%); }
-.companion[data-battle-move='flame-wave'] .battleFire i:nth-child(2) { top: 63px; height: 19px; width: 75px; }
-.companion[data-battle-move='flame-wave'] .battleFire i:nth-child(3) { display: none; }
 .companion[data-battle='frost-shield'] .battleIce i { left: 41px; top: 13px; width: 29px; height: 69px; animation: constellationHold var(--battle-duration) var(--ease-out) both; }
 .companion[data-battle='frost-shield'] .battleIce i:nth-child(2) { left: 58px; top: 4px; height: 78px; }
 .companion[data-battle='frost-shield'] .battleIce i:nth-child(3) { left: 75px; top: 19px; height: 63px; }
@@ -1760,6 +1731,516 @@
 .companion[data-battle-move='shadow-clone'] .battleShadow i { animation: cloneAppear var(--battle-duration) var(--ease-out) both; }
 @keyframes cloneAppear { 0%, 10% { opacity: 0; transform: translateX(0) scale(0.97); } 34%, 77% { opacity: 0.7; transform: translateX(var(--strike-x)) scale(1); } 100% { opacity: 0; transform: translateX(var(--strike-x)) scale(0.97); } }
 .companion[data-battle-move='shadow-feint'] .battleAfterimages i { filter: sepia(0.8) saturate(2.5) hue-rotate(210deg) brightness(0.8); }
+
+/* Every power keeps the original persona's body. Equipment is layered on top. */
+.companion[data-persona] :is(.spriteIdle, .spriteWalk) { width: 48px; height: 84px; left: 8px; background-image: var(--sprite-image); background-size: var(--sprite-size); }
+.companion[data-persona] .spriteIdle { background-position: var(--sprite-idle-x) var(--sprite-y); animation: companionIdle 1400ms steps(4) infinite; }
+.companion[data-persona] .spriteWalk { background-position: var(--sprite-walk-x) var(--sprite-y); animation: companionWalk var(--walk-cycle, 560ms) steps(4) infinite; }
+@keyframes companionIdle { to { background-position: var(--sprite-idle-end) var(--sprite-y); } }
+@keyframes companionWalk { to { background-position: var(--sprite-walk-end) var(--sprite-y); } }
+.companion :is(.afterimages i, .shadowBurst i, .battleShadow i, .battleAfterimages i),
+.companion[data-form='shadow-mode'] .formOrbs i {
+  left: 8px; width: 48px; height: 84px;
+  background-image: var(--sprite-image); background-size: var(--sprite-size);
+  background-position: var(--sprite-idle-x) var(--sprite-y); background-repeat: no-repeat;
+}
+.companion[data-form='hyper-sonic'] { --form-cloth: 217 227 234; --form-trim: 185 225 228; }
+.companion[data-form='hyper-sonic'] :is(.spriteIdle, .spriteWalk) { filter: saturate(0.15) brightness(1.35); }
+.companion[data-form='hyper-sonic'] .formCrown { opacity: 1; top: 13px; left: 15px; width: 36px; height: 22px; background: rgb(236 240 239); clip-path: polygon(0 28%, 27% 48%, 21% 0, 50% 30%, 58% 0, 75% 40%, 100% 20%, 93% 100%, 12% 100%); }
+.companion[data-form='hyper-sonic'] .formCrown::before { display: none; }
+.truthOrbs,
+.hyperAura { position: absolute; z-index: -3; inset: 0; pointer-events: none; opacity: 0; }
+.truthOrbs i { position: absolute; width: 5px; height: 5px; border: 1px solid rgb(186 165 93 / 0.7); border-radius: 50%; background: rgb(10 11 15); }
+.truthOrbs i:nth-child(1) { top: 12px; left: -6px; }
+.truthOrbs i:nth-child(2) { top: 2px; left: 13px; }
+.truthOrbs i:nth-child(3) { top: -1px; left: 37px; }
+.truthOrbs i:nth-child(4) { top: 10px; left: 61px; }
+.truthOrbs i:nth-child(5) { top: 28px; left: 73px; }
+.truthOrbs i:nth-child(6) { top: 49px; left: 72px; }
+.truthOrbs i:nth-child(7) { top: 68px; left: 58px; }
+.truthOrbs i:nth-child(8) { top: 74px; left: 30px; }
+.truthOrbs i:nth-child(9) { top: 61px; left: 2px; }
+.companion[data-form='chakra-mode'] .truthOrbs { opacity: 1; }
+.hyperAura { top: 6px; left: -5px; right: -5px; border: 1px solid rgb(224 240 248 / 0.32); border-radius: 50%; background: radial-gradient(ellipse, rgb(227 238 247 / 0.13), transparent 72%); }
+.hyperAura i { position: absolute; inset: -3px; border-radius: 50%; opacity: 0.12; background: radial-gradient(ellipse, rgb(121 218 237 / 0.4), transparent 70%); animation-duration: 7200ms; animation-timing-function: linear; animation-iteration-count: infinite; }
+.hyperAura i:nth-child(2) { inset: 1px -5px; background: radial-gradient(ellipse, rgb(220 165 236 / 0.4), transparent 70%); animation-delay: -2400ms; }
+.hyperAura i:nth-child(3) { inset: -5px 1px; background: radial-gradient(ellipse, rgb(225 230 151 / 0.4), transparent 70%); animation-delay: -4800ms; }
+.companion[data-form='hyper-sonic'] .hyperAura { opacity: 1; }
+.companion[data-form='hyper-sonic'] .hyperAura i { animation-name: hyperSpectrum; }
+@keyframes hyperSpectrum {
+  0%, 100% { opacity: 0.12; transform: scale(0.97); }
+  50% { opacity: 0.6; transform: scale(1.03); }
+}
+
+/* Final-war Overdrive gathers green electricity and Blackwhip locally. */
+.dekuWhip,
+.superEmeralds,
+.hyperBloom { position: absolute; z-index: 2; inset: 0; pointer-events: none; }
+.dekuWhip i,
+.superEmeralds i,
+.hyperBloom i { position: absolute; opacity: 0; }
+.dekuWhip i { left: 22px; top: 19px; width: 77px; height: 49px; border-top: 4px solid rgb(15 42 37); border-right: 2px solid rgb(111 238 168); border-bottom: 1px solid rgb(205 75 86); border-radius: 50%; transform-origin: left center; }
+.dekuWhip i:nth-child(2) { left: 5px; top: 39px; width: 86px; height: 39px; }
+.dekuWhip i:nth-child(3) { left: 12px; top: 8px; width: 64px; height: 64px; }
+.companion[data-effect='deku'] .dekuWhip i { animation: dekuWhipCharge var(--moment-duration) var(--ease-out) both; }
+.companion[data-effect='deku'] .lightning i { background: rgb(118 245 171); animation: lightningCharge var(--moment-duration) var(--ease-out) both; }
+@keyframes dekuWhipCharge {
+  0%, 10% { opacity: 0; transform: rotate(-28deg) scale(0.9); }
+  34%, 73% { opacity: 0.85; transform: rotate(18deg) scale(1); }
+  100% { opacity: 0; transform: rotate(35deg) scale(0.97); }
+}
+.companion[data-battle='blackwhip-strike'] .dekuWhip i { animation: blackwhipStrike var(--battle-duration) var(--ease-out) both; }
+@keyframes blackwhipStrike {
+  0%, 12% { opacity: 0; transform: translateX(-5px) rotate(-25deg) scaleX(0.9); }
+  39% { opacity: 1; transform: translateX(0) rotate(-10deg) scaleX(1); }
+  78% { opacity: 0.95; transform: translateX(45px) rotate(15deg) scaleX(1.15); }
+  100% { opacity: 0; transform: translateX(51px) rotate(20deg) scaleX(1.1); }
+}
+.companion[data-battle='gearshift-overdrive'] .battleAfterimages i { animation: battleDashEcho var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='gearshift-overdrive'] .battleLightning i { background: rgb(139 255 181); animation: meteorThrust var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='fa-jin-smash'] .battleImpact i { left: 55px; top: 34px; width: 17px; height: 17px; background: rgb(136 250 176); clip-path: polygon(50% 0, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0 50%, 35% 35%); animation: punchImpact var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='fa-jin-smash'] .battleImpact i:nth-child(2) { top: 25px; width: 46px; height: 46px; border: 2px solid rgb(125 235 162); border-radius: 50%; background: transparent; clip-path: none; }
+.companion[data-battle='fa-jin-smash'] .battleImpact i:nth-child(3) { top: 39px; width: 14px; height: 14px; background: rgb(231 99 99); }
+
+/* OFA support quirks have their own readable cue and travel. Danger Sense
+   warns before evasion; smoke expands from the body, never as a projectile. */
+.dangerSense, .smokescreen, .kineticCharge { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.dangerSense i, .smokescreen i, .kineticCharge i { position: absolute; opacity: 0; }
+.dangerSense i { left: 23px; top: 4px; width: 9px; height: 26px; background: rgb(251 221 116); clip-path: polygon(60% 0, 15% 48%, 49% 48%, 25% 100%, 100% 36%, 60% 36%, 90% 0); transform-origin: center bottom; --warning-angle: 0deg; }
+.dangerSense i:nth-child(2) { left: 6px; top: 15px; height: 17px; --warning-angle: -45deg; }
+.dangerSense i:nth-child(3) { left: 47px; top: 12px; height: 17px; --warning-angle: 45deg; }
+.companion[data-battle='danger-sense-counter'] .dangerSense i { animation: dangerWarning var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='danger-sense-counter'] .battleAfterimages i { animation: battleDashEcho var(--battle-duration) var(--ease-out) both; }
+@keyframes dangerWarning {
+  0% { opacity: 0; transform: translateY(3px) rotate(var(--warning-angle)); }
+  12%, 28% { opacity: 1; transform: translateY(0) rotate(var(--warning-angle)); }
+  43%, 100% { opacity: 0; transform: translateY(-4px) rotate(var(--warning-angle)); }
+}
+.smokescreen { z-index: 4; }
+.smokescreen i { left: 6px; top: 36px; width: 38px; height: 37px; border-radius: 43% 57% 36% 49%; background: rgb(167 182 175); box-shadow: inset -7px -6px rgb(96 119 112); --smoke-x: -33px; --smoke-y: -10px; }
+.smokescreen i:nth-child(2) { left: 28px; top: 21px; width: 34px; height: 39px; --smoke-x: 31px; --smoke-y: -18px; }
+.smokescreen i:nth-child(3) { left: 24px; top: 47px; width: 43px; height: 31px; --smoke-x: 39px; --smoke-y: -3px; }
+.smokescreen i:nth-child(4) { left: 0; top: 55px; width: 34px; height: 25px; --smoke-x: -40px; --smoke-y: 0px; }
+.smokescreen i:nth-child(5) { left: 22px; top: 35px; width: 32px; height: 36px; background: rgb(197 208 198); --smoke-x: 0px; --smoke-y: -27px; }
+.companion[data-battle='smokescreen-feint'] .smokescreen i { animation: smokeCover var(--battle-duration) var(--ease-out) both; }
+@keyframes smokeCover {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.9); }
+  22%, 43% { opacity: 0.88; }
+  76% { opacity: 0.45; }
+  100% { opacity: 0; transform: translate3d(var(--smoke-x), var(--smoke-y), 0) scale(1.1); }
+}
+.kineticCharge i { left: 10px; top: 55px; width: 17px; height: 19px; border: 2px solid rgb(239 111 128); border-radius: 50%; transform-origin: center; }
+.kineticCharge i:nth-child(2) { left: 43px; top: 52px; }
+.companion[data-battle='fa-jin-smash'] .kineticCharge i { animation: faJinStore var(--battle-duration) var(--ease-out) both; }
+@keyframes faJinStore {
+  0% { opacity: 0; transform: scale(1.08); }
+  16%, 31% { opacity: 0.95; transform: scale(0.9); }
+  47%, 100% { opacity: 0; transform: scale(1.1); }
+}
+
+/* Seven Super Emeralds converge into one pale, prismatic release. */
+.superEmeralds i { top: 34px; left: 26px; width: 12px; height: 14px; clip-path: polygon(50% 0, 100% 30%, 80% 80%, 50% 100%, 20% 80%, 0 30%); }
+.superEmeralds i:nth-child(1) { --emerald-x: -30px; --emerald-y: -25px; background: rgb(243 82 89); }
+.superEmeralds i:nth-child(2) { --emerald-x: -12px; --emerald-y: -43px; background: rgb(244 174 77); }
+.superEmeralds i:nth-child(3) { --emerald-x: 15px; --emerald-y: -42px; background: rgb(255 234 120); }
+.superEmeralds i:nth-child(4) { --emerald-x: 34px; --emerald-y: -20px; background: rgb(86 222 145); }
+.superEmeralds i:nth-child(5) { --emerald-x: 28px; --emerald-y: 10px; background: rgb(98 209 247); }
+.superEmeralds i:nth-child(6) { --emerald-x: 1px; --emerald-y: 29px; background: rgb(125 135 244); }
+.superEmeralds i:nth-child(7) { --emerald-x: -26px; --emerald-y: 15px; background: rgb(208 118 237); }
+.companion[data-effect='hyper'] .superEmeralds i { animation: emeraldConvergence var(--moment-duration) var(--ease-in-out) both; }
+@keyframes emeraldConvergence {
+  0% { opacity: 0; transform: rotate(-35deg) translate3d(var(--emerald-x), var(--emerald-y), 0) rotate(35deg) scale(0.9); }
+  16%, 33% { opacity: 1; transform: rotate(32deg) translate3d(var(--emerald-x), var(--emerald-y), 0) rotate(-32deg) scale(1); }
+  46% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg) scale(0.95); }
+  54%, 100% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg) scale(0.9); }
+}
+.hyperBloom i { left: -8px; top: 1px; width: 80px; height: 80px; border: 2px solid rgb(232 244 252); border-radius: 50%; background: rgb(206 225 242 / 0.12); }
+.hyperBloom i:nth-child(2) { left: -1px; top: 8px; width: 66px; height: 66px; border-width: 1px; border-color: rgb(146 219 230); }
+.hyperBloom i:nth-child(3) { left: -12px; top: 68px; width: 88px; height: 15px; background: transparent; border-width: 1px; border-color: rgb(223 172 233); }
+.companion[data-effect='hyper'] .hyperBloom i { animation: hyperPrismBloom var(--moment-duration) var(--ease-out) both; }
+@keyframes hyperPrismBloom {
+  0%, 48% { opacity: 0; transform: scale(0.9); }
+  59% { opacity: 0.95; transform: scale(1); }
+  77% { opacity: 0.6; transform: scale(1.07); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+.companion[data-battle='hyper-boost'] .battleAfterimages i,
+.companion[data-battle='hyper-spin-dash'] .battleAfterimages i { animation: battleDashEcho var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='hyper-boost'] .battleWind i { border-color: rgb(223 240 249); width: 77px; height: 15px; top: 27px; animation: windThrow var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='hyper-boost'] .battleWind i:nth-child(2) { top: 48px; border-color: rgb(146 219 230); }
+.companion[data-battle='hyper-boost'] .battleWind i:nth-child(3) { top: 66px; border-color: rgb(223 172 233); }
+.companion:is([data-battle='hyper-homing-attack'], [data-battle='hyper-spin-dash']) .battleOrb i { left: -9px; top: 0; width: 82px; height: 82px; border-color: rgb(232 244 252); background: rgb(206 225 242 / 0.1); box-shadow: none; animation: hyperPrismRoll var(--battle-duration) var(--ease-in-out) both; }
+.companion:is([data-battle='hyper-homing-attack'], [data-battle='hyper-spin-dash']) .battleOrb i:nth-child(2) { left: -14px; top: -4px; width: 92px; height: 90px; border-width: 1px; border-color: rgb(146 219 230); background: transparent; }
+.companion:is([data-battle='hyper-homing-attack'], [data-battle='hyper-spin-dash']) .battleOrb i:nth-child(3) { left: -2px; top: 12px; width: 64px; height: 60px; border-width: 1px; border-color: rgb(223 172 233); background: transparent; }
+.companion[data-battle='hyper-spin-dash'] .battleOrb i { border-style: dashed; }
+@keyframes hyperPrismRoll {
+  0% { opacity: 0; transform: rotate(-20deg) scale(0.9); }
+  22% { opacity: 0.95; }
+  78% { opacity: 0.95; transform: rotate(510deg) scale(1); }
+  100% { opacity: 0; transform: rotate(650deg) scale(0.98); }
+}
+.companion[data-phase='battling']:is([data-battle='baryon-breakthrough'], [data-battle='black-meteorite'], [data-battle='chidori'], [data-battle='gearshift-overdrive'], [data-battle='hyper-boost']) .spriteIdle { display: none; }
+.companion[data-phase='battling']:is([data-battle='baryon-breakthrough'], [data-battle='black-meteorite'], [data-battle='chidori'], [data-battle='gearshift-overdrive'], [data-battle='hyper-boost']) .spriteWalk { display: block; }
+.companion:is([data-battle='black-meteorite'], [data-battle='chidori']) .battleAfterimages i { animation: battleDashEcho var(--battle-duration) var(--ease-out) both; }
+
+/* Researched costumes dress the existing sprite; the helmet, face, native
+   animation frames, and proportions remain the active persona's own. */
+.formCloth, .formCollar, .formCuffs, .formScroll, .formScarf, .formSeals, .formBook, .spiritHalo { position: absolute; pointer-events: none; opacity: 0; }
+.formCloth { z-index: 1; top: 61px; left: 22px; width: 25px; height: 17px; background: rgb(var(--form-cloth)); clip-path: polygon(0 0, 100% 0, 100% 76%, 84% 76%, 84% 100%, 0 100%); }
+.formCloth::after { position: absolute; inset: 2px 5px; border-left: 2px solid rgb(var(--form-trim)); content: ''; }
+.formCollar { z-index: 2; left: 18px; top: 48px; width: 32px; height: 12px; background: rgb(var(--form-cloth)); clip-path: polygon(0 0, 33% 45%, 66% 45%, 100% 0, 94% 100%, 6% 100%); }
+.formCuffs { z-index: 3; inset: 0; }
+.formCuffs i { position: absolute; top: 65px; left: 15px; width: 6px; height: 9px; background: rgb(var(--form-trim)); }
+.formCuffs i:nth-child(2) { left: 46px; top: 61px; }
+.formSeals { z-index: 3; inset: 0; }
+.formSeals i { position: absolute; top: 51px; left: 23px; width: 3px; height: 4px; background: rgb(32 26 25); border-radius: 0 60% 60% 60%; }
+.formSeals i:nth-child(2) { left: 29px; top: 54px; }
+.formSeals i:nth-child(3) { left: 35px; top: 54px; }
+.formSeals i:nth-child(4) { left: 41px; }
+.formSeals i:nth-child(5) { left: 29px; top: 65px; }
+.formSeals i:nth-child(6) { left: 35px; top: 65px; }
+.formBook { z-index: 2; inset: 0; }
+.formBook i { position: absolute; top: 52px; left: -5px; width: 12px; height: 17px; border: 2px solid rgb(182 148 74); background: rgb(42 72 83); transform: rotate(-12deg); }
+.formBook i::after { position: absolute; width: 4px; height: 4px; top: 4px; left: 2px; background: rgb(230 206 130); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); content: ''; }
+.formBook i:nth-child(2) { left: 58px; top: 44px; background: rgb(31 42 64); transform: rotate(15deg); }
+.companion:not([data-form='none']) .formCloth { opacity: 0.86; }
+
+/* Sage: red haori, scroll, orange eye paint. Six Paths uses cross pupils and
+   seals without the ordinary Sage eye rings. */
+.companion[data-form='sage-mode'] .formScroll { opacity: 1; z-index: -2; left: 4px; top: 49px; width: 51px; height: 13px; background: rgb(215 198 156); border: 3px solid rgb(79 60 46); box-shadow: inset 0 3px rgb(169 84 61); }
+.companion[data-form='sage-mode'] .formCuffs { opacity: 1; }
+.companion[data-form='sage-mode'] .formCloth { background: rgb(195 106 45); }
+.companion[data-form='chakra-mode'] :is(.formSeals, .formCuffs, .powerEyes) { opacity: 1; }
+.companion[data-form='chakra-mode'] .powerEyes i { background: rgb(255 220 97); box-shadow: inset 1px 0 rgb(45 34 21); }
+.companion[data-form='chakra-mode'] .powerEyes i::after { position: absolute; left: 1px; top: -1px; height: 5px; width: 1px; background: rgb(45 34 21); content: ''; }
+.companion[data-form='chakra-mode'] .formCloth::after { border-color: rgb(41 33 25); }
+
+/* Baryon's fox cloak and nine tails sit around the same armored character. */
+.companion[data-form='baryon-mode'] .formCollar { opacity: 1; background: rgb(202 72 35); }
+.companion[data-form='baryon-mode'] .formCloth { background: rgb(43 31 29); }
+.companion[data-form='baryon-mode'] .formCloth::after { border-color: rgb(235 100 39); border-width: 4px; }
+.foxTails i:nth-child(5) { left: 5px; top: 39px; transform: rotate(-56deg); }
+.foxTails i:nth-child(6) { left: 48px; top: 39px; transform: rotate(56deg); }
+.foxTails i:nth-child(7) { left: 0; top: 51px; height: 29px; transform: rotate(-72deg); }
+.foxTails i:nth-child(8) { left: 54px; top: 51px; height: 29px; transform: rotate(72deg); }
+.foxTails i:nth-child(9) { left: 28px; top: 36px; height: 45px; transform: rotate(0deg); }
+.companion[data-form='baryon-mode'] .powerEyes i::after { position: absolute; left: -2px; top: 4px; width: 7px; height: 3px; background: rgb(52 28 30); transform: rotate(25deg); content: ''; }
+.companion[data-form='baryon-mode'] .powerEyes i:nth-child(2)::after { transform: rotate(-25deg); }
+
+/* Fourth-War Sasuke: gray high collar, purple waist rope, mismatched eyes. */
+.companion[data-form='six-paths-eyes'] :is(.formCollar, .weapon) { opacity: 1; }
+.companion[data-form='six-paths-eyes'] .formCollar, .companion[data-form='six-paths-eyes'] .formCloth { background: rgb(156 158 168); }
+.companion[data-form='six-paths-eyes'] .formCloth::after { inset: 10px -3px 3px; border: 0; background: rgb(127 91 158); box-shadow: 0 3px rgb(93 65 122); }
+.companion[data-form='six-paths-eyes'] .formCape { opacity: 0; }
+
+/* Final War Overdrive is equipment on this sprite: the verified yellow scarf,
+   neck guard, white reinforced gloves, red belt, and green energy accents. */
+.companion[data-form='deku-overdrive'] { --form-cloth: 43 99 88; --form-trim: 220 222 203; }
+.companion[data-form='deku-overdrive'] :is(.formCollar, .formScarf, .formCuffs, .powerEyes) { opacity: 1; }
+.companion[data-form='deku-overdrive'] .formCollar { background: rgb(29 40 40); }
+.companion[data-form='deku-overdrive'] .formScarf { z-index: 3; left: 9px; top: 49px; width: 44px; height: 13px; background: rgb(187 157 76); clip-path: polygon(0 0, 30% 35%, 100% 15%, 95% 80%, 32% 74%, 0 100%, 15% 48%); }
+.companion[data-form='deku-overdrive'] .formCloth::after { inset: 11px 0 3px; border: 0; background: rgb(162 63 66); }
+.companion[data-form='deku-overdrive'] .powerEyes i { background: rgb(139 237 192); box-shadow: 0 0 3px rgb(83 210 151); }
+.companion[data-form='deku-overdrive'] .formCuffs i { height: 12px; width: 8px; border-bottom: 3px solid rgb(134 159 147); }
+.companion[data-form='deku-overdrive'] .lightning i { opacity: 0.45; animation: none; background: rgb(141 232 188); left: 10px; top: 22px; width: 8px; height: 22px; }
+.companion[data-form='deku-overdrive'] .lightning i:nth-child(2) { left: 47px; top: 15px; width: 9px; height: 25px; }
+.companion[data-form='deku-overdrive'] .lightning i:nth-child(3) { left: 47px; top: 58px; width: 14px; height: 18px; transform: none; }
+
+/* Zetten training: light kimono, dark obi/hakama, Bulls headband, black right
+   forearm. Zetten itself does not create horns, wings, or a demonic body. */
+.companion[data-form='zetten-mode'] { --form-cloth: 219 217 203; --form-trim: 42 43 49; }
+.companion[data-form='zetten-mode'] :is(.formCollar, .formCuffs) { opacity: 1; }
+.companion[data-form='zetten-mode'] .formCape { opacity: 0; }
+.companion[data-form='zetten-mode'] .formCollar { background: rgb(221 219 208); }
+.companion[data-form='zetten-mode'] .formCloth::after { inset: 9px -3px 4px; border: 0; background: rgb(42 43 49); }
+.companion[data-form='zetten-mode'] .formCrown::before { background: rgb(193 166 95); }
+.companion[data-form='zetten-mode'] .formCuffs i { background: rgb(221 219 208); height: 6px; }
+.companion[data-form='zetten-mode'] .formCuffs i:nth-child(2) { background: rgb(30 31 38); height: 12px; }
+.companion[data-form='zetten-mode'] .formMark { display: none; }
+
+/* Full Devil Union: dark crown, four curled horns, red diamond, cheek streaks,
+   armor, claws and wings. The helmet underneath remains the original sprite. */
+.companion[data-form='devil-union'] :is(.formCrown, .formCollar, .formCuffs, .powerEyes) { opacity: 1; }
+.companion[data-form='devil-union'] .formCrown { top: 24px; height: 13px; background: rgb(24 26 34); clip-path: polygon(0 0, 17% 30%, 32% 0, 50% 25%, 68% 0, 84% 30%, 100% 0, 100% 100%, 0 100%); }
+.companion[data-form='devil-union'] .formCrown::before { top: 5px; left: 3px; width: 25px; height: 4px; background: rgb(193 49 66); box-shadow: none; }
+.companion[data-form='devil-union'] .formHorns i { left: 10px; top: 17px; width: 10px; height: 18px; background: rgb(24 26 34); }
+.companion[data-form='devil-union'] .formHorns i:nth-child(2) { left: 43px; }
+.companion[data-form='devil-union'] .formHorns i:nth-child(3) { left: 22px; top: 10px; width: 6px; height: 18px; }
+.companion[data-form='devil-union'] .formHorns i:nth-child(4) { left: 35px; top: 10px; width: 6px; height: 18px; transform: scaleX(-1); }
+.companion[data-form='devil-union'] .formCollar { background: rgb(26 27 35); height: 17px; }
+.companion[data-form='devil-union'] .formCuffs i { background: rgb(28 28 37); border-bottom: 3px solid rgb(158 51 66); }
+.companion[data-form='devil-union'] .powerEyes i { background: rgb(208 61 72); box-shadow: none; }
+.companion[data-form='devil-union'] .powerEyes i::after { position: absolute; left: 0; top: 4px; width: 3px; height: 9px; background: rgb(24 26 34); transform: rotate(-25deg); content: ''; }
+.companion[data-form='devil-union'] .formCloth::after { border-color: rgb(172 48 62); }
+
+/* Star Magic dresses the royal mage in navy/gold; it does not add the wind
+   spirit crown. Complete Spirit Dive has the full crown, TWO wings and halo. */
+.companion[data-form='spirit-dive'] { --form-cloth: 58 126 91; --form-trim: 211 235 178; }
+.companion[data-form='spirit-dive'] :is(.formCollar, .formCuffs, .spiritHalo) { opacity: 1; }
+.companion[data-form='spirit-dive'] .formCape { left: 9px; top: 48px; width: 46px; height: 34px; background: rgb(173 211 169); clip-path: polygon(10% 0, 90% 0, 100% 100%, 70% 85%, 50% 100%, 30% 85%, 0 100%); }
+.companion[data-form='spirit-dive'] .formCrown { top: 14px; left: 12px; width: 40px; height: 17px; background: rgb(211 235 178); clip-path: polygon(0 25%, 15% 45%, 15% 0, 30% 0, 30% 45%, 43% 45%, 43% 0, 57% 0, 57% 45%, 70% 45%, 70% 0, 85% 0, 85% 45%, 100% 25%, 94% 100%, 6% 100%); }
+.companion[data-form='spirit-dive'] .formWings i { left: -15px; top: 28px; width: 39px; height: 48px; background: rgb(150 224 181 / 0.75); }
+.companion[data-form='spirit-dive'] .formWings i:nth-child(2) { left: 40px; top: 28px; width: 39px; height: 48px; opacity: 1; transform: scaleX(-1); }
+.spiritHalo { z-index: -3; left: -7px; top: 16px; width: 78px; height: 61px; border: 1px solid rgb(194 232 171 / 0.65); border-radius: 50%; }
+.spiritHalo i { position: absolute; left: 9px; top: 4px; width: 9px; height: 3px; background: rgb(211 235 178); }
+.spiritHalo i::after { position: absolute; top: -3px; left: 3px; width: 3px; height: 9px; background: inherit; content: ''; }
+.spiritHalo i:nth-child(2) { left: 34px; top: -1px; }
+.spiritHalo i:nth-child(3) { left: 58px; top: 7px; }
+.spiritHalo i:nth-child(4) { left: 71px; top: 28px; }
+.spiritHalo i:nth-child(5) { left: 58px; top: 49px; }
+.spiritHalo i:nth-child(6) { left: 34px; top: 57px; }
+.spiritHalo i:nth-child(7) { left: 9px; top: 49px; }
+.spiritHalo i:nth-child(8) { left: -4px; top: 28px; }
+.companion[data-form='spirit-dive'] .formMark { background: rgb(228 242 195); }
+.companion[data-form='spirit-dive'] .formCollar { background: rgb(221 237 203); }
+
+/* Hyper's cuffs and footwear accents remain accessories on the knight.
+   The remaining original fantasy kits retain their weapon, frost or clone. */
+.companion[data-form='hyper-sonic'] .formCuffs { opacity: 1; }
+.companion[data-form='hyper-sonic'] .formCuffs i { background: rgb(237 239 228); border-bottom: 2px solid rgb(164 213 224); }
+.companion[data-form='hyper-sonic'] .formCloth { background: rgb(205 222 231); }
+.companion[data-form='hyper-sonic'] .formCloth::after { inset: 12px -3px 0; border: 0; background: rgb(185 59 68); }
+.companion[data-form='sword-draw'] { --form-cloth: 67 83 99; --form-trim: 187 197 193; }
+.companion[data-form='sword-draw'] .formCuffs { opacity: 1; }
+.companion[data-form='lightning-dash'] .formCloth::after { clip-path: polygon(50% 0, 100% 0, 60% 45%, 100% 45%, 0 100%, 35% 55%, 0 55%); background: rgb(151 226 243); border: 0; }
+.companion[data-form='fire-mode'] .formCloth::after { border-color: rgb(236 155 67); }
+.companion[data-form='ice-mode'] .formCuffs { opacity: 1; }
+.companion[data-form='shadow-mode'] .formCollar { opacity: 1; background: rgb(58 42 83); }
+
+/* Additional gear follows the same three-pixel rhythm as the source art.
+   These small pieces never substitute the knight's helmet or native frames. */
+.energyCrest, .formGreaves, .formArmor, .formSigil, .saintBlade { position: absolute; pointer-events: none; opacity: 0; }
+.formGreaves, .formArmor, .saintBlade { inset: 0; }
+.formGreaves i { position: absolute; left: 24px; top: 75px; width: 9px; height: 6px; background: rgb(var(--form-trim)); }
+.formGreaves i:nth-child(2) { left: 39px; }
+.formArmor { z-index: 3; }
+.formArmor i { position: absolute; top: 51px; left: 15px; width: 12px; height: 12px; background: rgb(var(--form-cloth)); border-top: 3px solid rgb(var(--form-trim)); clip-path: polygon(25% 0, 100% 0, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+.formArmor i:nth-child(2) { left: 42px; transform: scaleX(-1); }
+
+/* OFA Overdrive: the helmet gains an energy crest, not a replacement face.
+   Gran Torino's ragged scarf, neck guard, gloves and red soles stay equipped. */
+.companion[data-form='deku-overdrive'] :is(.energyCrest, .formGreaves) { opacity: 1; }
+.companion[data-form='deku-overdrive'] .energyCrest { z-index: 1; left: 16px; top: 12px; width: 33px; height: 19px; background: rgb(120 231 178); clip-path: polygon(0 55%, 9% 15%, 24% 40%, 36% 0, 48% 30%, 66% 0, 69% 36%, 93% 12%, 85% 55%, 100% 48%, 90% 100%, 3% 100%); box-shadow: inset 0 -6px rgb(34 104 77); }
+.companion[data-form='deku-overdrive'] .formCape { opacity: 0; }
+.companion[data-form='deku-overdrive'] .formScarf { left: -3px; top: 47px; width: 54px; height: 15px; background: rgb(207 175 81); clip-path: polygon(0 6%, 26% 26%, 38% 6%, 60% 36%, 100% 21%, 97% 73%, 57% 73%, 36% 60%, 30% 100%, 20% 73%, 9% 93%, 12% 53%); }
+.companion[data-form='deku-overdrive'] .formCollar { left: 22px; top: 45px; width: 27px; height: 13px; box-shadow: inset 0 -3px rgb(102 121 113); }
+.companion[data-form='deku-overdrive'] .formCuffs i { left: 15px; top: 61px; width: 9px; height: 14px; background: rgb(223 228 207); box-shadow: inset 3px 0 rgb(156 177 164); }
+.companion[data-form='deku-overdrive'] .formCuffs i:nth-child(2) { left: 45px; top: 58px; }
+.companion[data-form='deku-overdrive'] .formGreaves i { background: rgb(170 62 66); box-shadow: inset 0 3px rgb(224 225 204); }
+
+/* Zetten is controlled concentration: crossed kimono lapels, a wide dark
+   obi/hakama and anti-magic forearm. Devil Union adds armor to that body. */
+.companion[data-form='zetten-mode'] .formCollar { left: 21px; top: 48px; width: 27px; height: 18px; clip-path: polygon(0 0, 24% 0, 55% 68%, 82% 0, 100% 0, 63% 100%, 42% 100%); box-shadow: inset 3px 0 rgb(122 122 120); }
+.companion[data-form='zetten-mode'] .formCloth { top: 65px; height: 15px; background: rgb(40 41 48); clip-path: polygon(0 0, 100% 0, 100% 100%, 57% 100%, 50% 52%, 43% 100%, 0 100%); }
+.companion[data-form='zetten-mode'] .formCloth::after { inset: 0 0 9px; border: 0; background: rgb(29 30 37); }
+.companion[data-form='zetten-mode'] .formCuffs i:nth-child(2) { width: 9px; box-shadow: inset -3px 0 rgb(74 45 56); }
+.companion[data-form='devil-union'] :is(.formArmor, .formGreaves, .formSigil) { opacity: 1; }
+.companion[data-form='devil-union'] .formArmor i { background: rgb(29 27 37); border-color: rgb(168 46 63); }
+.companion[data-form='devil-union'] .formSigil { z-index: 4; top: 56px; left: 30px; width: 9px; height: 12px; background: rgb(186 48 70); clip-path: polygon(50% 0, 100% 30%, 85% 75%, 50% 100%, 15% 75%, 0 30%, 33% 35%, 50% 68%, 67% 35%); }
+.companion[data-form='devil-union'] .formCrown::after { position: absolute; left: 12px; top: 2px; width: 9px; height: 9px; background: rgb(228 68 83); clip-path: polygon(50% 0, 68% 35%, 100% 50%, 68% 65%, 50% 100%, 32% 65%, 0 50%, 32% 35%); content: ''; }
+.companion[data-form='devil-union'] .formWings i { top: 30px; left: -12px; width: 33px; height: 43px; background: rgb(38 27 42); }
+.companion[data-form='devil-union'] .formWings i:nth-child(2) { left: 43px; }
+.companion[data-form='devil-union'] .formGreaves i { background: rgb(32 27 38); border-bottom: 3px solid rgb(159 44 61); }
+
+/* Saint Stage accents the completed Spirit Dive. Two wings and cross crown
+   remain; Zephyr gains a luminous core and its enlarged fan-shaped guard. */
+.companion[data-form='spirit-dive'] :is(.saintBlade, .formArmor) { opacity: 1; }
+.companion[data-form='spirit-dive'] .formArmor i { background: rgb(189 230 181); border-color: rgb(232 247 198); }
+.companion[data-form='spirit-dive'] .formCuffs i { height: 15px; background: rgb(207 243 188); box-shadow: inset 3px 0 rgb(131 203 153); }
+.companion[data-form='spirit-dive'] .formWings i { clip-path: polygon(0 0, 30% 6%, 65% 25%, 100% 68%, 85% 100%, 48% 87%, 15% 54%, 0 25%, 42% 48%, 28% 20%); }
+.saintBlade { z-index: 4; }
+.saintBlade i { position: absolute; }
+.saintBlade i:first-child { top: 9px; left: 57px; width: 9px; height: 48px; background: rgb(227 255 202); clip-path: polygon(50% 0, 100% 19%, 100% 100%, 0 100%, 0 19%); box-shadow: inset 3px 0 rgb(139 222 167); }
+.saintBlade i:nth-child(2) { top: 46px; left: 43px; width: 36px; height: 15px; background: rgb(182 241 167); clip-path: polygon(0 0, 27% 20%, 50% 72%, 73% 20%, 100% 0, 90% 65%, 64% 100%, 36% 100%, 10% 65%); }
+.saintBlade i:nth-child(3) { top: 58px; left: 59px; width: 6px; height: 15px; background: rgb(90 174 126); box-shadow: 0 3px rgb(220 249 185); }
+.companion[data-battle='spirit-of-zephyr'] .saintBlade { opacity: 0; }
+.companion[data-battle='spirit-of-zephyr'] .battleWind i:first-child { background: transparent; width: 12px; height: 81px; left: 55px; top: -6px; filter: none; box-shadow: none; clip-path: none; }
+.companion[data-battle='spirit-of-zephyr'] .battleWind i:first-child::before { position: absolute; inset: 0; background: rgb(221 255 203); box-shadow: inset 3px 0 rgb(125 222 159); clip-path: polygon(50% 0, 100% 13%, 100% 78%, 76% 78%, 76% 100%, 24% 100%, 24% 78%, 0 78%, 0 13%); content: ''; }
+.companion[data-battle='spirit-of-zephyr'] .battleWind i:first-child::after { position: absolute; left: -12px; top: 58px; width: 36px; height: 15px; background: rgb(197 253 175); clip-path: polygon(0 0, 27% 20%, 50% 72%, 73% 20%, 100% 0, 90% 65%, 64% 100%, 36% 100%, 10% 65%); content: ''; }
+.companion[data-battle='spirit-of-zephyr'] .battleWind i:nth-child(2) { border-color: rgb(220 255 200); }
+.companion[data-battle='spirit-of-zephyr'] .battleImpact i:first-child { left: 66px; top: 21px; width: 47px; height: 47px; border: 2px solid rgb(220 255 200); border-radius: 50%; background: transparent; animation: saintRelease var(--battle-duration) var(--ease-out) both; }
+@keyframes saintRelease {
+  0%, 35% { opacity: 0; transform: scale(0.9); }
+  51% { opacity: 0.9; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.15); }
+}
+
+/* Luck's True Lightning kit equips the knight's own limbs. The five Mana
+   Method arrays belong at his boots; Battle Fiend's horns/tail are separate
+   Ultimate Magic, so they are deliberately absent from this Ceranos kit. */
+.luckArmor, .manaRunes, .hellfireMantle { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.luckArmor { z-index: 3; }
+.luckArmor i { position: absolute; background: rgb(177 235 255); box-shadow: inset 3px -3px rgb(70 165 212); }
+.luckArmor i:nth-child(1), .luckArmor i:nth-child(2) { left: 11px; top: 56px; width: 15px; height: 21px; clip-path: polygon(20% 0, 80% 0, 100% 35%, 85% 68%, 100% 100%, 60% 80%, 40% 100%, 20% 75%, 0 90%, 10% 45%); }
+.luckArmor i:nth-child(2) { left: 44px; top: 53px; transform: scaleX(-1); }
+.luckArmor i:nth-child(3), .luckArmor i:nth-child(4) { left: 21px; top: 69px; width: 12px; height: 15px; clip-path: polygon(0 0, 100% 0, 85% 55%, 100% 75%, 100% 100%, 0 100%, 20% 65%); }
+.luckArmor i:nth-child(4) { left: 37px; transform: scaleX(-1); }
+.luckArmor i:nth-child(5), .luckArmor i:nth-child(6) { left: 12px; top: 46px; width: 15px; height: 13px; clip-path: polygon(0 0, 60% 20%, 100% 100%, 30% 80%); }
+.luckArmor i:nth-child(6) { left: 43px; transform: scaleX(-1); }
+.manaRunes { z-index: -1; }
+.manaRunes i { position: absolute; left: 13px; top: 55px; width: 40px; height: 10px; border: 1px solid rgb(157 226 255 / 0.8); border-radius: 50%; }
+.manaRunes i::before { position: absolute; inset: -3px 4px; border-inline: 2px dashed rgb(206 247 255); content: ''; }
+.manaRunes i:nth-child(2) { top: 61px; left: 10px; width: 46px; }
+.manaRunes i:nth-child(3) { top: 67px; left: 7px; width: 52px; }
+.manaRunes i:nth-child(4) { top: 73px; left: 4px; width: 58px; }
+.manaRunes i:nth-child(5) { top: 79px; left: 1px; width: 64px; }
+.companion[data-form='lightning-dash'] { --form-cloth: 48 82 104; --form-trim: 167 232 255; }
+.companion[data-form='lightning-dash'] :is(.spriteIdle, .spriteWalk) { filter: saturate(0.8) brightness(1.12); }
+.companion[data-form='lightning-dash'] :is(.formCape, .formCrown, .formMark, .formOrbs) { opacity: 0; }
+.companion[data-form='lightning-dash'] .formCape { opacity: 0.85; left: 13px; top: 46px; width: 35px; height: 29px; background: rgb(32 42 51); }
+.companion[data-form='lightning-dash'] .formCape::before { border-color: rgb(178 151 88); }
+.companion[data-form='lightning-dash'] .luckArmor { opacity: 1; }
+.companion[data-form='lightning-dash'] .manaRunes { opacity: 0.45; }
+.companion[data-effect='lightning'] .manaRunes { opacity: 1; }
+.companion[data-effect='lightning'] .manaRunes i { animation: runeEngage var(--moment-duration) var(--ease-out) both; }
+.companion[data-form='lightning-dash'] .formCloth { background: rgb(45 69 81); }
+.companion[data-form='lightning-dash'] .formCloth::after { background: rgb(111 196 232); }
+@keyframes runeEngage {
+  0%, 8% { opacity: 0; transform: translateY(3px) scale(0.95); }
+  27%, 71% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0.45; transform: translateY(0) scale(1); }
+}
+
+/* Hellfire Incarnate is a living flame envelope around the same knight.
+   Its mane, fists and burning limbs replace the old phoenix costume cues. */
+.hellfireMantle { z-index: -1; }
+.hellfireMantle i { position: absolute; left: -6px; top: 18px; width: 28px; height: 63px; background: rgb(232 104 34 / 0.82); clip-path: polygon(40% 0, 52% 27%, 80% 8%, 74% 44%, 100% 67%, 78% 100%, 20% 100%, 0 76%, 16% 39%, 20% 8%, 34% 35%); transform-origin: center bottom; }
+.hellfireMantle i::after { position: absolute; inset: 12px 6px 3px; background: rgb(255 211 94); clip-path: inherit; content: ''; }
+.hellfireMantle i:nth-child(2) { left: 45px; top: 14px; height: 67px; --flame-flip: -1; transform: scaleX(-1); }
+.hellfireMantle i:nth-child(3) { left: 12px; top: 4px; width: 43px; height: 36px; clip-path: polygon(0 100%, 7% 40%, 21% 67%, 29% 0, 44% 40%, 56% 5%, 65% 48%, 91% 13%, 86% 67%, 100% 100%); }
+.hellfireMantle i:nth-child(4) { left: 11px; top: 48px; width: 15px; height: 32px; background: rgb(255 184 57); }
+.hellfireMantle i:nth-child(5) { left: 44px; top: 45px; width: 15px; height: 34px; background: rgb(255 184 57); }
+.hellfireMantle i:nth-child(6) { left: 22px; top: 65px; width: 13px; height: 19px; }
+.hellfireMantle i:nth-child(7) { left: 36px; top: 65px; width: 13px; height: 19px; }
+.companion[data-form='fire-mode'] { --form-cloth: 115 50 38; --form-trim: 255 210 114; }
+.companion[data-form='fire-mode'] :is(.formCape, .formCrown, .formMark, .formOrbs) { opacity: 0; }
+.companion[data-form='fire-mode'] :is(.hellfireMantle, .formCuffs, .formGreaves, .powerEyes) { opacity: 1; }
+.companion[data-form='fire-mode'] :is(.spriteIdle, .spriteWalk) { filter: sepia(0.6) saturate(1.6) brightness(1.12); }
+.companion[data-form='fire-mode'] .formCuffs i { width: 9px; height: 14px; background: rgb(255 213 102); border-bottom: 3px solid rgb(225 113 37); box-shadow: inset 3px 0 rgb(255 240 171); }
+.companion[data-form='fire-mode'] .formGreaves i { background: rgb(244 155 52); box-shadow: inset 0 3px rgb(255 227 143); }
+.companion[data-form='fire-mode'] .powerEyes i { background: rgb(255 242 176); box-shadow: none; }
+.companion[data-form='fire-mode'] .formCloth { background: rgb(143 75 41); }
+.companion[data-form='fire-mode'] .formCloth::after { border-color: rgb(255 213 120); }
+.companion[data-form='fire-mode'] .hellfireMantle i { animation: hellfireBreathe 3200ms var(--ease-in-out) infinite; }
+.companion[data-form='fire-mode'] .hellfireMantle i:nth-child(even) { animation-direction: reverse; }
+@keyframes hellfireBreathe {
+  0%, 100% { opacity: 0.68; transform: translateY(0) scaleX(var(--flame-flip, 1)); }
+  50% { opacity: 0.95; transform: translateY(-2px) scaleX(var(--flame-flip, 1)); }
+}
+
+/* Ceranos is the body-as-lightning rush; the other two moves retain Luck's
+   earlier glove and fingertip-orb techniques with different silhouettes. */
+.luckSpear, .luckClaw, .flameFists, .purgatoryFlame { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.luckSpear i, .luckClaw i, .flameFists i, .purgatoryFlame i { position: absolute; opacity: 0; }
+.luckSpear i { left: -35px; top: 34px; width: 142px; height: 35px; background: rgb(139 223 255); clip-path: polygon(0 40%, 36% 30%, 25% 5%, 62% 26%, 58% 0, 100% 50%, 58% 100%, 62% 73%, 25% 95%, 36% 64%, 0 60%); }
+.luckSpear i:nth-child(2) { left: -19px; top: 43px; width: 124px; height: 17px; background: rgb(236 253 255); }
+.luckSpear i:nth-child(3) { left: -41px; top: 25px; width: 82px; height: 53px; border: 1px solid rgb(164 235 255); border-radius: 50%; background: transparent; clip-path: none; }
+.companion[data-battle='luck-ceranos'] .luckSpear i { animation: ceranosRush var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='luck-ceranos'] .battleAfterimages i { filter: sepia(1) saturate(1.5) hue-rotate(145deg) brightness(1.5); animation: battleDashEcho var(--battle-duration) var(--ease-out) both; }
+@keyframes ceranosRush {
+  0%, 10% { opacity: 0; transform: translateX(-7px) scaleX(0.92); }
+  26%, 63% { opacity: 0.95; transform: translateX(0) scaleX(1); }
+  100% { opacity: 0; transform: translateX(19px) scaleX(1.05); }
+}
+.luckClaw i { left: 47px; top: 28px; width: 55px; height: 4px; background: rgb(204 246 255); border-bottom: 1px solid rgb(103 201 244); transform-origin: left center; --claw-angle: -20deg; }
+.luckClaw i:nth-child(2) { top: 41px; --claw-angle: 0deg; }
+.luckClaw i:nth-child(3) { top: 54px; --claw-angle: 20deg; }
+.companion[data-battle='luck-thunderclap-claw'] .luckClaw i { animation: thunderClaw var(--battle-duration) var(--ease-out) both; }
+@keyframes thunderClaw {
+  0%, 20% { opacity: 0; transform: translateX(-5px) rotate(var(--claw-angle)) scaleX(0.9); }
+  43% { opacity: 1; transform: translateX(0) rotate(var(--claw-angle)) scaleX(1); }
+  100% { opacity: 0; transform: translateX(28px) rotate(var(--claw-angle)) scaleX(1.05); }
+}
+.companion[data-battle='luck-thunderclap-orb'] .battleOrb i { width: 21px; height: 21px; background: rgb(229 252 255); box-shadow: inset 3px -3px rgb(91 182 233); border-color: rgb(141 225 255); animation: luckOrbRelease var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='luck-thunderclap-orb'] .battleOrb i:nth-child(2) { top: 32px; left: 36px; width: 35px; height: 35px; background: transparent; border-style: dashed; box-shadow: none; }
+.companion[data-battle='luck-thunderclap-orb'] .battleOrb i:nth-child(3) { top: 47px; left: 37px; width: 34px; height: 5px; border: 0; border-radius: 0; clip-path: polygon(0 30%, 35% 0, 60% 35%, 100% 20%, 100% 70%, 60% 100%, 30% 70%, 0 100%); }
+@keyframes luckOrbRelease {
+  0% { opacity: 0; transform: translateX(0) rotate(-25deg) scale(0.92); }
+  25%, 39% { opacity: 1; transform: translateX(0) rotate(35deg) scale(1); }
+  82% { opacity: 1; transform: translateX(78px) rotate(175deg) scale(1); }
+  100% { opacity: 0; transform: translateX(83px) rotate(195deg) scale(0.97); }
+}
+
+/* Calidos Brachium is flame-wrapped melee, not a generic thrown fireball.
+   A single fist, staggered fist barrage and Mana Zone stream stay distinct. */
+.flameFists i { left: 49px; top: 42px; width: 34px; height: 22px; background: rgb(242 130 36); clip-path: polygon(0 25%, 30% 10%, 38% 0, 49% 12%, 60% 0, 70% 12%, 82% 5%, 100% 35%, 100% 80%, 80% 100%, 20% 85%, 0 100%); box-shadow: inset -7px -4px rgb(220 80 27); }
+.flameFists i::after { position: absolute; inset: 4px 6px 5px 9px; background: rgb(255 228 139); content: ''; }
+.companion[data-battle='calidos-brachium'] .flameFists i:first-child { animation: calidosPunch var(--battle-duration) var(--ease-out) both; }
+@keyframes calidosPunch {
+  0%, 14% { opacity: 0; transform: translateX(-6px) rotate(-9deg) scale(0.95); }
+  38% { opacity: 1; transform: translateX(15px) rotate(0deg) scale(1); }
+  67% { opacity: 0.95; transform: translateX(30px) rotate(3deg) scale(1.05); }
+  100% { opacity: 0; transform: translateX(34px) rotate(5deg) scale(1.05); }
+}
+.companion[data-battle='calidos-brachium'] .battleImpact i { background: rgb(255 218 110); animation: punchImpact var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='calidos-brachium-barrage'] .flameFists i { animation: calidosBarrage calc(var(--battle-duration) * 0.58) var(--ease-out) both; animation-delay: var(--fist-delay, 0ms); }
+.flameFists i:nth-child(2) { left: 51px; top: 21px; --fist-delay: calc(var(--battle-duration) * 0.12); }
+.flameFists i:nth-child(3) { left: 55px; top: 59px; --fist-delay: calc(var(--battle-duration) * 0.23); }
+.flameFists i:nth-child(4) { left: 64px; top: 35px; --fist-delay: calc(var(--battle-duration) * 0.34); }
+.flameFists i:nth-child(5) { left: 43px; top: 18px; --fist-delay: calc(var(--battle-duration) * 0.18); }
+.flameFists i:nth-child(6) { left: 42px; top: 61px; --fist-delay: calc(var(--battle-duration) * 0.29); }
+@keyframes calidosBarrage {
+  0% { opacity: 0; transform: translateX(-5px) scale(0.95); }
+  22%, 46% { opacity: 1; transform: translateX(22px) scale(1); }
+  100% { opacity: 0; transform: translateX(42px) scale(1.05); }
+}
+.purgatoryFlame i { top: 8px; left: 39px; width: 115px; height: 73px; border-radius: 50% 15% 20% 50%; background: rgb(237 110 31 / 0.8); clip-path: polygon(0 35%, 18% 15%, 45% 25%, 68% 0, 65% 30%, 100% 18%, 86% 45%, 100% 70%, 72% 70%, 95% 100%, 53% 85%, 22% 100%, 0 70%); }
+.purgatoryFlame i:nth-child(2) { top: 19px; left: 43px; width: 99px; height: 53px; background: rgb(255 189 61 / 0.9); }
+.purgatoryFlame i:nth-child(3) { top: 34px; left: 47px; width: 78px; height: 28px; background: rgb(255 235 164); }
+.companion[data-battle='calidos-brachium-purgatory-abyss'] .purgatoryFlame i { animation: purgatoryStream var(--battle-duration) var(--ease-out) both; }
+.companion[data-battle='calidos-brachium-purgatory-abyss'] .flameFists i { animation: calidosBarrage calc(var(--battle-duration) * 0.58) var(--ease-out) both; animation-delay: var(--fist-delay, 0ms); }
+@keyframes purgatoryStream {
+  0%, 16% { opacity: 0; transform: translateX(-5px) scale(0.95); }
+  41%, 73% { opacity: 0.9; transform: translateX(8px) scale(1); }
+  100% { opacity: 0; transform: translateX(29px) scale(1.05); }
+}
+
+/* Noelle's Leviathan Dragon Form adds water armor to the active knight or
+   adventurer. The dedicated layer supplies ear fins, plumes and spiral lance. */
+.companion[data-form='water-mode'] { --form-cloth: 70 125 155; --form-trim: 201 235 244; }
+.companion[data-form='water-mode'] :is(.formCape, .formCrown, .formMark, .formOrbs) { opacity: 0; }
+.companion[data-form='water-mode'] .formCollar { opacity: 1; background: rgb(197 229 237); }
+.companion[data-form='water-mode'] .formCloth { background: rgb(76 139 165); }
+.companion[data-form='water-mode'] :is(.spriteIdle, .spriteWalk) { filter: saturate(0.75) brightness(1.1); }
+
+/* Every transient descendant, including beam pseudo-elements, shares pause. */
+/* Spirit Dive keeps its complete crown, wings and armor while Star Magic
+   adds four separate anchors and Yuno's Clover/Spade grimoires. */
+.companion[data-form='spirit-dive'] :is(.formStars, .formBook) { opacity: 1; }
+.companion[data-form='spirit-dive'] .formStars i { width: 8px; height: 8px; background: rgb(255 225 145); box-shadow: 0 0 5px rgb(255 220 130 / 0.45); }
+.companion[data-form='spirit-dive'] .formStars i:nth-child(1) { left: -20px; top: 6px; }
+.companion[data-form='spirit-dive'] .formStars i:nth-child(2) { left: 77px; top: 7px; }
+.companion[data-form='spirit-dive'] .formStars i:nth-child(3) { left: -25px; top: 61px; }
+.companion[data-form='spirit-dive'] .formStars i:nth-child(4) { left: 81px; top: 60px; }
+.companion[data-form='spirit-dive'] .formBook { z-index: 5; }
+.companion[data-form='spirit-dive'] .formBook i:first-child { left: -14px; top: 43px; border-color: rgb(199 163 89); background: rgb(45 99 76); }
+.companion[data-form='spirit-dive'] .formBook i:first-child::after { background: rgb(232 219 152); clip-path: polygon(30% 0, 50% 25%, 70% 0, 100% 30%, 75% 50%, 100% 70%, 70% 100%, 50% 75%, 30% 100%, 0 70%, 25% 50%, 0 30%); }
+.companion[data-form='spirit-dive'] .formBook i:nth-child(2) { left: 68px; top: 42px; border-color: rgb(199 163 89); background: rgb(33 47 72); }
+.companion[data-form='spirit-dive'] .formBook i:nth-child(2)::after { width: 6px; height: 6px; left: 1px; top: 3px; clip-path: polygon(50% 0, 100% 52%, 69% 78%, 58% 74%, 65% 100%, 35% 100%, 42% 74%, 31% 78%, 0 52%); }
+/* Idle equipment matches the character's arsenal. During a technique the
+   dedicated renderer owns its exact sword/bow/halberd, avoiding duplicate blades. */
+.companion[data-form='zetten-mode'] .weapon { top: 11px; left: 48px; width: 5px; height: 57px; border-left: 2px solid rgb(157 151 154); border-radius: 70% 0 0; background: rgb(35 31 40); filter: none; }
+.companion[data-form='zetten-mode'] .weapon::after { position: absolute; top: 42px; left: -5px; width: 13px; height: 3px; background: rgb(101 71 77); content: ''; }
+.companion[data-form='devil-union'] .weapon { opacity: 1; top: 7px; left: 49px; width: 16px; height: 67px; background: rgb(29 27 34); border-left: 3px solid rgb(115 96 108); filter: none; clip-path: polygon(28% 0, 100% 8%, 100% 81%, 65% 81%, 65% 100%, 35% 100%, 35% 81%, 0 81%, 0 12%); }
+.companion[data-form='six-paths-eyes'] .weapon { top: 14px; left: 49px; width: 5px; height: 58px; background: rgb(217 228 235); border-left: 2px solid rgb(116 141 170); filter: none; }
+.companion[data-form='six-paths-eyes'] .weapon::after { position: absolute; top: 43px; left: -3px; width: 9px; height: 3px; background: rgb(55 47 72); content: ''; }
+.companion[data-battle]:not([data-battle='none']):is([data-form='zetten-mode'], [data-form='devil-union'], [data-form='six-paths-eyes']) .weapon,
+.companion[data-battle]:not([data-battle='none'])[data-form='spirit-dive'] .saintBlade { opacity: 0; }
+.companion[data-battle='black-divider'] .battleSlash i:first-child,
+.companion[data-battle='spirit-of-zephyr'] .battleWind i:first-child { display: none; }
+
+/* Kurama charges the bomb at its muzzle and releases it across the lane. */
+.companion[data-form='chakra-mode'][data-battle='tailed-beast-bomb'] .battleOrb i { left: 75px; top: -59px; width: 30px; height: 30px; animation: kuramaBombRelease var(--battle-duration) var(--ease-out) both; }
+.companion[data-form='chakra-mode'][data-battle='tailed-beast-bomb'] .battleOrb i:nth-child(2) { left: 71px; top: -63px; width: 38px; height: 38px; }
+.companion[data-form='chakra-mode'][data-battle='tailed-beast-bomb'] .battleOrb i:nth-child(3) { left: 84px; top: -50px; width: 10px; height: 10px; }
+@keyframes kuramaBombRelease { 0%, 6% { opacity: 0; transform: translateX(0) scale(0.9); } 24%, 42% { opacity: 1; transform: translateX(0) scale(1); } 83% { opacity: 1; transform: translateX(40px) scale(0.96); } 100% { opacity: 0; transform: translateX(44px) scale(0.92); } }
+
+.companion[data-form='sword-draw']:is([data-battle='knight-rising-cut'], [data-battle='knight-pommel-strike'], [data-battle='knight-blade-beam'], [data-battle='knight-counter-cut'], [data-battle='knight-shield-riposte'], [data-battle='knight-lunge']) .weapon { opacity: 0; }
+
+.companion:is([data-motion='paused'], [data-paused='true'], [data-open='true']) .floatBody > span:not(.pose),
+.companion:is([data-motion='paused'], [data-paused='true'], [data-open='true']) .floatBody > span:not(.pose) *,
+.companion:is([data-motion='paused'], [data-paused='true'], [data-open='true']) .floatBody > span:not(.pose) *::before,
+.companion:is([data-motion='paused'], [data-paused='true'], [data-open='true']) .floatBody > span:not(.pose) *::after { animation-play-state: paused; }
 
 .companion:is([data-motion='paused'], [data-paused='true'], [data-open='true']) :is(
   .spriteIdle, .spriteWalk, .ring, .dust i, .sparks i,
@@ -1771,7 +2252,8 @@
   .battleSlash i, .battleLightning i, .battleStars i, .battleWind i,
   .battleIce i, .battleShadow i, .battleImpact i, .battleAfterimages i,
   .battleConstellation i, .battleConstellation b, .battleArms i,
-  .battleTails i, .battleDarkFlame i, .battleSusanoo i
+  .battleTails i, .battleDarkFlame i, .battleSusanoo i, .hyperAura i, .floatBody,
+  .hellfireMantle i, .manaRunes i
 ) {
   animation-play-state: paused;
 }
@@ -1779,6 +2261,7 @@
 .companion:is([data-motion='paused'], [data-paused='true'], [data-open='true']) .battleConstellation b::after {
   animation-play-state: paused;
 }
+.companion[data-flight='true']:is([data-motion='paused'], [data-paused='true'], [data-open='true']) .floatBody { animation-play-state: paused; }
 
 .companion:is([data-battle='baryon-breakthrough'], [data-battle='baryon-rasengan'], [data-battle='black-meteorite'], [data-battle='chidori']) .spriteIdle { display: none; }
 .companion:is([data-battle='baryon-breakthrough'], [data-battle='baryon-rasengan'], [data-battle='black-meteorite'], [data-battle='chidori']) .spriteWalk { display: block; }
@@ -1839,5 +2322,16 @@
   }
 
   .companion[data-effect] :is(.sageEyes, .weapon) { animation: none; }
+
+  .floatBody > span:not(.pose) { display: none; }
+  .companion[data-persona] :is(.spriteIdle, .spriteWalk) { animation: none; }
+  .companion[data-persona] .spriteIdle { display: block !important; background-position: var(--sprite-idle-x) var(--sprite-y); }
+  .companion[data-persona] .spriteWalk { display: none !important; }
+  .companion .pose { transform: none !important; }
+  .companion .flight { transform: none !important; transition: none; }
+  .companion .floatBody { animation: none !important; transform: none !important; }
+  .companion .character::after { opacity: 1; transform: none; }
+  .companion[data-form='hyper-sonic'] .hyperAura i { animation: none; opacity: 0.12; transform: none; }
+  .companion :is(.hellfireMantle i, .manaRunes i) { animation: none !important; }
 
 }

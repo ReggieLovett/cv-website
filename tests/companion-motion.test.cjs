@@ -51,10 +51,10 @@ test('every pose stays grounded, returns to visible neutral, and avoids layout a
   const allowedProperties = new Set(['transform', 'opacity', 'offset', 'easing']);
   const neutral = 'translate3d(0, 0, 0) rotate(0deg) scale(1)';
   for (const [name, action] of Object.entries(SPRITE_ACTIONS)) {
-    assert.ok(action.duration >= 600 && action.duration <= 2600, `${name} duration`);
+    assert.ok(action.duration >= 600 && action.duration <= 3000, `${name} duration`);
     assert.ok([
-      'none', 'dust', 'spark', 'ring', 'sage', 'chakra', 'sword', 'lightning', 'fire', 'ice', 'shadow',
-      'zetten', 'devil', 'star', 'spirit', 'baryon', 'six-paths',
+      'none', 'dust', 'spark', 'ring', 'sage', 'chakra', 'sword', 'lightning', 'fire', 'water',
+      'zetten', 'devil', 'star', 'spirit', 'baryon', 'six-paths', 'deku', 'hyper',
     ].includes(action.effect));
     assert.ok(action.label.trim());
     assert.equal(action.keyframes[0].offset, 0);
@@ -92,21 +92,21 @@ test('selection can reach every action in each repertoire and never repeats the 
   }
 });
 
-test('all thirteen persistent forms have direct chooser entries and distinct effect contracts', () => {
+test('all persistent forms have direct chooser entries and distinct effect contracts', () => {
   const expected = [
     ['sage-mode', 'Sage Mode', 'sage'],
-    ['chakra-mode', 'Chakra Cloak', 'chakra'],
+    ['chakra-mode', 'Six Paths KCM', 'chakra'],
     ['sword-draw', 'Draw Sword', 'sword'],
     ['lightning-dash', 'Lightning Step', 'lightning'],
-    ['fire-mode', 'Phoenix Flame', 'fire'],
-    ['ice-mode', 'Frost Armor', 'ice'],
-    ['shadow-mode', 'Shadow Clone', 'shadow'],
+    ['fire-mode', 'Hellfire Incarnate', 'fire'],
+    ['water-mode', 'Leviathan Dragon Armor', 'water'],
     ['zetten-mode', 'Zetten', 'zetten'],
     ['devil-union', 'Devil Union', 'devil'],
-    ['star-magic', 'Star Magic', 'star'],
-    ['spirit-dive', 'Spirit Dive', 'spirit'],
+    ['spirit-dive', 'Spirit Dive + Star Magic', 'spirit'],
     ['baryon-mode', 'Baryon Mode', 'baryon'],
     ['six-paths-eyes', 'Six Paths Eyes', 'six-paths'],
+    ['deku-overdrive', 'OFA Full Overdrive', 'deku'],
+    ['hyper-sonic', 'Hyper Sonic', 'hyper'],
   ];
   assert.equal(POWER_UPS.length, expected.length);
   assert.equal(new Set(POWER_UPS.map(({ action }) => action)).size, expected.length);
@@ -116,7 +116,7 @@ test('all thirteen persistent forms have direct chooser entries and distinct eff
     assert.equal(choice.label, label);
     assert.ok(choice.description.trim());
     assert.equal(SPRITE_ACTIONS[action].effect, effect);
-    assert.ok(SPRITE_ACTIONS[action].duration >= 1800 && SPRITE_ACTIONS[action].duration <= 2600);
+    assert.ok(SPRITE_ACTIONS[action].duration >= 1800 && SPRITE_ACTIONS[action].duration <= 3000);
   }
   for (const action of Object.keys(SPRITE_ACTIONS)) {
     assert.equal(isPowerUp(action), POWER_UPS.some((choice) => choice.action === action));
@@ -126,8 +126,47 @@ test('all thirteen persistent forms have direct chooser entries and distinct eff
   assert.equal(isPowerUp(undefined), false);
 });
 
-test('the four Black Clover performances have distinct poses within the local character bounds', () => {
-  const actions = ['zetten-mode', 'devil-union', 'star-magic', 'spirit-dive'];
+test('the new transformation arcs stay local, grounded, and steadily visible through their charge and release', () => {
+  const performances = new Set();
+  for (const action of ['deku-overdrive', 'hyper-sonic']) {
+    const config = SPRITE_ACTIONS[action];
+    assert.ok(config.duration >= 2600 && config.duration <= 3000);
+    assert.ok(config.keyframes.some((frame) => frame.offset > 0.4 && frame.offset < 0.7));
+    performances.add(JSON.stringify(config.keyframes));
+    for (const keyframe of config.keyframes) {
+      const [, x, y] = /translate3d\(([-\d.]+)(?:px)?, ([-\d.]+)(?:px)?, 0\)/.exec(keyframe.transform);
+      assert.ok(Math.abs(Number(x)) <= 6, `${action} leaves its charge stance`);
+      assert.equal(Number(y), 0);
+      assert.equal(keyframe.opacity, 1, `${action} must not flicker during its transformation`);
+    }
+  }
+  assert.equal(performances.size, 2);
+  const kcm = POWER_UPS.find(({ action }) => action === 'chakra-mode');
+  for (const detail of ['magatama', 'cross-shaped pupils', 'Truth-Seeking Orbs']) {
+    assert.ok(kcm.description.includes(detail));
+  }
+  const hyper = POWER_UPS.find(({ action }) => action === 'hyper-sonic');
+  for (const detail of ['silver quills', 'prismatic', 'Frontiers-inspired', 'Super Sonic', 'hover']) {
+    assert.ok(hyper.description.includes(detail), `Hyper Sonic is missing ${detail}`);
+  }
+  assert.equal(SPRITE_ACTIONS['hyper-sonic'].effect, 'hyper');
+});
+
+test('water replaces ice in both personas while the standalone Shadow Clone form is removed', () => {
+  for (const pool of Object.values(ACTION_POOLS)) {
+    assert.ok(pool.includes('water-mode'));
+    assert.equal(pool.includes('ice-mode'), false);
+    assert.equal(pool.includes('shadow-mode'), false);
+  }
+  assert.equal(SPRITE_ACTIONS['ice-mode'], undefined);
+  assert.equal(SPRITE_ACTIONS['shadow-mode'], undefined);
+  assert.equal(isPowerUp('ice-mode'), false);
+  assert.equal(isPowerUp('shadow-mode'), false);
+  assert.match(POWER_UPS.find(({ action }) => action === 'water-mode').description, /Noelle.*Leviathan.*dragon/i);
+});
+
+test('the Black Clover union performances have distinct poses within the local character bounds', () => {
+  const actions = ['zetten-mode', 'devil-union', 'spirit-dive'];
   const performances = new Set();
   for (const action of actions) {
     const config = SPRITE_ACTIONS[action];
@@ -141,6 +180,18 @@ test('the four Black Clover performances have distinct poses within the local ch
     }
   }
   assert.equal(performances.size, actions.length);
+});
+
+test('Yuno has one combined Spirit Dive and Star Magic choice in both personas', () => {
+  assert.equal(SPRITE_ACTIONS['star-magic'], undefined);
+  assert.equal(isPowerUp('star-magic'), false);
+  for (const pool of Object.values(ACTION_POOLS)) {
+    assert.ok(pool.includes('spirit-dive'));
+    assert.equal(pool.includes('star-magic'), false);
+  }
+  const yuno = POWER_UPS.find(({ action }) => action === 'spirit-dive');
+  assert.match(yuno.description, /Saint Stage/);
+  assert.match(yuno.description, /Star Magic/);
 });
 
 test('power selection reaches every form, avoids the held form, and survives repeated automatic changes', () => {
@@ -160,9 +211,9 @@ test('power selection reaches every form, avoids the held form, and survives rep
     previous = next;
   }
   for (const sample of [-10, -1, 0, 1, 10, NaN, Infinity, -Infinity]) {
-    const next = pickPowerUp('shadow-mode', () => sample);
+    const next = pickPowerUp('water-mode', () => sample);
     assert.ok(actions.includes(next));
-    assert.notEqual(next, 'shadow-mode');
+    assert.notEqual(next, 'water-mode');
   }
 });
 

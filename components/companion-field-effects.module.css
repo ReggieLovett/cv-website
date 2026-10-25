@@ -1,0 +1,23 @@
+.manaZone { position: absolute; inset: 0; z-index: 0; display: none; pointer-events: none; --zone-rgb: 246 144 75; }
+.manaZone i, .manaZone b { position: absolute; box-sizing: border-box; opacity: 0; }
+.dome { left: -60px; top: -30px; width: 184px; height: 112px; border: 1px solid rgb(var(--zone-rgb) / 0.8); border-bottom: 0; border-radius: 50% 50% 7% 7%; background: radial-gradient(ellipse at 50% 100%, transparent 45%, rgb(var(--zone-rgb) / 0.11) 78%, transparent 80%); transform-origin: center bottom; }
+.ground { left: -61px; top: 66px; width: 186px; height: 17px; border: 2px solid rgb(var(--zone-rgb) / 0.85); border-radius: 50%; background: rgb(var(--zone-rgb) / 0.07); }
+.manaZone b { left: -54px; top: 47px; width: 7px; height: 16px; border-block: 2px solid rgb(var(--zone-rgb)); border-inline: 1px solid rgb(var(--zone-rgb)); transform: rotate(20deg); --mote-x: 3px; --mote-y: -16px; }
+.manaZone b:nth-of-type(2) { left: -26px; top: 27px; --mote-x: -3px; --mote-y: -20px; }
+.manaZone b:nth-of-type(3) { left: 15px; top: 0; --mote-x: 4px; --mote-y: -17px; }
+.manaZone b:nth-of-type(4) { left: 65px; top: 4px; --mote-x: -4px; --mote-y: -20px; }
+.manaZone b:nth-of-type(5) { left: 95px; top: 27px; --mote-x: 2px; --mote-y: -17px; }
+.manaZone b:nth-of-type(6) { left: 111px; top: 48px; --mote-x: 3px; --mote-y: -14px; }
+:global([data-battle='calidos-brachium-barrage']) .manaZone,
+:global([data-battle='calidos-brachium-purgatory-abyss']) .manaZone,
+:global([data-battle='calidos-crossfire']) .manaZone,
+:global([data-battle='calidos-zone-press']) .manaZone,
+:global([data-battle='never-never-land']) .manaZone { display: block; }
+:global([data-battle='never-never-land']) .manaZone { --zone-rgb: 168 233 175; }
+:global([data-battle]) .manaZone .dome { animation: zoneBoundary var(--battle-duration) var(--ease-out) both; }
+:global([data-battle]) .manaZone .ground { animation: zoneGround var(--battle-duration) var(--ease-out) both; }
+:global([data-battle]) .manaZone b { animation: zoneMana var(--battle-duration) var(--ease-out) both; }
+@keyframes zoneBoundary { 0% { opacity: 0; transform: scale(0.9); } 18%, 79% { opacity: 0.85; transform: scale(1); } 100% { opacity: 0; transform: scale(1.03); } }
+@keyframes zoneGround { 0% { opacity: 0; transform: scaleX(0.85); } 17%, 80% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1.05); } }
+@keyframes zoneMana { 0%, 12% { opacity: 0; transform: translate3d(0, 5px, 0) rotate(20deg); } 29%, 67% { opacity: 0.8; } 100% { opacity: 0; transform: translate3d(var(--mote-x), var(--mote-y), 0) rotate(35deg); } }
+@media (prefers-reduced-motion: reduce) { .manaZone { display: none !important; } }

@@ -1,0 +1,25 @@
+/* Full chakra constructs fit the existing horizontal battle reserve. The fox
+   and armored warrior emerge behind the original knight, never as a new body. */
+.susanoo, .kurama { position: absolute; inset: 0; z-index: 0; display: none; pointer-events: none; }
+.susanooShockwave { position: absolute; inset: 0; z-index: 3; display: none; pointer-events: none; }
+.susanooShockwave i { position: absolute; left: 51px; top: -9px; width: 35px; height: 82px; border-right: 4px solid rgb(213 180 255); border-radius: 50%; opacity: 0; }
+:global([data-form='six-paths-eyes'][data-battle='susanoo-slash']) .susanooShockwave { display: block; }
+:global([data-battle='susanoo-slash']) .susanooShockwave i { animation: spectralWave var(--battle-duration) var(--ease-out) both; }
+.susanoo svg, .kurama svg { position: absolute; left: -78px; top: -116px; width: 220px; height: 200px; overflow: visible; opacity: 0; transform-origin: 50% 100%; }
+:global([data-form='six-paths-eyes'][data-battle='susanoo-slash']) .susanoo,
+:global([data-form='six-paths-eyes'][data-battle='inferno-flame-control']) .susanoo,
+:global([data-form='six-paths-eyes'][data-battle='indra-arrow']) .susanoo,
+:global([data-form='chakra-mode'][data-battle='tailed-beast-bomb']) .kurama,
+:global([data-form='chakra-mode'][data-battle='chakra-arm-barrage']) .kurama,
+:global([data-form='chakra-mode'][data-battle='six-paths-super-tailed-shuriken']) .kurama,
+:global([data-form='chakra-mode'][data-battle='six-paths-tailed-beast-barrage']) .kurama { display: block; }
+:global([data-battle]) .susanoo svg { animation: spectralAvatar var(--battle-duration) var(--ease-out) both; }
+:global([data-battle]) .kurama svg { animation: foxAvatar var(--battle-duration) var(--ease-out) both; }
+:global([data-battle]) .nineTails { transform-origin: 112px 163px; animation: avatarTails var(--battle-duration) var(--ease-in-out) both; }
+:global([data-battle]) .spectralWings { transform-origin: 112px 106px; animation: avatarWings var(--battle-duration) var(--ease-out) both; }
+@keyframes spectralAvatar { 0% { opacity: 0; transform: scale(0.94); } 17%, 37% { opacity: 0.94; transform: scale(1); } 67%, 83% { opacity: 1; transform: translateX(3px) scale(1.01); } 100% { opacity: 0; transform: translateX(4px) scale(1.015); } }
+@keyframes foxAvatar { 0% { opacity: 0; transform: scale(0.94); } 17%, 42% { opacity: 0.98; transform: scale(1); } 68%, 85% { opacity: 1; transform: translateX(3px) scale(1.01); } 100% { opacity: 0; transform: translateX(4px) scale(1.015); } }
+@keyframes avatarTails { 0% { transform: rotate(-3deg); } 50% { transform: rotate(0deg); } 100% { transform: rotate(2deg); } }
+@keyframes avatarWings { 0% { transform: scaleX(0.95); } 30%, 80% { transform: scaleX(1); } 100% { transform: scaleX(1.02); } }
+@keyframes spectralWave { 0%, 35% { opacity: 0; transform: translateX(-7px) scaleX(0.9); } 49% { opacity: 1; transform: translateX(8px) scaleX(1); } 85% { opacity: 1; transform: translateX(52px) scaleX(1); } 100% { opacity: 0; transform: translateX(60px) scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .susanoo, .kurama, .susanooShockwave { display: none !important; } }

@@ -5,21 +5,21 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 const ts = require('typescript');
+const repositoryRoot = path.resolve(__dirname, '..');
+const compiledSources = new Map();
 
 function compile(relativePath) {
-  const filename = path.resolve(__dirname, '..', relativePath);
-  return {
+  const filename = path.resolve(repositoryRoot, relativePath);
+  if (compiledSources.has(filename)) return compiledSources.get(filename);
+  const source = {
     filename,
     code: ts.transpileModule(fs.readFileSync(filename, 'utf8'), {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
     }).outputText,
   };
+  compiledSources.set(filename, source);
+  return source;
 }
-
-const hookSource = compile('components/use-companion-motion.ts');
-const catalogueSource = compile('lib/companion-motion.ts');
-const battleSource = compile('lib/companion-battle.ts');
-const travelSource = compile('lib/companion-travel.ts');
 
 function pointFromTransform(transform = '') {
   const pair = /^translate3d\(([-+\d.eE]+)px,\s*([-+\d.eE]+)px,\s*0(?:px)?\)$/.exec(transform);
@@ -244,23 +244,32 @@ function createEngine(options = {}) {
     document, window, Math: math, getComputedStyle: computedStyle, DOMMatrixReadOnly: Matrix,
     setTimeout: clock.setTimeout, clearTimeout: clock.clearTimeout,
   };
-  function evaluate(source, requireModule) {
+  const modules = new Map();
+  function loadModule(relativePath) {
+    // Keep real module dependencies inside the pure companion catalogue/hook.
+    // Never let the VM import arbitrary repository files or external packages.
+    assert.match(relativePath, /^(?:lib\/companion-[a-z-]+\.ts|components\/use-companion-motion\.ts)$/);
+    const source = compile(relativePath);
+    if (modules.has(source.filename)) return modules.get(source.filename).exports;
     const moduleRecord = { exports: {} };
+    modules.set(source.filename, moduleRecord);
+    function requireModule(name) {
+      if (name === 'react') return react;
+      const requested = name.startsWith('@/') ? path.resolve(repositoryRoot, `${name.slice(2)}.ts`)
+        : name.startsWith('./') ? path.resolve(path.dirname(source.filename), `${name}.ts`) : null;
+      assert.ok(requested, `Unexpected companion import: ${name}`);
+      const next = path.relative(repositoryRoot, requested).split(path.sep).join('/');
+      return loadModule(next);
+    }
     vm.runInNewContext(source.code, {
       ...globals, module: moduleRecord, exports: moduleRecord.exports, require: requireModule,
     }, { filename: source.filename });
     return moduleRecord.exports;
   }
-  const catalogue = evaluate(catalogueSource, (name) => { throw new Error(`Unexpected catalogue import: ${name}`); });
-  const battle = evaluate(battleSource, (name) => { throw new Error(`Unexpected battle import: ${name}`); });
-  const travel = evaluate(travelSource, (name) => { throw new Error(`Unexpected travel import: ${name}`); });
-  ({ useCompanionMotion: hook } = evaluate(hookSource, (name) => {
-    if (name === 'react') return react;
-    if (name === '@/lib/companion-motion') return catalogue;
-    if (name === '@/lib/companion-battle') return battle;
-    if (name === '@/lib/companion-travel') return travel;
-    throw new Error(`Unexpected hook import: ${name}`);
-  }));
+  const catalogue = loadModule('lib/companion-motion.ts');
+  const battle = loadModule('lib/companion-battle.ts');
+  const travel = loadModule('lib/companion-travel.ts');
+  ({ useCompanionMotion: hook } = loadModule('components/use-companion-motion.ts'));
 
   function flush() {
     if (disposed) return;
@@ -412,9 +421,9 @@ test('interaction holds freeze autonomous clocks after a requested charge and de
   engine.act((controls) => controls.setHeld(true));
   engine.advance(60000);
   assert.equal(engine.animations.length, 0);
-  engine.act((controls) => controls.showTrick('ice-mode'));
+  engine.act((controls) => controls.showTrick('water-mode'));
   engine.advance(2200);
-  assert.equal(engine.output.form, 'ice-mode');
+  assert.equal(engine.output.form, 'water-mode');
   engine.advance(550);
   const demonstration = engine.battleAnimations.at(-1);
   assert.ok(demonstration, 'The requested power should demonstrate its completed form');
@@ -425,10 +434,10 @@ test('interaction holds freeze autonomous clocks after a requested charge and de
   engine.act((controls) => controls.setHeld(false));
   const remainingPowerTime = 18000 - 2200 - 550 - demonstration.duration;
   engine.advance(remainingPowerTime - 1);
-  assert.equal(engine.output.form, 'ice-mode');
+  assert.equal(engine.output.form, 'water-mode');
   engine.advance(1);
   assert.equal(engine.catalogue.isPowerUp(engine.roamer.dataset.action), true);
-  assert.notEqual(engine.roamer.dataset.action, 'ice-mode');
+  assert.notEqual(engine.roamer.dataset.action, 'water-mode');
 });
 
 test('interrupted charges start at the visible pose and cancellation restores the prior completed form', (t) => {
@@ -456,7 +465,7 @@ test('interrupted charges start at the visible pose and cancellation restores th
 
 test('reset cancels the first unfinished charge and its finish callback cannot restore it', (t) => {
   const engine = engineFor(t);
-  engine.act((controls) => controls.showTrick('ice-mode'));
+  engine.act((controls) => controls.showTrick('water-mode'));
   engine.advance(800);
   const charge = engine.poseAnimations.at(-1);
   const queuedFinish = charge.onfinish;
@@ -476,7 +485,7 @@ test('a persona change cancels a pending charge, clears the held form, and uses 
   const engine = engineFor(t);
   engine.act((controls) => controls.showTrick('sage-mode'));
   engine.advance(2600);
-  engine.act((controls) => controls.showTrick('shadow-mode'));
+  engine.act((controls) => controls.showTrick('sword-draw'));
   engine.advance(600);
   const charge = engine.poseAnimations.at(-1);
   engine.update({ persona: 'zelda' });
@@ -493,8 +502,8 @@ test('reduced motion applies and resets forms directly without creating animatio
   engine.act((controls) => controls.showTrick('fire-mode'));
   assert.equal(engine.output.form, 'fire-mode');
   assert.equal(engine.roamer.dataset.form, 'fire-mode');
-  engine.act((controls) => controls.showTrick('ice-mode'));
-  assert.equal(engine.output.form, 'ice-mode');
+  engine.act((controls) => controls.showTrick('water-mode'));
+  assert.equal(engine.output.form, 'water-mode');
   assert.equal(engine.roamer.dataset.effect, 'none');
   assert.equal(engine.animations.length, 0);
   engine.act((controls) => controls.resetForm());
@@ -514,7 +523,7 @@ test('resize preserves the live walking point and clamps both coordinates to the
   assertPoint(pointFromTransform(engine.roamer.style.transform), engine.travel.clampPoint(before, { width: 100, height: 140 }));
 });
 
-for (const action of ['zetten-mode', 'devil-union', 'star-magic', 'spirit-dive']) {
+for (const action of ['zetten-mode', 'devil-union', 'spirit-dive', 'deku-overdrive', 'hyper-sonic']) {
   test(`${action} completes into a persistent form and reset also cancels its unfinished charge`, (t) => {
     const engine = engineFor(t);
     const { duration, effect } = engine.catalogue.SPRITE_ACTIONS[action];
@@ -558,11 +567,8 @@ for (const action of ['zetten-mode', 'devil-union', 'star-magic', 'spirit-dive']
   });
 }
 
-test('all thirteen forms perform one-, two-, and three-move combinations along the bottom edge', (t) => {
-  const forms = [
-    'sage-mode', 'chakra-mode', 'sword-draw', 'lightning-dash', 'fire-mode', 'ice-mode', 'shadow-mode',
-    'zetten-mode', 'devil-union', 'star-magic', 'spirit-dive', 'baryon-mode', 'six-paths-eyes',
-  ];
+test('every selectable form performs one-, two-, and three-move combinations along the bottom edge', (t) => {
+  const forms = engineFor(t).catalogue.POWER_UPS.map(({ action }) => action);
   for (const form of forms) {
     for (const [roll, expectedLength] of [[0, 1], [0.7, 2], [0.95, 3]]) {
       const engine = engineFor(t, { random: () => roll });
@@ -602,10 +608,9 @@ test('all thirteen forms perform one-, two-, and three-move combinations along t
   }
 });
 
-test('all thirteen power charges stage horizontally inside effect-safe bounds before their release', (t) => {
+test('every power charge stages horizontally inside effect-safe bounds before its release', (t) => {
   for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }, { width: 1024, height: 800 }]) {
     const catalogue = engineFor(t, { viewport }).catalogue;
-    assert.equal(catalogue.POWER_UPS.length, 13);
     for (const { action } of catalogue.POWER_UPS) {
       const engine = engineFor(t, { viewport });
       engine.act((controls) => controls.showTrick(action));
@@ -618,13 +623,11 @@ test('all thirteen power charges stage horizontally inside effect-safe bounds be
       const bounds = engine.travel.getCompanionBattleBounds(viewport);
       assert.ok(destination.x >= bounds.minX && destination.x <= bounds.maxX, `${action} horizontal staging`);
       assert.equal(destination.y, 0, `${action} must stage along the bottom`);
-      const firstLift = charge.keyframes.find((frame) => {
-        const y = /^translate3d\([^,]+,\s*([-+\d.eE]+)px,/.exec(frame.transform)?.[1];
-        return y !== undefined && Number(y) < 0;
-      });
-      // Small local pose effects may retain a lift; entirely grounded poses
-      // instead finish staging during the first fifth of the charge.
-      const releaseTime = firstLift ? firstLift.offset * charge.duration : charge.duration * 0.2;
+      for (const frame of charge.keyframes) {
+        const y = /translate3d\([^,]+,\s*([-+\d.eE]+)(?:px)?,/.exec(frame.transform)?.[1];
+        assert.equal(Number(y), 0, `${action} lifts its charge off the bottom baseline`);
+      }
+      const releaseTime = charge.duration * 0.2;
       assert.ok(staging.duration <= releaseTime, `${action} stages after its release`);
       engine.advance(staging.duration);
       assertPoint(pointFromTransform(engine.computedStyle(engine.roamer).transform), destination);
@@ -636,9 +639,10 @@ test('all thirteen power charges stage horizontally inside effect-safe bounds be
   }
 });
 
-test('Baryon and Chakra battles move faster through the world than Sage form', (t) => {
+test('Hyper Sonic is fastest, followed by Baryon, Deku, KCM, and Sage in actual battle travel', (t) => {
   const speeds = {};
-  for (const form of ['sage-mode', 'chakra-mode', 'baryon-mode']) {
+  const ascendingForms = ['sage-mode', 'chakra-mode', 'deku-overdrive', 'baryon-mode', 'hyper-sonic'];
+  for (const form of ascendingForms) {
     const engine = engineFor(t);
     engine.act((controls) => controls.showTrick(form));
     engine.advance(engine.catalogue.SPRITE_ACTIONS[form].duration + 550);
@@ -646,8 +650,11 @@ test('Baryon and Chakra battles move faster through the world than Sage form', (
     assert.ok(movement, `${form} has no battle travel`);
     speeds[form] = travelDistance(movement) / movement.duration * 1000;
   }
-  assert.ok(speeds['chakra-mode'] > speeds['sage-mode']);
-  assert.ok(speeds['baryon-mode'] > speeds['chakra-mode']);
+  for (let index = 1; index < ascendingForms.length; index += 1) {
+    const slower = ascendingForms[index - 1];
+    const faster = ascendingForms[index];
+    assert.ok(speeds[faster] > speeds[slower], `${faster} (${speeds[faster]}) must move faster than ${slower} (${speeds[slower]})`);
+  }
 });
 
 test('pause, hidden tabs, and interaction holds suspend the same automatic battle pose and world movement', (t) => {
@@ -807,11 +814,18 @@ test('roaming, pause, chat, reset, and resize keep the actor anchored to the bot
 });
 
 test('reduced motion applies forms instantly and does not start battles', (t) => {
-  const engine = engineFor(t, { reducedMotion: true });
-  engine.act((controls) => controls.showTrick('baryon-mode'));
-  engine.act((controls) => controls.showBattle());
-  engine.advance(60000);
-  assert.equal(engine.output.form, 'baryon-mode');
-  assert.equal(engine.animations.length, 0);
-  assert.equal(engine.roamer.dataset.battle, 'none');
+  const forms = engineFor(t).catalogue.POWER_UPS.map(({ action }) => action);
+  assert.equal(forms.length, 13);
+  for (const form of forms) {
+    const engine = engineFor(t, { reducedMotion: true });
+    engine.act((controls) => controls.showTrick(form));
+    engine.act((controls) => controls.showBattle());
+    engine.advance(60000);
+    assert.equal(engine.output.form, form);
+    assert.equal(engine.animations.length, 0);
+    assert.equal(engine.roamer.dataset.battle, 'none');
+    engine.act((controls) => controls.resetForm());
+    assert.equal(engine.output.form, null);
+    assert.equal(engine.roamer.dataset.form, 'none');
+  }
 });

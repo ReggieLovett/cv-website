@@ -1,3 +1,8 @@
+import { makeTechnique as move } from './companion-technique';
+import { NARUTO_TECHNIQUES, NARUTO_REPERTOIRES } from './companion-naruto-techniques';
+import { CLOVER_TECHNIQUES, CLOVER_REPERTOIRES } from './companion-clover-techniques';
+import { HYPER_TECHNIQUES, HYPER_REPERTOIRE } from './companion-hyper-techniques';
+import { EXTRA_TECHNIQUES } from './companion-extra-techniques';
 import type { PowerUpAction } from './companion-motion';
 
 export type BattleMove =
@@ -10,15 +15,17 @@ export type BattleMove =
   | 'quartile-hasta' | 'quartile-scutum' | 'conjunction'
   | 'spirit-storm' | 'spirit-of-zephyr' | 'spirit-of-euros'
   | 'draw-slash' | 'cross-slash' | 'guard-break'
-  | 'lightning-thrust' | 'thunder-step' | 'chain-lightning'
-  | 'fireball' | 'flame-burst' | 'flame-wave'
-  | 'ice-spike' | 'frost-shield' | 'ice-shards'
-  | 'shadow-clone' | 'shadow-strike' | 'shadow-feint';
+  | 'luck-ceranos' | 'luck-thunderclap-claw' | 'luck-thunderclap-orb'
+  | 'calidos-brachium' | 'calidos-brachium-barrage' | 'calidos-brachium-purgatory-abyss'
+  | 'gearshift-overdrive' | 'fa-jin-smash' | 'blackwhip-strike'
+  | 'danger-sense-counter' | 'smokescreen-feint'
+  | keyof typeof NARUTO_TECHNIQUES
+  | keyof typeof CLOVER_TECHNIQUES
+  | keyof typeof HYPER_TECHNIQUES
+  | keyof typeof EXTRA_TECHNIQUES;
 
 type NamedTechnique = Exclude<BattleMove,
-  | 'draw-slash' | 'cross-slash' | 'guard-break'
-  | 'lightning-thrust' | 'thunder-step' | 'chain-lightning'
-  | 'flame-burst' | 'flame-wave' | 'ice-shards' | 'shadow-clone' | 'shadow-feint'>;
+  | 'draw-slash' | 'cross-slash' | 'guard-break'>;
 export type BattleEffect = NamedTechnique | 'dash' | 'punch' | 'slash' | 'lightning';
 
 export type BattleMoveConfig = {
@@ -29,39 +36,15 @@ export type BattleMoveConfig = {
   travel: 'dash' | 'advance' | 'hover';
 };
 
-type Pose = 'strike' | 'cast' | 'draw' | 'rush' | 'brace' | 'spin' | 'vanish';
-const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
-const EASE_IN_OUT = 'cubic-bezier(0.77, 0, 0.175, 1)';
-const NEUTRAL = 'translate3d(0, 0, 0) rotate(0deg) scale(1)';
-
-function frame(offset: number, x = 0, angle = 0, scale = '1', opacity = 1): Keyframe {
-  return { offset, transform: `translate3d(${x === 0 ? '0' : `${x}px`}, 0, 0) rotate(${angle}deg) scale(${scale})`, opacity,
-    easing: offset < 0.3 ? EASE_IN_OUT : EASE_OUT };
-}
-
-/** Body poses pivot at the feet. Only the outer actor owns horizontal travel. */
-function poseFrames(pose: Pose): Keyframe[] {
-  const middle: Record<Pose, Keyframe[]> = {
-    strike: [frame(0.2, -4, -8, '0.98, 1.02'), frame(0.44, 10, 11, '1.06, 0.96'), frame(0.74, 3, -4)],
-    cast: [frame(0.2, -2, -5, '1.03, 0.96'), frame(0.43, 0, -3, '1.04'), frame(0.68, 5, 5, '1.03')],
-    draw: [frame(0.24, -5, -15, '0.98, 1.02'), frame(0.5, 11, 22, '1.06, 0.96'), frame(0.8, 2, -4)],
-    rush: [frame(0.16, -4, -8, '1.03, 0.95'), frame(0.46, 12, 10, '1.08, 0.94', 0.84), frame(0.8, 2, 3)],
-    brace: [frame(0.2, 0, 0, '1.06, 0.94'), frame(0.48, 0, -2, '1.03'), frame(0.76, 0, 2, '1.04, 0.97')],
-    spin: [frame(0.22, -3, -18, '0.98, 1.02'), frame(0.48, 7, 28, '1.04, 0.97'), frame(0.76, -2, -10)],
-    vanish: [frame(0.22, -3, -4, '0.98', 0.8), frame(0.47, 0, 0, '0.95', 0.5), frame(0.7, 6, 5, '1.02', 0.85)],
-  };
-  return [{ ...frame(0), transform: NEUTRAL }, ...middle[pose], { ...frame(1), transform: NEUTRAL }];
-}
-
-function move(label: string, effect: BattleEffect, travel: BattleMoveConfig['travel'], pose: Pose, duration: number): BattleMoveConfig {
-  return { label, effect, travel, keyframes: poseFrames(pose), duration };
-}
-
 /** Named techniques are sourced in docs/companion-move-references.md.
- * The five original fantasy kits deliberately use their own descriptive labels.
+ * Draw Sword is an original knight kit; named forms document their sources and adaptations.
  * Renderer families can be shared; data-battle-move selects a distinct variant.
  */
 export const BATTLE_MOVES: Record<BattleMove, BattleMoveConfig> = {
+  ...NARUTO_TECHNIQUES,
+  ...CLOVER_TECHNIQUES,
+  ...HYPER_TECHNIQUES,
+  ...EXTRA_TECHNIQUES,
   'frog-kumite': move('Frog Kumite', 'frog-kumite', 'advance', 'strike', 820),
   'sage-giant-rasengan': move('Sage Art: Giant Rasengan', 'sage-giant-rasengan', 'advance', 'cast', 1100),
   rasenshuriken: move('Wind Style: Rasenshuriken', 'rasenshuriken', 'hover', 'cast', 1140),
@@ -82,42 +65,44 @@ export const BATTLE_MOVES: Record<BattleMove, BattleMoveConfig> = {
   'black-hurricane': move('Black Hurricane', 'black-hurricane', 'advance', 'spin', 1100),
   'quartile-hasta': move('Star Magic: Quartile Hasta', 'quartile-hasta', 'hover', 'cast', 1160),
   'quartile-scutum': move('Star Magic: Quartile Scutum', 'quartile-scutum', 'hover', 'brace', 1080),
-  conjunction: move('Star Magic: Conjunction', 'conjunction', 'dash', 'vanish', 900),
+  conjunction: move('Conjunction: Hushed Dance Counter', 'conjunction', 'dash', 'vanish', 1100),
   'spirit-storm': move('Spirit Storm', 'spirit-storm', 'hover', 'cast', 1080),
-  'spirit-of-zephyr': move('Spirit of Zephyr', 'spirit-of-zephyr', 'advance', 'draw', 980),
+  'spirit-of-zephyr': move('Saint Spirit of Zephyr', 'spirit-of-zephyr', 'advance', 'draw', 980),
   'spirit-of-euros': move('Spirit of Euros', 'spirit-of-euros', 'hover', 'cast', 1140),
   'draw-slash': move('Quickdraw Slash', 'slash', 'advance', 'draw', 820),
   'cross-slash': move('Cross Slash', 'slash', 'advance', 'spin', 940),
   'guard-break': move('Guard Break', 'punch', 'advance', 'strike', 780),
-  'lightning-thrust': move('Lightning Thrust', 'lightning', 'dash', 'rush', 880),
-  'thunder-step': move('Thunder Step', 'dash', 'dash', 'rush', 760),
-  'chain-lightning': move('Chain Lightning', 'lightning', 'hover', 'cast', 1040),
-  fireball: move('Fireball', 'fireball', 'hover', 'cast', 1050),
-  'flame-burst': move('Flame Burst', 'fireball', 'advance', 'strike', 920),
-  'flame-wave': move('Flame Wave', 'fireball', 'hover', 'cast', 1120),
-  'ice-spike': move('Ice Spike', 'ice-spike', 'advance', 'cast', 1100),
-  'frost-shield': move('Frost Shield', 'frost-shield', 'hover', 'brace', 1080),
-  'ice-shards': move('Ice Shards', 'ice-spike', 'hover', 'cast', 980),
-  'shadow-clone': move('Shadow Clone', 'shadow-strike', 'hover', 'vanish', 1100),
-  'shadow-strike': move('Shadow Strike', 'shadow-strike', 'dash', 'strike', 900),
-  'shadow-feint': move('Shadow Feint', 'dash', 'dash', 'vanish', 780),
+  'luck-ceranos': move('True Lightning Magic: Ceranos', 'luck-ceranos', 'dash', 'rush', 880),
+  'luck-thunderclap-claw': move('Thunder God’s Gloves: Claw Strike', 'luck-thunderclap-claw', 'advance', 'strike', 820),
+  'luck-thunderclap-orb': move('Lightning Magic: Thunderbolt Destruction', 'luck-thunderclap-orb', 'hover', 'cast', 1040),
+  'calidos-brachium': move('Flame Magic: Calidos Brachium', 'calidos-brachium', 'advance', 'strike', 980),
+  'calidos-brachium-barrage': move('Mana Zone: Calidos Brachium Barrage', 'calidos-brachium-barrage', 'advance', 'strike', 1120),
+  'calidos-brachium-purgatory-abyss': move('Mana Zone Full Release: Calidos Brachium Purgatory: Abyss', 'calidos-brachium-purgatory-abyss', 'hover', 'brace', 1180),
+  'gearshift-overdrive': move('Gearshift: Overdrive', 'gearshift-overdrive', 'dash', 'rush', 780),
+  'fa-jin-smash': move('Fa Jin Smash', 'fa-jin-smash', 'advance', 'strike', 960),
+  'blackwhip-strike': move('Blackwhip Strike', 'blackwhip-strike', 'hover', 'cast', 1100),
+  'danger-sense-counter': move('Danger Sense: Evade', 'danger-sense-counter', 'dash', 'vanish', 900),
+  'smokescreen-feint': move('Smokescreen: Feint', 'smokescreen-feint', 'dash', 'vanish', 1100),
 };
 
 /** Form-appropriate repertoires can share techniques; speed is horizontal CSS pixels per second. */
 export const FORM_BATTLES: Record<PowerUpAction, { moves: readonly BattleMove[]; speed: number }> = {
-  'sage-mode': { moves: ['frog-kumite', 'sage-giant-rasengan', 'rasenshuriken'], speed: 300 },
-  'chakra-mode': { moves: ['chakra-arm-barrage', 'chakra-arm-rasengan', 'rasenshuriken', 'tailed-beast-bomb'], speed: 520 },
-  'sword-draw': { moves: ['draw-slash', 'cross-slash', 'guard-break'], speed: 320 },
-  'lightning-dash': { moves: ['lightning-thrust', 'thunder-step', 'chain-lightning'], speed: 580 },
-  'fire-mode': { moves: ['fireball', 'flame-burst', 'flame-wave'], speed: 340 },
-  'ice-mode': { moves: ['ice-spike', 'frost-shield', 'ice-shards'], speed: 260 },
-  'shadow-mode': { moves: ['shadow-clone', 'shadow-strike', 'shadow-feint'], speed: 420 },
-  'zetten-mode': { moves: ['anti-magic-zetten', 'black-slash', 'black-meteorite'], speed: 440 },
-  'devil-union': { moves: ['infinite-slash-equinox', 'black-divider', 'black-hurricane'], speed: 380 },
-  'star-magic': { moves: ['quartile-hasta', 'quartile-scutum', 'conjunction'], speed: 400 },
-  'spirit-dive': { moves: ['spirit-storm', 'spirit-of-zephyr', 'spirit-of-euros'], speed: 460 },
-  'baryon-mode': { moves: ['baryon-rasengan', 'baryon-tail-breaker', 'baryon-breakthrough'], speed: 700 },
-  'six-paths-eyes': { moves: ['chidori', 'amaterasu', 'susanoo-slash'], speed: 560 },
+  'sage-mode': { moves: NARUTO_REPERTOIRES['sage-mode'], speed: 300 },
+  'chakra-mode': { moves: NARUTO_REPERTOIRES['chakra-mode'], speed: 520 },
+  'sword-draw': { moves: ['draw-slash', 'cross-slash', 'guard-break', 'knight-spin-cut', 'knight-shield-riposte', 'knight-lunge', 'knight-rising-cut', 'knight-pommel-strike', 'knight-blade-beam', 'knight-counter-cut'], speed: 320 },
+  'lightning-dash': { moves: CLOVER_REPERTOIRES['lightning-dash'], speed: 580 },
+  'fire-mode': { moves: CLOVER_REPERTOIRES['fire-mode'], speed: 340 },
+  'water-mode': { moves: CLOVER_REPERTOIRES['water-mode'], speed: 400 },
+  'zetten-mode': { moves: CLOVER_REPERTOIRES['zetten-mode'], speed: 440 },
+  'devil-union': { moves: CLOVER_REPERTOIRES['devil-union'], speed: 380 },
+  'spirit-dive': { moves: CLOVER_REPERTOIRES['spirit-dive'], speed: 460 },
+  'baryon-mode': { moves: NARUTO_REPERTOIRES['baryon-mode'], speed: 700 },
+  'six-paths-eyes': { moves: NARUTO_REPERTOIRES['six-paths-eyes'], speed: 560 },
+  'deku-overdrive': {
+    moves: ['gearshift-overdrive', 'fa-jin-smash', 'blackwhip-strike', 'danger-sense-counter', 'smokescreen-feint', 'deku-air-force', 'deku-blackchain', 'deku-detroit-quintuple', 'deku-manchester-smash', 'deku-st-louis-air-force'],
+    speed: 620,
+  },
+  'hyper-sonic': { moves: HYPER_REPERTOIRE, speed: 800 },
 };
 
 function randomUnit(random: () => number): number {

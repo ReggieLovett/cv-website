@@ -107,6 +107,8 @@
   font-size: 12px;
 }
 
+.currentForm small { font-size: 10px; line-height: 1.5; }
+
 .powerHeading {
   padding: 9px 9px 5px;
   color: rgb(var(--dim));

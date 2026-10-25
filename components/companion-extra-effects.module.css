@@ -1,0 +1,117 @@
+.airForce, .blackchain, .spinCut, .riposte, .lunge { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.airForce i, .blackchain i, .spinCut i, .riposte i, .lunge i { position: absolute; opacity: 0; }
+.airForce i { left: 45px; top: 36px; width: 25px; height: 24px; border: 2px solid rgb(209 248 227); border-left-color: transparent; border-radius: 50%; --air-delay: 0ms; }
+.airForce i:nth-child(2) { top: 28px; width: 39px; height: 40px; --air-delay: calc(var(--battle-duration) * 0.08); }
+.airForce i:nth-child(3) { top: 22px; width: 51px; height: 52px; border-width: 1px; --air-delay: calc(var(--battle-duration) * 0.16); }
+:global([data-battle='deku-air-force']) .airForce i { animation: airPressure calc(var(--battle-duration) - var(--air-delay)) var(--ease-out) both; animation-delay: var(--air-delay); }
+@keyframes airPressure {
+  0%, 14% { opacity: 0; transform: translateX(-3px) scale(0.95); }
+  33% { opacity: 1; transform: translateX(16px) scale(1); }
+  82% { opacity: 0.75; transform: translateX(59px) scale(1.1); }
+  100% { opacity: 0; transform: translateX(65px) scale(1.13); }
+}
+.blackchain i { left: 45px; top: 41px; width: 14px; height: 10px; border: 3px solid rgb(20 48 42); border-right-color: rgb(218 93 106); outline: 1px solid rgb(94 213 149); border-radius: 45%; --link-x: 0px; --link-y: 0px; }
+.blackchain i:nth-child(2) { --link-x: 14px; --link-y: -3px; }
+.blackchain i:nth-child(3) { --link-x: 28px; --link-y: -6px; }
+.blackchain i:nth-child(4) { --link-x: 42px; --link-y: -3px; }
+.blackchain i:nth-child(5) { --link-x: 55px; --link-y: 4px; }
+.blackchain i:nth-child(6) { width: 29px; height: 37px; border-width: 4px; --link-x: 62px; --link-y: -11px; }
+:global([data-battle='deku-blackchain']) .blackchain i { animation: chainBind var(--battle-duration) var(--ease-out) both; }
+@keyframes chainBind {
+  0%, 8% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-15deg); }
+  36%, 58% { opacity: 1; transform: translate3d(var(--link-x), var(--link-y), 0) rotate(0deg); }
+  82% { opacity: 0.95; transform: translate3d(calc(var(--link-x) - 23px), calc(var(--link-y) + 12px), 0) rotate(15deg); }
+  100% { opacity: 0; transform: translate3d(calc(var(--link-x) - 30px), calc(var(--link-y) + 16px), 0) rotate(20deg); }
+}
+.spinCut i { left: -15px; top: 21px; width: 99px; height: 61px; border-top: 3px solid rgb(225 235 226); border-right: 2px solid rgb(151 196 204); border-radius: 50%; }
+.spinCut i:nth-child(2) { left: -6px; top: 28px; width: 83px; height: 46px; border-top-color: rgb(155 180 189); }
+:global([data-battle='knight-spin-cut']) .spinCut i { animation: circularCut var(--battle-duration) var(--ease-in-out) both; }
+@keyframes circularCut {
+  0%, 12% { opacity: 0; transform: rotate(-60deg) scale(0.95); }
+  30%, 77% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(410deg) scale(1.04); }
+}
+.riposte i:first-child { left: 43px; top: 32px; width: 23px; height: 39px; background: rgb(99 139 157); border: 3px solid rgb(205 220 211); clip-path: polygon(0 0, 100% 0, 94% 70%, 50% 100%, 6% 70%); }
+.riposte i:last-child { left: 57px; top: 41px; width: 61px; height: 5px; background: rgb(231 237 221); clip-path: polygon(0 0, 85% 0, 100% 50%, 85% 100%, 0 100%); }
+:global([data-battle='knight-shield-riposte']) .riposte i:first-child { animation: shieldCatch var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='knight-shield-riposte']) .riposte i:last-child { animation: counterBlade var(--battle-duration) var(--ease-out) both; }
+@keyframes shieldCatch {
+  0% { opacity: 0; transform: translateX(-3px) rotate(8deg); }
+  19%, 43% { opacity: 1; transform: translateX(0) rotate(-5deg); }
+  65%, 100% { opacity: 0; transform: translateX(-6px) rotate(-10deg); }
+}
+@keyframes counterBlade {
+  0%, 42% { opacity: 0; transform: translateX(-8px) scaleX(0.95); }
+  61% { opacity: 1; transform: translateX(5px) scaleX(1); }
+  100% { opacity: 0; transform: translateX(19px) scaleX(1.05); }
+}
+.lunge i { left: 43px; top: 44px; width: 91px; height: 6px; background: rgb(222 232 220); clip-path: polygon(0 30%, 85% 0, 100% 50%, 85% 100%, 0 70%); }
+.lunge i:nth-child(2) { left: 23px; top: 38px; width: 71px; height: 18px; background: transparent; border-block: 1px solid rgb(173 206 213); clip-path: none; }
+:global([data-battle='knight-lunge']) .lunge i { animation: bladeLunge var(--battle-duration) var(--ease-out) both; }
+@keyframes bladeLunge {
+  0%, 11% { opacity: 0; transform: translateX(-6px); }
+  34%, 62% { opacity: 1; transform: translateX(5px); }
+  100% { opacity: 0; transform: translateX(22px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .airForce, .blackchain, .spinCut, .riposte, .lunge { display: none; }
+}
+
+/* Distinct OFA mechanics: five accelerated punches, a tethered axe kick,
+   and a wide pressure wave released by a sweeping armored boot. */
+.quintuple, .manchester, .stLouis, .risingCut, .pommel, .bladeBeam, .counterCut { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.quintuple i, .manchester i, .stLouis i, .risingCut i, .pommel i, .bladeBeam i, .counterCut i { position: absolute; opacity: 0; }
+.quintuple i { left: 50px; top: 23px; width: 25px; height: 16px; background: rgb(143 251 181); border: 2px solid rgb(225 255 228); border-radius: 4px; --hit-delay: 0ms; }
+.quintuple i::after { position: absolute; left: -19px; top: 4px; width: 18px; border-top: 2px solid rgb(114 218 163); content: ''; }
+.quintuple i:nth-child(2) { top: 44px; --hit-delay: calc(var(--battle-duration) * 0.1); }
+.quintuple i:nth-child(3) { top: 30px; left: 59px; --hit-delay: calc(var(--battle-duration) * 0.2); }
+.quintuple i:nth-child(4) { top: 56px; --hit-delay: calc(var(--battle-duration) * 0.3); }
+.quintuple i:nth-child(5) { top: 39px; left: 65px; --hit-delay: calc(var(--battle-duration) * 0.4); }
+:global([data-battle='deku-detroit-quintuple']) .quintuple i { animation: acceleratedPunch calc(var(--battle-duration) * 0.56) var(--ease-out) both; animation-delay: var(--hit-delay); }
+@keyframes acceleratedPunch {
+  0%, 7% { opacity: 0; transform: translateX(-12px) scaleX(0.9); }
+  20%, 48% { opacity: 1; transform: translateX(29px) scaleX(1); }
+  100% { opacity: 0; transform: translateX(43px) scaleX(1.04); }
+}
+.manchester i:first-child { left: -29px; top: 38px; width: 74px; height: 25px; border-top: 3px solid rgb(18 45 38); border-bottom: 1px solid rgb(111 236 159); border-radius: 50%; }
+.manchester i:nth-child(2) { left: 50px; top: 8px; width: 13px; height: 57px; background: rgb(28 65 56); border: 2px solid rgb(125 236 158); border-bottom: 7px solid rgb(213 64 70); border-radius: 3px; transform-origin: 50% 5%; }
+.manchester i:nth-child(3) { left: 62px; top: 57px; width: 42px; height: 21px; border-top: 3px solid rgb(208 255 218); border-radius: 50%; }
+:global([data-battle='deku-manchester-smash']) .manchester i:first-child { animation: tetherRelease var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='deku-manchester-smash']) .manchester i:nth-child(2) { animation: axeKick var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='deku-manchester-smash']) .manchester i:nth-child(3) { animation: kickImpact var(--battle-duration) var(--ease-out) both; }
+@keyframes tetherRelease { 0% { opacity: 0; transform: scaleX(0.9); } 18%, 36% { opacity: 1; transform: scaleX(1); } 61%, 100% { opacity: 0; transform: scaleX(0.7); } }
+@keyframes axeKick { 0%, 23% { opacity: 0; transform: rotate(-82deg); } 36% { opacity: 1; transform: rotate(-86deg); } 67% { opacity: 1; transform: rotate(-12deg); } 100% { opacity: 0; transform: rotate(8deg); } }
+@keyframes kickImpact { 0%, 57% { opacity: 0; transform: scale(0.9); } 71% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.15); } }
+.stLouis i:first-child { left: 26px; top: 55px; width: 49px; height: 12px; border-right: 8px solid rgb(224 73 86); background: rgb(37 79 65); border-radius: 4px; transform-origin: left center; }
+.stLouis i:not(:first-child) { left: 46px; top: 17px; width: 39px; height: 61px; border-right: 4px solid rgb(203 255 222); border-top: 1px solid rgb(118 230 172); border-radius: 50%; --wave-delay: 0ms; }
+.stLouis i:nth-child(3) { width: 46px; height: 69px; top: 12px; --wave-delay: calc(var(--battle-duration) * 0.1); }
+:global([data-battle='deku-st-louis-air-force']) .stLouis i:first-child { animation: sweepBoot var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='deku-st-louis-air-force']) .stLouis i:not(:first-child) { animation: pressureSweep calc(var(--battle-duration) - var(--wave-delay)) var(--ease-out) both; animation-delay: var(--wave-delay); }
+@keyframes sweepBoot { 0%, 10% { opacity: 0; transform: rotate(-40deg) scaleX(0.85); } 30%, 46% { opacity: 1; transform: rotate(3deg) scaleX(1); } 69%, 100% { opacity: 0; transform: rotate(18deg) scaleX(1); } }
+@keyframes pressureSweep { 0%, 28% { opacity: 0; transform: translateX(-8px) scale(0.9); } 41% { opacity: 1; transform: translateX(10px) scale(1); } 83% { opacity: 0.9; transform: translateX(46px) scale(1.05); } 100% { opacity: 0; transform: translateX(55px) scale(1.08); } }
+
+/* These four are original knight choreography, not attributed anime spells. */
+.risingCut i:first-child { left: 51px; top: 3px; width: 7px; height: 67px; background: rgb(225 236 230); border-left: 2px solid rgb(127 158 173); clip-path: polygon(50% 0, 100% 12%, 100% 85%, 70% 85%, 70% 100%, 30% 100%, 30% 85%, 0 85%, 0 12%); transform-origin: 50% 90%; }
+.risingCut i:last-child { left: 25px; top: 5px; width: 70px; height: 69px; border-right: 3px solid rgb(210 233 232); border-radius: 50%; }
+:global([data-battle='knight-rising-cut']) .risingCut i { animation: risingBlade var(--battle-duration) var(--ease-out) both; }
+@keyframes risingBlade { 0%, 12% { opacity: 0; transform: rotate(100deg); } 32% { opacity: 1; transform: rotate(73deg); } 77% { opacity: 1; transform: rotate(-33deg); } 100% { opacity: 0; transform: rotate(-40deg); } }
+.pommel i:first-child { left: 47px; top: 39px; width: 16px; height: 11px; border: 2px solid rgb(226 208 141); background: rgb(121 133 147); box-shadow: -12px 0 rgb(112 90 65); }
+.pommel i:last-child { left: 80px; top: 30px; width: 27px; height: 28px; border: 2px solid rgb(241 224 164); clip-path: polygon(50% 0, 66% 32%, 100% 50%, 66% 66%, 50% 100%, 32% 66%, 0 50%, 32% 32%); }
+:global([data-battle='knight-pommel-strike']) .pommel i { animation: pommelJab var(--battle-duration) var(--ease-out) both; }
+@keyframes pommelJab { 0%, 15% { opacity: 0; transform: translateX(-6px); } 40%, 61% { opacity: 1; transform: translateX(13px); } 100% { opacity: 0; transform: translateX(8px); } }
+.bladeBeam i:first-child { left: 48px; top: 10px; width: 9px; height: 60px; background: rgb(233 245 232); border-left: 2px solid rgb(132 175 188); clip-path: polygon(50% 0, 100% 15%, 100% 84%, 67% 84%, 67% 100%, 33% 100%, 33% 84%, 0 84%, 0 15%); transform-origin: bottom center; }
+.bladeBeam i:last-child { left: 52px; top: 11px; width: 20px; height: 58px; border-right: 4px solid rgb(215 248 237); border-radius: 50%; box-shadow: 5px 0 rgb(139 209 225 / 0.3); }
+:global([data-battle='knight-blade-beam']) .bladeBeam i:first-child { animation: beamSword var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='knight-blade-beam']) .bladeBeam i:last-child { animation: releasedCrescent var(--battle-duration) var(--ease-out) both; }
+@keyframes beamSword { 0%, 7% { opacity: 0; transform: rotate(-25deg); } 25%, 51% { opacity: 1; transform: rotate(35deg); } 75%, 100% { opacity: 0; transform: rotate(50deg); } }
+@keyframes releasedCrescent { 0%, 31% { opacity: 0; transform: translateX(0) scaleX(0.9); } 43% { opacity: 1; transform: translateX(8px) scaleX(1); } 86% { opacity: 1; transform: translateX(61px) scaleX(1); } 100% { opacity: 0; transform: translateX(72px) scaleX(1); } }
+.counterCut i:first-child { left: 37px; top: 21px; width: 7px; height: 51px; border: 1px solid rgb(205 222 226); background: rgb(100 130 147); transform-origin: bottom center; }
+.counterCut i:nth-child(2) { left: 55px; top: 17px; width: 8px; height: 57px; background: rgb(234 241 224); transform-origin: bottom center; clip-path: polygon(50% 0, 100% 15%, 100% 100%, 0 100%, 0 15%); }
+.counterCut i:last-child { left: 72px; top: 25px; width: 21px; height: 21px; background: rgb(248 219 136); clip-path: polygon(50% 0, 62% 35%, 100% 50%, 62% 62%, 50% 100%, 35% 62%, 0 50%, 35% 35%); }
+:global([data-battle='knight-counter-cut']) .counterCut i:first-child { animation: deflectBlade var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='knight-counter-cut']) .counterCut i:nth-child(2) { animation: returnCut var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='knight-counter-cut']) .counterCut i:last-child { animation: deflectSpark var(--battle-duration) var(--ease-out) both; }
+@keyframes deflectBlade { 0% { opacity: 0; transform: rotate(-35deg); } 15%, 35% { opacity: 1; transform: rotate(24deg); } 50%, 100% { opacity: 0; transform: rotate(27deg); } }
+@keyframes returnCut { 0%, 39% { opacity: 0; transform: rotate(-56deg); } 56%, 76% { opacity: 1; transform: rotate(55deg); } 100% { opacity: 0; transform: rotate(65deg); } }
+@keyframes deflectSpark { 0%, 12% { opacity: 0; transform: scale(0.9); } 25% { opacity: 1; transform: scale(1); } 41%, 100% { opacity: 0; transform: scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .quintuple, .manchester, .stLouis, .risingCut, .pommel, .bladeBeam, .counterCut { display: none; } }

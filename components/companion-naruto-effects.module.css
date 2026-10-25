@@ -1,0 +1,441 @@
+/* All geometry is local to the unchanged 64 × 84 actor. Visible projections fit
+   the 100px battle reserve, targeting x=-92…156 before the parent mirrors them.
+   The existing character wrapper mirrors effects with the original sprite. */
+.twinRasengan,
+.rasenganBarrage,
+.shadowFollowUp,
+.lavaShuriken,
+.sixPathsRasen,
+.bulletBarrage,
+.counterKick,
+.tailBarrage,
+.handPower,
+.flameControl,
+.planetarySeal {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+  clip-path: inset(-110px -160px 0 -160px);
+}
+
+.twinRasengan > *,
+.rasenganBarrage > *,
+.shadowFollowUp > *,
+.lavaShuriken > *,
+.sixPathsRasen > *,
+.bulletBarrage > *,
+.counterKick > *,
+.tailBarrage > *,
+.handPower > *,
+.flameControl > *,
+.planetarySeal > * {
+  position: absolute;
+  display: block;
+  margin: 0;
+  opacity: 0;
+}
+
+/* Two compact hand orbs advance together; their rings counter-rotate. */
+.twinRasengan i {
+  left: 43px;
+  top: 44px;
+  width: 25px;
+  height: 25px;
+  border: 2px solid rgb(223 252 255);
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, rgb(249 255 255), rgb(64 184 234) 54%, rgb(48 126 198 / 0.6) 73%, transparent 76%);
+  box-shadow: 0 0 7px rgb(93 204 244 / 0.6);
+}
+.twinRasengan i:nth-child(2) { left: 26px; top: 54px; width: 20px; height: 20px; }
+.twinRasengan b { left: 40px; top: 41px; width: 31px; height: 31px; border: 2px dashed rgb(174 242 255); border-radius: 50%; }
+.twinRasengan b:last-child { left: 23px; top: 51px; width: 26px; height: 26px; }
+:global([data-battle='sage-twin-rasengan']) .twinRasengan i { animation: twinThrust var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sage-twin-rasengan']) .twinRasengan b { animation: twinSpiral var(--battle-duration) linear both; }
+@keyframes twinThrust {
+  0%, 12% { opacity: 0; transform: translateX(-8px) scale(0.9); }
+  30% { opacity: 1; transform: translateX(0) scale(1); }
+  62% { opacity: 1; transform: translateX(25px) scale(1.05); }
+  100% { opacity: 0; transform: translateX(38px) scale(0.95); }
+}
+@keyframes twinSpiral {
+  0%, 12% { opacity: 0; transform: translateX(-8px) rotate(0deg); }
+  30% { opacity: 0.8; transform: translateX(0) rotate(180deg); }
+  62% { opacity: 0.8; transform: translateX(25px) rotate(450deg); }
+  100% { opacity: 0; transform: translateX(38px) rotate(640deg); }
+}
+
+/* Clones retain the current knight/elf atlas, rather than introducing Naruto bodies. */
+.rasenganBarrage i,
+.shadowFollowUp i,
+.sixPathsRasen i {
+  left: 8px;
+  top: 0;
+  width: 48px;
+  height: 84px;
+  background-image: var(--sprite-image);
+  background-position: var(--sprite-idle-x) var(--sprite-y);
+  background-size: var(--sprite-size);
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+.rasenganBarrage i:nth-child(1) { --clone-x: 25px; --clone-delay: 0ms; }
+.rasenganBarrage i:nth-child(2) { --clone-x: 57px; --clone-delay: 90ms; }
+.rasenganBarrage i:nth-child(3) { --clone-x: 72px; --clone-delay: 180ms; }
+.rasenganBarrage b { left: 45px; top: 43px; width: 24px; height: 24px; border: 2px solid rgb(228 253 255); border-radius: 50%; background: repeating-conic-gradient(rgb(222 255 255) 0deg 26deg, rgb(61 171 231) 32deg 60deg); }
+.rasenganBarrage b:nth-of-type(1) { --clone-x: 25px; --clone-delay: 0ms; }
+.rasenganBarrage b:nth-of-type(2) { --clone-x: 57px; --clone-delay: 90ms; }
+.rasenganBarrage b:nth-of-type(3) { --clone-x: 72px; --clone-delay: 180ms; }
+:global([data-battle='sage-rasengan-barrage']) .rasenganBarrage > * { animation: cloneRush calc(var(--battle-duration) - 180ms) var(--ease-out) var(--clone-delay) both; }
+@keyframes cloneRush {
+  0%, 14% { opacity: 0; transform: translateX(-15px); }
+  29% { opacity: 0.8; }
+  70% { opacity: 0.85; transform: translateX(var(--clone-x)); }
+  100% { opacity: 0; transform: translateX(calc(var(--clone-x) + 14px)); }
+}
+.shadowFollowUp i:first-child { --follow-x: 60px; }
+.shadowFollowUp i:nth-child(2) { --follow-x: 96px; }
+.shadowFollowUp b { left: 6px; top: 42px; width: 43px; height: 38px; border-radius: 45%; background: radial-gradient(circle, rgb(232 232 222 / 0.6), rgb(232 232 222 / 0.35) 60%, transparent 69%); }
+.shadowFollowUp b:nth-of-type(2) { left: 78px; top: 38px; }
+.shadowFollowUp em { left: 45px; top: 47px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgb(220 253 255); background: repeating-conic-gradient(rgb(79 184 233) 0deg 45deg, rgb(209 249 255) 65deg 90deg); }
+:global([data-battle='sage-shadow-clone']) .shadowFollowUp i { animation: followUpClone var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sage-shadow-clone']) .shadowFollowUp b { animation: cloneSmoke var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sage-shadow-clone']) .shadowFollowUp em { animation: followUpOrb var(--battle-duration) var(--ease-out) both; }
+@keyframes followUpClone { 0%, 20% { opacity: 0; transform: translateX(0); } 34% { opacity: 0.8; } 66% { opacity: 0.8; transform: translateX(var(--follow-x)); } 89%, 100% { opacity: 0; transform: translateX(var(--follow-x)); } }
+@keyframes cloneSmoke { 0%, 12% { opacity: 0; transform: scale(0.9); } 27% { opacity: 0.75; } 56%, 100% { opacity: 0; transform: scale(1.25); } }
+@keyframes followUpOrb { 0%, 26% { opacity: 0; transform: translateX(0) rotate(0deg); } 37% { opacity: 1; } 66% { opacity: 1; transform: translateX(60px) rotate(360deg); } 100% { opacity: 0; transform: translateX(80px) rotate(540deg); } }
+
+/* Lava: a molten nucleus, white four-point wind blade, and separate steam plumes. */
+.lavaShuriken b { left: 47px; top: 21px; width: 33px; height: 33px; border: 3px solid rgb(255 220 106); border-radius: 50%; background: radial-gradient(circle, rgb(255 205 75), rgb(231 88 35) 48%, rgb(135 45 30) 70%); box-shadow: 0 0 9px rgb(247 122 42 / 0.5); }
+.lavaShuriken i { left: 30px; top: 7px; width: 66px; height: 62px; background: rgb(230 250 247 / 0.85); clip-path: polygon(48% 0, 57% 36%, 100% 48%, 63% 57%, 51% 100%, 40% 64%, 0 51%, 37% 41%); }
+.lavaShuriken i:nth-of-type(2) { background: transparent; border: 2px solid rgb(233 255 250 / 0.8); border-radius: 50%; clip-path: none; }
+.lavaShuriken i:nth-of-type(3) { left: 43px; top: 20px; width: 40px; height: 36px; background: transparent; border: 2px dashed rgb(255 235 133); border-radius: 50%; clip-path: none; }
+.lavaShuriken em { left: 48px; top: -5px; width: 10px; height: 21px; border-radius: 50%; background: rgb(233 244 233 / 0.6); }
+.lavaShuriken em:nth-of-type(2) { left: 69px; top: -10px; }
+.lavaShuriken em:nth-of-type(3) { left: 84px; top: 1px; }
+:global([data-battle='lava-rasenshuriken']) .lavaShuriken b { animation: lavaCore var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='lava-rasenshuriken']) .lavaShuriken i { animation: lavaDisc var(--battle-duration) linear both; }
+:global([data-battle='lava-rasenshuriken']) .lavaShuriken em { animation: lavaSteam var(--battle-duration) var(--ease-out) both; }
+@keyframes lavaCore { 0%, 12% { opacity: 0; transform: translateX(-8px) scale(0.9); } 30%, 48% { opacity: 1; transform: translateX(0) scale(1); } 86% { opacity: 1; transform: translateX(36px) scale(1.1); } 100% { opacity: 0; transform: translateX(44px) scale(1.12); } }
+@keyframes lavaDisc { 0%, 12% { opacity: 0; transform: translateX(-8px) rotate(0deg); } 30% { opacity: 0.9; transform: translateX(0) rotate(180deg); } 48% { opacity: 0.9; transform: translateX(0) rotate(360deg); } 86% { opacity: 0.9; transform: translateX(36px) rotate(730deg); } 100% { opacity: 0; transform: translateX(44px) rotate(850deg); } }
+@keyframes lavaSteam { 0%, 14% { opacity: 0; transform: translateY(0) scale(0.95); } 38% { opacity: 0.6; } 60%, 100% { opacity: 0; transform: translateY(-25px) scale(1.2); } }
+
+/* Six Paths game technique: a short gold blade precedes two clone-launched discs. */
+.sixPathsRasen i:first-child { --rasen-x: 34px; }
+.sixPathsRasen i:nth-child(2) { --rasen-x: 72px; }
+.sixPathsRasen b { left: 42px; top: 35px; width: 75px; height: 12px; background: linear-gradient(90deg, rgb(255 202 71), rgb(255 246 178)); clip-path: polygon(0 18%, 75% 0, 100% 50%, 75% 100%, 0 82%); transform-origin: 0 50%; }
+.sixPathsRasen em { left: 76px; top: 34px; width: 36px; height: 36px; background: rgb(240 255 255); clip-path: polygon(50% 0, 61% 36%, 100% 50%, 64% 61%, 50% 100%, 38% 64%, 0 50%, 36% 38%); }
+.sixPathsRasen em:last-child { left: 94px; top: 22px; width: 32px; height: 32px; background: rgb(255 221 114); }
+:global([data-battle='six-paths-shadow-rasen']) .sixPathsRasen i { animation: sixPathsClones var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='six-paths-shadow-rasen']) .sixPathsRasen b { animation: sixPathsBlade var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='six-paths-shadow-rasen']) .sixPathsRasen em { animation: sixPathsDiscs var(--battle-duration) linear both; }
+@keyframes sixPathsClones { 0%, 35% { opacity: 0; transform: translateX(0); } 50%, 75% { opacity: 0.7; transform: translateX(var(--rasen-x)); } 100% { opacity: 0; transform: translateX(var(--rasen-x)); } }
+@keyframes sixPathsBlade { 0%, 8% { opacity: 0; transform: rotate(-55deg) scaleX(0.9); } 21% { opacity: 1; } 36% { opacity: 1; transform: rotate(38deg) scaleX(1); } 45%, 100% { opacity: 0; transform: rotate(42deg); } }
+@keyframes sixPathsDiscs { 0%, 48% { opacity: 0; transform: translateX(0) rotate(0deg); } 60% { opacity: 1; } 86% { opacity: 1; transform: translateX(16px) rotate(400deg); } 100% { opacity: 0; transform: translateX(22px) rotate(560deg); } }
+
+/* Baryon strikes are close-range chakra fists, a low kick, and repeated tails. */
+.bulletBarrage i { left: 44px; top: 45px; width: 38px; height: 11px; background: linear-gradient(90deg, transparent, rgb(239 93 36) 35%, rgb(255 205 96)); clip-path: polygon(0 30%, 65% 20%, 71% 0, 92% 0, 100% 28%, 100% 75%, 91% 100%, 68% 90%, 62% 72%, 0 70%); }
+.bulletBarrage i:nth-child(1) { --fist-y: -17px; --fist-x: 31px; --hit-delay: 0ms; }
+.bulletBarrage i:nth-child(2) { --fist-y: 0px; --fist-x: 45px; --hit-delay: 100ms; }
+.bulletBarrage i:nth-child(3) { --fist-y: 14px; --fist-x: 34px; --hit-delay: 200ms; }
+.bulletBarrage i:nth-child(4) { --fist-y: -9px; --fist-x: 54px; --hit-delay: 300ms; }
+.bulletBarrage i:nth-child(5) { --fist-y: 8px; --fist-x: 47px; --hit-delay: 400ms; }
+.bulletBarrage b { left: 103px; top: 36px; width: 12px; height: 12px; border: 2px solid rgb(255 194 75); transform: rotate(45deg); }
+.bulletBarrage b:nth-of-type(2) { left: 115px; top: 50px; }
+.bulletBarrage b:nth-of-type(3) { left: 99px; top: 61px; }
+:global([data-battle='baryon-bullet-barrage']) .bulletBarrage i { animation: baryonFist calc(var(--battle-duration) - 400ms) var(--ease-out) var(--hit-delay) both; }
+:global([data-battle='baryon-bullet-barrage']) .bulletBarrage b { animation: baryonImpact var(--battle-duration) var(--ease-out) both; }
+@keyframes baryonFist { 0%, 12% { opacity: 0; transform: translate3d(0, var(--fist-y), 0); } 34% { opacity: 1; } 65% { opacity: 0.95; transform: translate3d(var(--fist-x), var(--fist-y), 0); } 100% { opacity: 0; transform: translate3d(calc(var(--fist-x) + 8px), var(--fist-y), 0); } }
+@keyframes baryonImpact { 0%, 40% { opacity: 0; transform: rotate(45deg) scale(0.9); } 58%, 72% { opacity: 0.9; } 100% { opacity: 0; transform: rotate(85deg) scale(1.35); } }
+.counterKick i { left: 27px; top: 24px; width: 77px; height: 57px; border: 5px solid transparent; border-right-color: rgb(255 183 66); border-bottom-color: rgb(230 88 34); border-radius: 50%; transform-origin: 15% 80%; }
+.counterKick b { left: 45px; top: 64px; width: 39px; height: 10px; background: linear-gradient(90deg, rgb(183 57 32), rgb(255 196 76)); clip-path: polygon(0 0, 75% 0, 85% 40%, 100% 60%, 98% 100%, 65% 100%, 0 75%); transform-origin: 0 50%; }
+.counterKick em { left: 104px; top: 63px; width: 13px; height: 3px; background: rgb(255 219 133); }
+.counterKick em:nth-of-type(2) { top: 56px; transform: rotate(-35deg); }
+.counterKick em:nth-of-type(3) { top: 71px; transform: rotate(35deg); }
+:global([data-battle='baryon-counter-kick']) .counterKick i { animation: kickArc var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='baryon-counter-kick']) .counterKick b { animation: kickThrust var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='baryon-counter-kick']) .counterKick em { animation: kickContact var(--battle-duration) var(--ease-out) both; }
+@keyframes kickArc { 0%, 19% { opacity: 0; transform: rotate(-65deg) scale(0.95); } 48% { opacity: 0.95; } 74% { opacity: 0.8; transform: rotate(20deg) scale(1.05); } 100% { opacity: 0; transform: rotate(25deg) scale(1.05); } }
+@keyframes kickThrust { 0%, 20% { opacity: 0; transform: rotate(-28deg); } 48% { opacity: 1; transform: translateX(22px) rotate(0deg); } 75%, 100% { opacity: 0; transform: translateX(25px) rotate(0deg); } }
+@keyframes kickContact { 0%, 42% { opacity: 0; } 52%, 67% { opacity: 1; } 100% { opacity: 0; } }
+.tailBarrage i { left: 26px; top: 44px; width: 113px; height: 14px; border-radius: 10% 80% 80% 10%; background: linear-gradient(90deg, rgb(195 45 28), rgb(246 108 36) 67%, rgb(255 204 90)); clip-path: polygon(0 15%, 40% 10%, 75% 40%, 100% 50%, 75% 70%, 35% 90%, 0 100%); transform-origin: 0 50%; }
+.tailBarrage i:nth-child(1) { --tail-angle: -29deg; --tail-delay: 0ms; }
+.tailBarrage i:nth-child(2) { --tail-angle: 0deg; --tail-delay: 120ms; }
+.tailBarrage i:nth-child(3) { --tail-angle: 13deg; --tail-delay: 240ms; }
+.tailBarrage b { left: 132px; top: 23px; width: 17px; height: 17px; border: 2px solid rgb(255 168 60); border-radius: 50%; }
+.tailBarrage b:nth-of-type(2) { top: 42px; }
+.tailBarrage b:nth-of-type(3) { top: 62px; }
+:global([data-battle='baryon-tail-barrage']) .tailBarrage i { animation: tailPierce calc(var(--battle-duration) - 240ms) var(--ease-out) var(--tail-delay) both; }
+:global([data-battle='baryon-tail-barrage']) .tailBarrage b { animation: baryonImpact var(--battle-duration) var(--ease-out) both; }
+@keyframes tailPierce { 0%, 14% { opacity: 0; transform: rotate(var(--tail-angle)) scaleX(0.9); } 34% { opacity: 1; transform: rotate(var(--tail-angle)) scaleX(1); } 56% { opacity: 1; transform: rotate(var(--tail-angle)) scaleX(1.08); } 100% { opacity: 0; transform: rotate(var(--tail-angle)) scaleX(0.95); } }
+
+/* Space swap: two Rinnegan rings, a displaced arrow, then a short Chidori fork. */
+.handPower i { left: 10px; top: 25px; width: 34px; height: 49px; border: 2px solid rgb(164 136 228); border-radius: 50%; box-shadow: inset 0 0 0 5px rgb(135 105 209 / 0.15); }
+.handPower i:nth-child(2) { left: 100px; }
+.handPower b { left: 20px; top: 49px; width: 93px; height: 4px; background: rgb(159 125 219); clip-path: polygon(0 20%, 85% 20%, 85% 0, 100% 50%, 85% 100%, 85% 80%, 0 80%); }
+.handPower em { left: 100px; top: 40px; width: 39px; height: 27px; background: rgb(199 243 255); clip-path: polygon(0 41%, 38% 32%, 25% 0, 70% 35%, 100% 20%, 81% 50%, 100% 80%, 63% 66%, 38% 100%, 44% 61%, 0 70%); }
+.handPower em:last-child { left: 111px; top: 32px; width: 31px; height: 39px; background: rgb(100 172 244); }
+:global([data-battle='heavenly-hand-power']) .handPower i { animation: swapRings var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='heavenly-hand-power']) .handPower b { animation: swapArrow var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='heavenly-hand-power']) .handPower em { animation: swapChidori var(--battle-duration) var(--ease-out) both; }
+@keyframes swapRings { 0%, 10% { opacity: 0; transform: scaleX(0.9); } 26%, 45% { opacity: 0.9; transform: scaleX(1); } 63%, 100% { opacity: 0; transform: scaleX(1.12); } }
+@keyframes swapArrow { 0%, 15% { opacity: 0; transform: translateX(32px); } 30% { opacity: 0.9; } 47% { opacity: 0.8; transform: translateX(-12px); } 52%, 100% { opacity: 0; transform: translateX(-15px); } }
+@keyframes swapChidori { 0%, 45% { opacity: 0; transform: translateX(-8px) scale(0.95); } 62%, 78% { opacity: 1; transform: translateX(0) scale(1); } 100% { opacity: 0; transform: translateX(10px) scale(1.1); } }
+
+/* A compact Susano'o bow fires three black flame arrows; no avatar replaces the body. */
+.flameControl b { left: 48px; top: 15px; width: 28px; height: 63px; border: 4px solid transparent; border-right-color: rgb(160 111 220); border-radius: 50%; }
+.flameControl em { left: 64px; top: 18px; width: 2px; height: 55px; background: rgb(205 159 249); }
+.flameControl i { left: 56px; top: 42px; width: 63px; height: 15px; background: rgb(21 18 31); filter: drop-shadow(0 0 2px rgb(175 102 218)); clip-path: polygon(0 35%, 24% 28%, 15% 0, 45% 27%, 63% 9%, 73% 33%, 100% 50%, 73% 68%, 63% 91%, 44% 73%, 15% 100%, 24% 72%, 0 65%); }
+.flameControl i:nth-of-type(1) { --arrow-y: -14px; --arrow-delay: 0ms; }
+.flameControl i:nth-of-type(2) { --arrow-y: 0px; --arrow-delay: 120ms; }
+.flameControl i:nth-of-type(3) { --arrow-y: 14px; --arrow-delay: 240ms; }
+:global([data-battle='inferno-flame-control']) .flameControl :is(b, em) { animation: flameBow var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='inferno-flame-control']) .flameControl i { animation: flameArrows calc(var(--battle-duration) - 240ms) var(--ease-out) var(--arrow-delay) both; }
+@keyframes flameBow { 0%, 8% { opacity: 0; transform: scaleY(0.95); } 25%, 69% { opacity: 0.85; transform: scaleY(1); } 100% { opacity: 0; transform: scaleY(1); } }
+@keyframes flameArrows { 0%, 25% { opacity: 0; transform: translate3d(-5px, var(--arrow-y), 0); } 38% { opacity: 1; } 82% { opacity: 1; transform: translate3d(30px, var(--arrow-y), 0); } 100% { opacity: 0; transform: translate3d(31px, var(--arrow-y), 0); } }
+
+/* Planetary Devastation is a local gravity seed pulling rubble inward, not a meteor
+   dropped across the page. All rocks finish above the actor's existing floor. */
+.planetarySeal b { left: 104px; top: 23px; width: 21px; height: 21px; border-radius: 50%; background: rgb(22 19 29); box-shadow: 0 0 0 2px rgb(164 128 221), 0 0 10px rgb(142 98 204 / 0.5); }
+.planetarySeal em { left: 77px; top: -4px; width: 75px; height: 75px; border: 2px dashed rgb(165 139 205 / 0.7); border-radius: 50%; }
+.planetarySeal i { left: 108px; top: 28px; width: 15px; height: 13px; border: 1px solid rgb(157 145 166); background: rgb(92 84 105); clip-path: polygon(16% 0, 75% 0, 100% 37%, 77% 100%, 23% 89%, 0 42%); }
+.planetarySeal i:nth-of-type(1) { --rock-x: -61px; --rock-y: 42px; --rock-angle: -45deg; }
+.planetarySeal i:nth-of-type(2) { --rock-x: -29px; --rock-y: -39px; --rock-angle: 70deg; }
+.planetarySeal i:nth-of-type(3) { --rock-x: 29px; --rock-y: -28px; --rock-angle: 32deg; }
+.planetarySeal i:nth-of-type(4) { --rock-x: 30px; --rock-y: 37px; --rock-angle: -72deg; }
+.planetarySeal i:nth-of-type(5) { --rock-x: -11px; --rock-y: 42px; --rock-angle: 14deg; }
+.planetarySeal i:nth-of-type(6) { --rock-x: -60px; --rock-y: -20px; --rock-angle: -20deg; }
+:global([data-battle='planetary-devastation']) .planetarySeal b { animation: gravitySeed var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='planetary-devastation']) .planetarySeal em { animation: gravityField var(--battle-duration) linear both; }
+:global([data-battle='planetary-devastation']) .planetarySeal i { animation: gravityRubble var(--battle-duration) var(--ease-in-out) both; }
+@keyframes gravitySeed { 0%, 7% { opacity: 0; transform: scale(0.95); } 25%, 78% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.12); } }
+@keyframes gravityField { 0%, 15% { opacity: 0; transform: rotate(0deg) scale(1.05); } 37%, 65% { opacity: 0.7; } 100% { opacity: 0; transform: rotate(-160deg) scale(0.95); } }
+@keyframes gravityRubble { 0%, 21% { opacity: 0; transform: translate3d(var(--rock-x), var(--rock-y), 0) rotate(var(--rock-angle)); } 35% { opacity: 0.85; } 76% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg); } 100% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg); } }
+
+/* The expanded repertoires add attacks, summons and defenses to the same body.
+   Local shapes, including release paths, stay inside x=-92…156. */
+.massiveBarrage, .uzumakiBarrage, .toadSummon, .shurikenFeint,
+.truthseekerSalvo, .chakraRebirth, .superTailedShuriken, .beastBombBarrage,
+.scarletRasengan, .baryonCharge, .destructiveFist, .scarletFlash,
+.kirin, .indraArrow, .chidoriFlame, .sasukeFireball {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+.massiveBarrage > *, .uzumakiBarrage > *, .toadSummon > *, .shurikenFeint > *,
+.truthseekerSalvo > *, .chakraRebirth > *, .superTailedShuriken > *, .beastBombBarrage > *,
+.scarletRasengan > *, .baryonCharge > *, .destructiveFist > *, .scarletFlash > *,
+.kirin > *, .indraArrow > *, .chidoriFlame > *, .sasukeFireball > * {
+  position: absolute;
+  display: block;
+  margin: 0;
+  opacity: 0;
+}
+.massiveBarrage i, .uzumakiBarrage i, .shurikenFeint i, .beastBombBarrage i {
+  left: 8px;
+  top: 0;
+  width: 48px;
+  height: 84px;
+  background: var(--sprite-image) var(--sprite-idle-x) var(--sprite-y) / var(--sprite-size) no-repeat;
+  image-rendering: pixelated;
+}
+
+/* Giant spheres are held by two clones; neither body nor sphere drops below the floor. */
+.massiveBarrage i:first-child { --massive-x: 32px; }
+.massiveBarrage i:nth-child(2) { --massive-x: 76px; }
+.massiveBarrage b { left: 54px; top: 13px; width: 49px; height: 49px; border: 3px solid rgb(222 251 255); border-radius: 50%; background: repeating-conic-gradient(rgb(222 252 255) 0deg 24deg, rgb(62 173 224) 28deg 60deg); --massive-x: 45px; }
+.massiveBarrage b:nth-of-type(2) { left: 85px; top: 30px; width: 42px; height: 42px; --massive-x: 24px; }
+.massiveBarrage em { left: 45px; top: 66px; width: 101px; height: 15px; border-top: 3px solid rgb(185 241 255); border-radius: 50%; }
+:global([data-battle='sage-massive-rasengan-barrage']) .massiveBarrage :is(i, b) { animation: massiveAdvance var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sage-massive-rasengan-barrage']) .massiveBarrage em { animation: massivePressure var(--battle-duration) var(--ease-out) both; }
+@keyframes massiveAdvance { 0%, 10% { opacity: 0; transform: translateX(-7px) scale(0.95); } 31% { opacity: 0.95; transform: translateX(0) scale(1); } 73% { opacity: 1; transform: translateX(var(--massive-x)) scale(1.05); } 100% { opacity: 0; transform: translateX(var(--massive-x)) scale(1.05); } }
+@keyframes massivePressure { 0%, 50% { opacity: 0; transform: scaleX(0.95); } 73% { opacity: 0.85; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1.1); } }
+
+/* Three unarmed clones take turns hitting; this is distinct from the orb barrage. */
+.uzumakiBarrage i:nth-child(1), .uzumakiBarrage b:nth-of-type(1) { --combo-x: 24px; --combo-delay: 0ms; }
+.uzumakiBarrage i:nth-child(2), .uzumakiBarrage b:nth-of-type(2) { --combo-x: 48px; --combo-delay: 110ms; }
+.uzumakiBarrage i:nth-child(3), .uzumakiBarrage b:nth-of-type(3) { --combo-x: 76px; --combo-delay: 220ms; }
+.uzumakiBarrage b { left: 43px; top: 48px; width: 18px; height: 12px; border-right: 4px solid rgb(241 219 168); background: rgb(156 184 181); clip-path: polygon(0 20%, 60% 20%, 70% 0, 100% 0, 100% 100%, 65% 100%, 60% 75%, 0 75%); }
+:global([data-battle='sage-uzumaki-barrage']) .uzumakiBarrage > * { animation: cloneCombo calc(var(--battle-duration) - 220ms) var(--ease-out) var(--combo-delay) both; }
+@keyframes cloneCombo { 0%, 12% { opacity: 0; transform: translateX(0); } 32% { opacity: 0.85; } 59% { opacity: 1; transform: translateX(var(--combo-x)); } 100% { opacity: 0; transform: translateX(calc(var(--combo-x) + 8px)); } }
+
+/* A bounded Gamabunta-inspired summon assists beside the unchanged actor. */
+.toadSummon b { left: 57px; top: 43px; width: 65px; height: 38px; background: rgb(155 86 57); border-bottom: 7px solid rgb(101 119 143); clip-path: polygon(12% 0, 31% 4%, 40% 17%, 66% 17%, 76% 0, 92% 4%, 100% 60%, 87% 78%, 100% 100%, 67% 100%, 54% 84%, 37% 100%, 0 100%, 12% 75%, 0 53%); }
+.toadSummon b::after { position: absolute; content: ''; top: 19px; left: 17px; width: 38px; height: 3px; background: rgb(69 45 33); }
+.toadSummon i { left: 68px; top: 39px; width: 10px; height: 11px; background: rgb(233 211 150); border: 3px solid rgb(156 87 57); border-top-width: 2px; box-shadow: inset -2px 0 rgb(32 41 35); }
+.toadSummon i:nth-of-type(2) { left: 101px; }
+.toadSummon em { left: 47px; top: 66px; width: 86px; height: 16px; border: 2px dashed rgb(219 201 161); border-radius: 50%; }
+.toadSummon strong { left: 89px; top: 39px; width: 36px; height: 35px; border: 2px solid rgb(222 238 220); border-left-color: transparent; border-radius: 50%; }
+:global([data-battle='sage-toad-summoning']) .toadSummon :is(b, i) { animation: toadAppear var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sage-toad-summoning']) .toadSummon em { animation: summonSeal var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sage-toad-summoning']) .toadSummon strong { animation: toadCroak var(--battle-duration) var(--ease-out) both; }
+@keyframes toadAppear { 0%, 16% { opacity: 0; transform: scale(0.95); } 33%, 76% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.98); } }
+@keyframes summonSeal { 0% { opacity: 0; transform: scaleX(0.95); } 18%, 35% { opacity: 0.9; } 60%, 100% { opacity: 0; transform: scaleX(1.1); } }
+@keyframes toadCroak { 0%, 42% { opacity: 0; transform: translateX(0) scale(0.95); } 59% { opacity: 0.9; } 100% { opacity: 0; transform: translateX(14px) scale(1.4); } }
+
+/* A spinning throw distracts first; a later clone exits the smoke behind it. */
+.shurikenFeint b { left: 47px; top: 28px; width: 42px; height: 42px; background: rgb(213 247 253); clip-path: polygon(50% 0, 63% 35%, 100% 50%, 64% 63%, 50% 100%, 37% 65%, 0 50%, 35% 38%); }
+.shurikenFeint em { left: 91px; top: 43px; width: 34px; height: 34px; border-radius: 43%; background: rgb(222 229 216 / 0.7); }
+.shurikenFeint strong { left: 49px; top: 47px; width: 68px; height: 3px; background: linear-gradient(90deg, transparent, rgb(204 240 241)); }
+:global([data-battle='sage-shuriken-feint']) .shurikenFeint b { animation: feintDisc var(--battle-duration) linear both; }
+:global([data-battle='sage-shuriken-feint']) .shurikenFeint i { animation: feintClone var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sage-shuriken-feint']) .shurikenFeint em { animation: feintSmoke var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sage-shuriken-feint']) .shurikenFeint strong { animation: feintTrail var(--battle-duration) var(--ease-out) both; }
+@keyframes feintDisc { 0%, 8% { opacity: 0; transform: translateX(0) rotate(0deg); } 22% { opacity: 1; } 67% { opacity: 0.9; transform: translateX(55px) rotate(600deg); } 78%, 100% { opacity: 0; transform: translateX(55px) rotate(700deg); } }
+@keyframes feintClone { 0%, 47% { opacity: 0; transform: translateX(45px); } 66%, 82% { opacity: 0.85; transform: translateX(72px); } 100% { opacity: 0; transform: translateX(72px); } }
+@keyframes feintSmoke { 0%, 45% { opacity: 0; transform: scale(0.95); } 58% { opacity: 0.85; } 86%, 100% { opacity: 0; transform: scale(1.25); } }
+@keyframes feintTrail { 0%, 13% { opacity: 0; transform: translateX(0) scaleX(0.95); } 36% { opacity: 0.7; } 70%, 100% { opacity: 0; transform: translateX(30px) scaleX(1.1); } }
+
+/* Naruto's own Truth-Seeking Orbs launch separately, with a short dark staff cue. */
+.truthseekerSalvo i { left: 24px; top: 24px; width: 12px; height: 12px; border: 1px solid rgb(222 199 127); border-radius: 50%; background: rgb(23 22 30); --salvo-x: 98px; --salvo-y: 0px; --salvo-delay: 0ms; }
+.truthseekerSalvo i:nth-child(2) { top: 35px; --salvo-x: 112px; --salvo-y: -12px; --salvo-delay: 60ms; }
+.truthseekerSalvo i:nth-child(3) { top: 46px; --salvo-x: 113px; --salvo-y: 0px; --salvo-delay: 120ms; }
+.truthseekerSalvo i:nth-child(4) { top: 57px; --salvo-x: 104px; --salvo-y: 8px; --salvo-delay: 180ms; }
+.truthseekerSalvo i:nth-child(5) { top: 66px; --salvo-x: 88px; --salvo-y: 2px; --salvo-delay: 240ms; }
+.truthseekerSalvo b { left: 42px; top: 49px; width: 82px; height: 5px; background: rgb(31 28 35); border-block: 1px solid rgb(194 173 113); }
+:global([data-battle='six-paths-truthseeker-salvo']) .truthseekerSalvo i { animation: truthseekerShot calc(var(--battle-duration) - 240ms) var(--ease-out) var(--salvo-delay) both; }
+:global([data-battle='six-paths-truthseeker-salvo']) .truthseekerSalvo b { animation: truthseekerStaff var(--battle-duration) var(--ease-out) both; }
+@keyframes truthseekerShot { 0%, 14% { opacity: 0; transform: translate3d(0, 0, 0); } 29% { opacity: 1; } 82% { opacity: 1; transform: translate3d(var(--salvo-x), var(--salvo-y), 0); } 100% { opacity: 0; transform: translate3d(var(--salvo-x), var(--salvo-y), 0); } }
+@keyframes truthseekerStaff { 0%, 19% { opacity: 0; transform: scaleX(0.95); } 38%, 62% { opacity: 0.9; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(0.95); } }
+
+/* Rebirth is a defensive support technique, expressed as a palm seal and local field. */
+.chakraRebirth b { left: 38px; top: 45px; width: 25px; height: 25px; border-radius: 50%; background: radial-gradient(circle, rgb(248 253 188), rgb(118 211 166 / 0.8) 60%, transparent 72%); }
+.chakraRebirth b::after { position: absolute; content: ''; inset: 5px; background: rgb(245 248 186); clip-path: polygon(36% 0, 64% 0, 64% 36%, 100% 36%, 100% 64%, 64% 64%, 64% 100%, 36% 100%, 36% 64%, 0 64%, 0 36%, 36% 36%); }
+.chakraRebirth em { left: -26px; top: -17px; width: 116px; height: 98px; border: 2px solid rgb(225 235 153 / 0.7); border-radius: 50%; }
+.chakraRebirth i { left: 16px; top: 58px; width: 5px; height: 5px; background: rgb(216 244 183); --rebirth-rise: -24px; }
+.chakraRebirth i:nth-of-type(2) { left: 35px; --rebirth-rise: -36px; }
+.chakraRebirth i:nth-of-type(3) { left: 52px; --rebirth-rise: -27px; }
+:global([data-battle='six-paths-chakra-rebirth']) .chakraRebirth :is(b, em) { animation: rebirthField var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='six-paths-chakra-rebirth']) .chakraRebirth i { animation: rebirthMotes var(--battle-duration) var(--ease-out) both; }
+@keyframes rebirthField { 0%, 9% { opacity: 0; transform: scale(0.95); } 36%, 73% { opacity: 0.85; transform: scale(1); } 100% { opacity: 0; transform: scale(1.08); } }
+@keyframes rebirthMotes { 0%, 21% { opacity: 0; transform: translateY(0) rotate(0deg); } 44%, 72% { opacity: 0.9; } 100% { opacity: 0; transform: translateY(var(--rebirth-rise)) rotate(90deg); } }
+
+/* A multi-nature shuriken spread has five visibly spinning, traveling projectiles. */
+.superTailedShuriken i { left: 39px; top: 19px; width: 23px; height: 23px; background: rgb(255 230 147); clip-path: polygon(50% 0, 62% 35%, 100% 50%, 63% 62%, 50% 100%, 37% 63%, 0 50%, 35% 38%); --nature-x: 65px; --nature-y: -12px; --nature-delay: 0ms; }
+.superTailedShuriken i:nth-child(2) { top: 31px; background: rgb(227 113 66); --nature-x: 79px; --nature-y: -5px; --nature-delay: 60ms; }
+.superTailedShuriken i:nth-child(3) { top: 42px; background: rgb(218 245 255); --nature-x: 80px; --nature-y: 0px; --nature-delay: 120ms; }
+.superTailedShuriken i:nth-child(4) { top: 53px; background: rgb(164 135 223); --nature-x: 73px; --nature-y: 4px; --nature-delay: 180ms; }
+.superTailedShuriken i:nth-child(5) { top: 61px; background: rgb(152 219 211); --nature-x: 57px; --nature-y: 5px; --nature-delay: 240ms; }
+:global([data-battle='six-paths-super-tailed-shuriken']) .superTailedShuriken i { animation: tailedShurikenFlight calc(var(--battle-duration) - 240ms) linear var(--nature-delay) both; }
+@keyframes tailedShurikenFlight { 0%, 17% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg); } 31% { opacity: 1; } 84% { opacity: 1; transform: translate3d(var(--nature-x), var(--nature-y), 0) rotate(620deg); } 100% { opacity: 0; transform: translate3d(var(--nature-x), var(--nature-y), 0) rotate(780deg); } }
+.beastBombBarrage b { left: 42px; top: 35px; width: 18px; height: 18px; border: 2px solid rgb(227 192 101); border-radius: 50%; background: radial-gradient(circle at 40% 35%, rgb(136 80 155), rgb(31 23 45) 64%); --bomb-delay: 0ms; }
+.beastBombBarrage b:nth-of-type(2) { top: 45px; width: 19px; height: 19px; --bomb-delay: 120ms; }
+.beastBombBarrage b:nth-of-type(3) { top: 54px; width: 22px; height: 22px; --bomb-delay: 240ms; }
+.beastBombBarrage em { left: 42px; top: 28px; width: 27px; height: 50px; border-right: 2px solid rgb(237 200 107); border-radius: 50%; }
+:global([data-battle='six-paths-tailed-beast-barrage']) .beastBombBarrage i { animation: beastClone var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='six-paths-tailed-beast-barrage']) .beastBombBarrage b { animation: smallBombFlight calc(var(--battle-duration) - 240ms) var(--ease-out) var(--bomb-delay) both; }
+:global([data-battle='six-paths-tailed-beast-barrage']) .beastBombBarrage em { animation: bombLaunch var(--battle-duration) var(--ease-out) both; }
+@keyframes beastClone { 0%, 11% { opacity: 0; transform: translateX(10px); } 27%, 75% { opacity: 0.75; transform: translateX(24px); } 100% { opacity: 0; transform: translateX(24px); } }
+@keyframes smallBombFlight { 0%, 19% { opacity: 0; transform: translateX(0); } 31% { opacity: 1; } 81% { opacity: 1; transform: translateX(82px); } 100% { opacity: 0; transform: translateX(82px); } }
+@keyframes bombLaunch { 0%, 19% { opacity: 0; transform: scaleX(0.95); } 36%, 67% { opacity: 0.8; } 100% { opacity: 0; transform: scaleX(1.1); } }
+
+/* Baryon game techniques: a scarlet orb detonation, charge, spin, and high-speed contact. */
+.scarletRasengan b { left: 48px; top: 40px; width: 29px; height: 29px; border: 2px solid rgb(255 220 134); border-radius: 50%; background: repeating-conic-gradient(rgb(252 147 63) 0deg 40deg, rgb(192 45 34) 48deg 70deg); }
+.scarletRasengan em { left: 75px; top: 20px; width: 57px; height: 57px; border: 5px solid rgb(243 98 46); border-radius: 50%; }
+.scarletRasengan i { left: 111px; top: 24px; width: 26px; height: 4px; background: rgb(255 207 107); --scarlet-ray: -25deg; }
+.scarletRasengan i:nth-of-type(2) { top: 47px; --scarlet-ray: 0deg; }
+.scarletRasengan i:nth-of-type(3) { top: 69px; --scarlet-ray: 25deg; }
+:global([data-battle='baryon-scarlet-rasengan']) .scarletRasengan b { animation: scarletOrb var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='baryon-scarlet-rasengan']) .scarletRasengan :is(em, i) { animation: scarletDetonation var(--battle-duration) var(--ease-out) both; }
+@keyframes scarletOrb { 0%, 8% { opacity: 0; transform: translateX(0) rotate(0deg); } 28% { opacity: 1; } 59% { opacity: 1; transform: translateX(26px) rotate(330deg); } 72%, 100% { opacity: 0; transform: translateX(26px) rotate(390deg); } }
+@keyframes scarletDetonation { 0%, 52% { opacity: 0; transform: rotate(var(--scarlet-ray, 0deg)) scale(0.95); } 67% { opacity: 0.95; transform: rotate(var(--scarlet-ray, 0deg)) scale(1.1); } 100% { opacity: 0; transform: rotate(var(--scarlet-ray, 0deg)) scale(1.3); } }
+.baryonCharge b { left: 47px; top: 22px; width: 67px; height: 48px; background: rgb(233 91 42 / 0.65); clip-path: polygon(0 0, 72% 23%, 100% 50%, 72% 77%, 0 100%, 30% 50%); }
+.baryonCharge i { left: -12px; top: 31px; width: 61px; height: 4px; background: linear-gradient(90deg, transparent, rgb(250 161 78)); }
+.baryonCharge i:nth-of-type(2) { top: 47px; width: 53px; }
+.baryonCharge i:nth-of-type(3) { top: 65px; }
+.baryonCharge em { left: 126px; top: 40px; width: 16px; height: 16px; background: rgb(255 209 125); clip-path: polygon(50% 0, 61% 36%, 100% 50%, 64% 61%, 50% 100%, 38% 64%, 0 50%, 36% 38%); }
+:global([data-battle='baryon-charge']) .baryonCharge b { animation: chargePressure var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='baryon-charge']) .baryonCharge i { animation: chargeStreaks var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='baryon-charge']) .baryonCharge em { animation: chargeContact var(--battle-duration) var(--ease-out) both; }
+@keyframes chargePressure { 0%, 10% { opacity: 0; transform: scaleX(0.95); } 28%, 68% { opacity: 0.85; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1.12); } }
+@keyframes chargeStreaks { 0%, 9% { opacity: 0; transform: translateX(0); } 29%, 70% { opacity: 0.9; } 100% { opacity: 0; transform: translateX(-28px); } }
+@keyframes chargeContact { 0%, 58% { opacity: 0; transform: scale(0.95); } 72% { opacity: 1; } 100% { opacity: 0; transform: scale(1.2); } }
+.destructiveFist i { left: -17px; top: 12px; width: 99px; height: 69px; border: 4px solid transparent; border-top-color: rgb(236 92 43); border-right-color: rgb(255 193 88); border-radius: 50%; }
+.destructiveFist i:nth-child(2) { left: -6px; top: 23px; width: 77px; height: 49px; border-bottom-color: rgb(218 68 36); border-top-color: transparent; }
+.destructiveFist b { left: 13px; top: 22px; width: 21px; height: 12px; border-right: 6px solid rgb(255 209 129); background: rgb(235 107 45); --spin-fist-x: 26px; --spin-fist-y: 0px; }
+.destructiveFist b:nth-of-type(2) { left: 50px; top: 39px; --spin-fist-x: 18px; --spin-fist-y: 5px; }
+.destructiveFist b:nth-of-type(3) { left: 18px; top: 65px; --spin-fist-x: 25px; --spin-fist-y: -2px; }
+.destructiveFist b:nth-of-type(4) { left: -1px; top: 44px; --spin-fist-x: -15px; --spin-fist-y: 0px; }
+:global([data-battle='baryon-destructive-fist']) .destructiveFist i { animation: destructiveSpin var(--battle-duration) var(--ease-in-out) both; }
+:global([data-battle='baryon-destructive-fist']) .destructiveFist b { animation: destructiveContact var(--battle-duration) var(--ease-out) both; }
+@keyframes destructiveSpin { 0%, 12% { opacity: 0; transform: rotate(-45deg); } 35%, 72% { opacity: 0.95; } 100% { opacity: 0; transform: rotate(340deg); } }
+@keyframes destructiveContact { 0%, 18% { opacity: 0; transform: translate3d(0, 0, 0); } 41%, 63% { opacity: 1; transform: translate3d(var(--spin-fist-x), var(--spin-fist-y), 0); } 100% { opacity: 0; transform: translate3d(var(--spin-fist-x), var(--spin-fist-y), 0); } }
+.scarletFlash i { left: -45px; top: 26px; width: 85px; height: 4px; background: linear-gradient(90deg, transparent, rgb(216 48 35), rgb(255 194 109)); }
+.scarletFlash i:nth-child(2) { top: 38px; width: 94px; }
+.scarletFlash i:nth-child(3) { top: 53px; width: 90px; }
+.scarletFlash i:nth-child(4) { top: 67px; width: 81px; }
+.scarletFlash b { left: 91px; top: 35px; width: 11px; height: 22px; background: rgb(255 201 113); clip-path: polygon(50% 0, 65% 37%, 100% 50%, 66% 62%, 50% 100%, 35% 63%, 0 50%, 35% 37%); }
+.scarletFlash b:last-child { left: 139px; top: 45px; }
+:global([data-battle='baryon-scarlet-flash']) .scarletFlash i { animation: scarletDashLines var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='baryon-scarlet-flash']) .scarletFlash b { animation: scarletDashHits var(--battle-duration) var(--ease-out) both; }
+@keyframes scarletDashLines { 0%, 10% { opacity: 0; transform: translateX(-10px); } 31% { opacity: 1; } 76% { opacity: 0.9; transform: translateX(80px); } 100% { opacity: 0; transform: translateX(80px); } }
+@keyframes scarletDashHits { 0%, 51% { opacity: 0; transform: scale(0.95); } 67%, 81% { opacity: 1; } 100% { opacity: 0; transform: scale(1.3); } }
+
+/* Kirin remains a descending lightning dragon at the target, not body flight. */
+.kirin b { left: 76px; top: -25px; width: 65px; height: 49px; background: rgb(173 226 251); clip-path: polygon(0 8%, 27% 20%, 22% 0, 47% 17%, 59% 0, 65% 24%, 100% 29%, 88% 47%, 100% 62%, 67% 66%, 77% 86%, 45% 77%, 32% 100%, 24% 63%, 0 53%); }
+.kirin b::after { position: absolute; content: ''; left: 43px; top: 17px; width: 6px; height: 3px; background: rgb(64 89 151); }
+.kirin i { left: 100px; top: -45px; width: 8px; height: 100px; background: rgb(191 236 255); clip-path: polygon(26% 0, 90% 0, 54% 35%, 100% 34%, 21% 100%, 39% 54%, 0 54%); }
+.kirin i:nth-of-type(2) { left: 125px; height: 105px; background: rgb(116 177 239); }
+.kirin i:nth-of-type(3) { left: 143px; height: 100px; }
+.kirin em { left: 93px; top: 72px; width: 57px; height: 11px; border-top: 3px solid rgb(188 234 255); border-radius: 50%; }
+:global([data-battle='sasuke-kirin']) .kirin b { animation: kirinDescent var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sasuke-kirin']) .kirin i { animation: kirinForks var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sasuke-kirin']) .kirin em { animation: kirinGround var(--battle-duration) var(--ease-out) both; }
+@keyframes kirinDescent { 0%, 15% { opacity: 0; transform: translate3d(0, -12px, 0); } 34% { opacity: 0.95; } 64% { opacity: 1; transform: translate3d(13px, 28px, 0); } 82%, 100% { opacity: 0; transform: translate3d(13px, 28px, 0); } }
+@keyframes kirinForks { 0%, 28% { opacity: 0; transform: translateY(-10px); } 45%, 72% { opacity: 0.9; transform: translateY(24px); } 100% { opacity: 0; transform: translateY(24px); } }
+@keyframes kirinGround { 0%, 57% { opacity: 0; transform: scaleX(0.95); } 73% { opacity: 1; } 100% { opacity: 0; transform: scaleX(1.1); } }
+
+/* Indra's Arrow: purple bow, drawn string, then a detached lightning arrow. */
+.indraArrow b { left: 43px; top: -6px; width: 49px; height: 86px; border: 6px solid transparent; border-right-color: rgb(152 108 220); border-radius: 50%; }
+.indraArrow em { left: 70px; top: 3px; width: 2px; height: 70px; background: rgb(221 182 255); }
+.indraArrow i { left: 63px; top: 32px; width: 65px; height: 15px; background: linear-gradient(90deg, rgb(147 124 242), rgb(214 228 255)); clip-path: polygon(0 34%, 65% 34%, 65% 0, 100% 50%, 65% 100%, 65% 66%, 0 66%); }
+.indraArrow strong { left: 130px; top: 26px; width: 19px; height: 29px; border: 2px solid rgb(182 166 255); border-radius: 50%; }
+:global([data-battle='indra-arrow']) .indraArrow :is(b, em) { animation: indraDraw var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='indra-arrow']) .indraArrow i { animation: indraFlight var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='indra-arrow']) .indraArrow strong { animation: indraContact var(--battle-duration) var(--ease-out) both; }
+@keyframes indraDraw { 0%, 7% { opacity: 0; transform: scaleY(0.95); } 26%, 52% { opacity: 0.95; transform: scaleY(1); } 80%, 100% { opacity: 0; transform: scaleY(1); } }
+@keyframes indraFlight { 0%, 20% { opacity: 0; transform: translateX(-16px); } 38%, 49% { opacity: 1; transform: translateX(-12px); } 77% { opacity: 1; transform: translateX(26px); } 100% { opacity: 0; transform: translateX(26px); } }
+@keyframes indraContact { 0%, 70% { opacity: 0; transform: scale(0.95); } 84% { opacity: 0.9; } 100% { opacity: 0; transform: scale(1.2); } }
+
+/* Sasuke's fused Chidori is a dark flame envelope around pointed lightning. */
+.chidoriFlame b { left: 40px; top: 25px; width: 57px; height: 44px; background: rgb(25 20 35); clip-path: polygon(0 30%, 24% 35%, 16% 0, 47% 26%, 65% 10%, 75% 34%, 100% 48%, 77% 64%, 67% 94%, 46% 75%, 19% 100%, 25% 67%, 0 72%); }
+.chidoriFlame i { left: 45px; top: 30px; width: 65px; height: 43px; background: rgb(178 204 255); clip-path: polygon(0 44%, 40% 36%, 26% 0, 64% 35%, 100% 17%, 78% 47%, 100% 77%, 63% 62%, 39% 100%, 42% 60%, 0 68%); }
+.chidoriFlame i:nth-of-type(2) { top: 38px; width: 74px; height: 23px; background: rgb(150 104 220); }
+.chidoriFlame i:nth-of-type(3) { top: 42px; width: 77px; height: 15px; background: rgb(229 237 255); }
+.chidoriFlame em { left: 129px; top: 30px; width: 17px; height: 40px; border-right: 3px solid rgb(172 124 233); border-radius: 50%; }
+:global([data-battle='sasuke-chidori-flame-control']) .chidoriFlame :is(b, i) { animation: fusedChidori var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sasuke-chidori-flame-control']) .chidoriFlame em { animation: fusedChidoriHit var(--battle-duration) var(--ease-out) both; }
+@keyframes fusedChidori { 0%, 11% { opacity: 0; transform: translateX(-6px) scaleX(0.95); } 32% { opacity: 1; } 72% { opacity: 1; transform: translateX(26px) scaleX(1.02); } 100% { opacity: 0; transform: translateX(26px) scaleX(1.02); } }
+@keyframes fusedChidoriHit { 0%, 60% { opacity: 0; transform: scale(0.95); } 78% { opacity: 0.9; } 100% { opacity: 0; transform: scale(1.12); } }
+
+/* Fireball detaches from the mouth, travels visibly, then bursts at its endpoint. */
+.sasukeFireball b { left: 46px; top: 31px; width: 35px; height: 35px; border-radius: 50%; background: radial-gradient(circle at 60% 45%, rgb(255 236 156), rgb(249 161 52) 40%, rgb(212 65 31) 75%); box-shadow: 0 0 4px rgb(247 133 46 / 0.6); }
+.sasukeFireball i { left: 32px; top: 33px; width: 29px; height: 31px; background: rgb(228 95 32 / 0.85); clip-path: polygon(0 0, 83% 25%, 100% 50%, 81% 80%, 0 100%, 28% 57%); }
+.sasukeFireball i:nth-of-type(2) { top: 40px; width: 33px; height: 18px; background: rgb(255 196 77); }
+.sasukeFireball i:nth-of-type(3) { left: 24px; top: 46px; width: 23px; height: 7px; }
+.sasukeFireball em { left: 123px; top: 22px; width: 31px; height: 51px; background: rgb(250 166 63 / 0.8); clip-path: polygon(22% 0, 60% 26%, 100% 14%, 73% 47%, 100% 80%, 59% 71%, 24% 100%, 26% 64%, 0 50%, 27% 36%); }
+:global([data-battle='sasuke-fireball']) .sasukeFireball :is(b, i) { animation: sasukeFireFlight var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='sasuke-fireball']) .sasukeFireball em { animation: sasukeFireBurst var(--battle-duration) var(--ease-out) both; }
+@keyframes sasukeFireFlight { 0%, 13% { opacity: 0; transform: translateX(0) scale(0.95); } 30% { opacity: 1; transform: translateX(8px) scale(1); } 78% { opacity: 1; transform: translateX(68px) scale(1.08); } 89%, 100% { opacity: 0; transform: translateX(68px) scale(1.08); } }
+@keyframes sasukeFireBurst { 0%, 72% { opacity: 0; transform: scale(0.95); } 84% { opacity: 0.95; } 100% { opacity: 0; transform: scale(1.04); } }
+
+/* The shared parent pauses every descendant, including pseudo-elements. Reduced
+   motion removes only these transient attacks; completed clothing stays visible. */
+@media (prefers-reduced-motion: reduce) {
+  .twinRasengan,
+  .rasenganBarrage,
+  .shadowFollowUp,
+  .lavaShuriken,
+  .sixPathsRasen,
+  .bulletBarrage,
+  .counterKick,
+  .tailBarrage,
+  .handPower,
+  .flameControl,
+  .planetarySeal,
+  .massiveBarrage, .uzumakiBarrage, .toadSummon, .shurikenFeint,
+  .truthseekerSalvo, .chakraRebirth, .superTailedShuriken, .beastBombBarrage,
+  .scarletRasengan, .baryonCharge, .destructiveFist, .scarletFlash,
+  .kirin, .indraArrow, .chidoriFlame, .sasukeFireball { display: none; }
+}

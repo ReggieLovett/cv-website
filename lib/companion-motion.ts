@@ -6,14 +6,14 @@ export type PowerUpAction =
   | 'sword-draw'
   | 'lightning-dash'
   | 'fire-mode'
-  | 'ice-mode'
-  | 'shadow-mode'
+  | 'water-mode'
   | 'zetten-mode'
   | 'devil-union'
-  | 'star-magic'
   | 'spirit-dive'
   | 'baryon-mode'
-  | 'six-paths-eyes';
+  | 'six-paths-eyes'
+  | 'deku-overdrive'
+  | 'hyper-sonic';
 
 export type SpriteAction = 'hop' | 'salute' | 'look-around' | 'twirl' | 'levitate' | 'sparkle' | PowerUpAction;
 
@@ -22,8 +22,8 @@ export type SpriteActionConfig = {
   duration: number;
   effect:
     | 'none' | 'dust' | 'spark' | 'ring'
-    | 'sage' | 'chakra' | 'sword' | 'lightning' | 'fire' | 'ice' | 'shadow'
-    | 'zetten' | 'devil' | 'star' | 'spirit' | 'baryon' | 'six-paths';
+    | 'sage' | 'chakra' | 'sword' | 'lightning' | 'fire' | 'water'
+    | 'zetten' | 'devil' | 'star' | 'spirit' | 'baryon' | 'six-paths' | 'deku' | 'hyper';
   label: string;
 };
 
@@ -158,7 +158,7 @@ export const SPRITE_ACTIONS: Record<SpriteAction, SpriteActionConfig> = {
     ],
     duration: 2400,
     effect: 'chakra',
-    label: 'A cloak of golden energy',
+    label: 'Six Paths chakra awakens',
   },
   'sword-draw': {
     keyframes: [
@@ -187,7 +187,7 @@ export const SPRITE_ACTIONS: Record<SpriteAction, SpriteActionConfig> = {
     ],
     duration: 1800,
     effect: 'lightning',
-    label: 'A flash across the trail',
+    label: 'True Lightning Magic: Ceranos',
   },
   'fire-mode': {
     keyframes: [
@@ -202,9 +202,9 @@ export const SPRITE_ACTIONS: Record<SpriteAction, SpriteActionConfig> = {
     ],
     duration: 2400,
     effect: 'fire',
-    label: 'A phoenix stirs within',
+    label: 'Hellfire Incarnate awakens',
   },
-  'ice-mode': {
+  'water-mode': {
     keyframes: [
       frame(0),
       frame(0.16, 'translate3d(0, 0, 0) rotate(0deg) scale(1.08, 0.94)', EASE_IN_OUT),
@@ -214,22 +214,8 @@ export const SPRITE_ACTIONS: Record<SpriteAction, SpriteActionConfig> = {
       frame(1),
     ],
     duration: 2200,
-    effect: 'ice',
-    label: 'A shield of winter',
-  },
-  'shadow-mode': {
-    keyframes: [
-      frame(0),
-      frame(0.14, 'translate3d(0, 0, 0) rotate(-2deg) scale(0.98, 1.02)', EASE_IN_OUT, 0.86),
-      frame(0.3, 'translate3d(-11px, 0, 0) rotate(-6deg) scale(0.97)', EASE_IN_OUT, 0.58),
-      frame(0.5, 'translate3d(11px, 0, 0) rotate(6deg) scale(1.03)', EASE_IN_OUT, 0.68),
-      frame(0.7, 'translate3d(-5px, 0, 0) rotate(-3deg) scale(0.99)', EASE_IN_OUT, 0.8),
-      frame(0.86, 'translate3d(2px, 0, 0) rotate(1deg) scale(1)', EASE_OUT, 0.94),
-      frame(1),
-    ],
-    duration: 2300,
-    effect: 'shadow',
-    label: 'A shadow at my side',
+    effect: 'water',
+    label: 'Leviathan’s dragon armor awakens',
   },
   'zetten-mode': {
     keyframes: [
@@ -260,20 +246,6 @@ export const SPRITE_ACTIONS: Record<SpriteAction, SpriteActionConfig> = {
     duration: 2600,
     effect: 'devil',
     label: 'Wings of a darker resolve',
-  },
-  'star-magic': {
-    keyframes: [
-      frame(0),
-      frame(0.16, 'translate3d(-8px, 0, 0) rotate(-8deg) scale(1.02)', EASE_IN_OUT),
-      frame(0.36, 'translate3d(10px, 0, 0) rotate(6deg) scale(1.05)', EASE_IN_OUT),
-      frame(0.56, 'translate3d(-10px, 0, 0) rotate(-5deg) scale(1.04)', EASE_IN_OUT),
-      frame(0.74, 'translate3d(7px, 0, 0) rotate(5deg) scale(1.03)', EASE_IN_OUT),
-      frame(0.9, 'translate3d(0, 0, 0) rotate(0deg) scale(1.01)'),
-      frame(1),
-    ],
-    duration: 2500,
-    effect: 'star',
-    label: 'A constellation, close at hand',
   },
   'spirit-dive': {
     keyframes: [
@@ -319,6 +291,38 @@ export const SPRITE_ACTIONS: Record<SpriteAction, SpriteActionConfig> = {
     effect: 'six-paths',
     label: 'A crimson-and-violet awakening',
   },
+  'deku-overdrive': {
+    keyframes: [
+      frame(0),
+      frame(0.12, 'translate3d(0, 0, 0) rotate(-4deg) scale(1.05, 0.94)', EASE_IN_OUT),
+      frame(0.24, 'translate3d(-2px, 0, 0) rotate(-6deg) scale(1.04, 0.96)'),
+      frame(0.36, 'translate3d(2px, 0, 0) rotate(4deg) scale(1.03)'),
+      frame(0.5, 'translate3d(-2px, 0, 0) rotate(-3deg) scale(1.05)', EASE_IN_OUT),
+      frame(0.64, 'translate3d(5px, 0, 0) rotate(7deg) scale(1.08, 0.98)'),
+      frame(0.82, 'translate3d(2px, 0, 0) rotate(-2deg) scale(1.04)', EASE_IN_OUT),
+      frame(1),
+    ],
+    duration: 2800,
+    effect: 'deku',
+    label: 'One For All: Overdrive',
+  },
+  'hyper-sonic': {
+    // Sonic 3 & Knuckles: seven Super Emeralds converge before one local silver
+    // bloom. A restrained rainbow halo replaces the original flashing palette.
+    keyframes: [
+      frame(0),
+      frame(0.12, 'translate3d(0, 0, 0) rotate(-3deg) scale(1.04, 0.95)', EASE_IN_OUT),
+      frame(0.28, 'translate3d(0, 0, 0) rotate(-2deg) scale(1.03, 0.96)', EASE_IN_OUT),
+      frame(0.44, 'translate3d(0, 0, 0) rotate(0deg) scale(1.04)', EASE_IN_OUT),
+      frame(0.58, 'translate3d(0, 0, 0) rotate(0deg) scale(1.09)'),
+      frame(0.7, 'translate3d(2px, 0, 0) rotate(3deg) scale(1.06)', EASE_IN_OUT),
+      frame(0.86, 'translate3d(0, 0, 0) rotate(-1deg) scale(1.03)'),
+      frame(1),
+    ],
+    duration: 3000,
+    effect: 'hyper',
+    label: 'Seven Super Emeralds awaken Hyper Sonic',
+  },
 };
 
 /** Direct choices expose every power-up regardless of the active sprite persona. */
@@ -330,8 +334,8 @@ export const POWER_UPS: readonly { action: PowerUpAction; label: string; descrip
   },
   {
     action: 'chakra-mode',
-    label: 'Chakra Cloak',
-    description: 'Charge up inside a flowing cloak of golden energy.',
+    label: 'Six Paths KCM',
+    description: 'Naruto’s golden magatama cloak, cross-shaped pupils, Truth-Seeking Orbs, and a nine-tailed Kurama avatar for chakra-arm, bomb and Rasenshuriken attacks.',
   },
   {
     action: 'sword-draw',
@@ -341,22 +345,17 @@ export const POWER_UPS: readonly { action: PowerUpAction; label: string; descrip
   {
     action: 'lightning-dash',
     label: 'Lightning Step',
-    description: 'Build a charge and dash through a trail of blue sparks.',
+    description: 'Luck’s True Lightning Magic: rune arrays, lightning gloves and boots, Ceranos, and his close-range lightning arsenal.',
   },
   {
     action: 'fire-mode',
-    label: 'Phoenix Flame',
-    description: 'Ignite phoenix fire and carry a warm aura of embers.',
+    label: 'Hellfire Incarnate',
+    description: 'Mereoleona’s flame mantle, burning fists, Calidos Brachium combinations, and Mana Zone air-standing.',
   },
   {
-    action: 'ice-mode',
-    label: 'Frost Armor',
-    description: 'Brace as frost crystals gather into a coat of icy armor.',
-  },
-  {
-    action: 'shadow-mode',
-    label: 'Shadow Clone',
-    description: 'Slip between shadows and summon a companion silhouette.',
+    action: 'water-mode',
+    label: 'Leviathan Dragon Armor',
+    description: 'Noelle’s Leviathan-powered Valkyrie Armor: silver water armor, dragon fins, a spiral lance, and Sea Dragon magic.',
   },
   {
     action: 'zetten-mode',
@@ -369,14 +368,9 @@ export const POWER_UPS: readonly { action: PowerUpAction; label: string; descrip
     description: 'An Asta-inspired effect: release dark wings and brace in a united battle form.',
   },
   {
-    action: 'star-magic',
-    label: 'Star Magic',
-    description: 'A Yuno-inspired effect: gather a constellation around a grounded stance.',
-  },
-  {
     action: 'spirit-dive',
-    label: 'Spirit Dive',
-    description: 'A Yuno-inspired effect: summon guardian wind into a grounded spirit form.',
+    label: 'Spirit Dive + Star Magic',
+    description: 'Yuno’s complete Spirit Dive and Saint Stage, four Star Magic stars, two grimoires, and ten combined wind-and-star techniques.',
   },
   {
     action: 'baryon-mode',
@@ -386,7 +380,17 @@ export const POWER_UPS: readonly { action: PowerUpAction; label: string; descrip
   {
     action: 'six-paths-eyes',
     label: 'Six Paths Eyes',
-    description: 'A Sasuke-inspired effect: awaken crimson and violet eyes inside a cool electric aura.',
+    description: 'Sasuke’s crimson/violet eyes and Kusanagi blade, with purple Susano’o armor, a spectral sword, flame arrows and Indra’s Arrow during battle.',
+  },
+  {
+    action: 'deku-overdrive',
+    label: 'OFA Full Overdrive',
+    description: 'Final War Deku gear with OFA, Gearshift, Fa Jin, Danger Sense, Blackwhip, Smokescreen, and Float performances.',
+  },
+  {
+    action: 'hyper-sonic',
+    label: 'Hyper Sonic',
+    description: 'Hyper Sonic’s silver quills and restrained prismatic aura, with ten Frontiers-inspired Super Sonic combat techniques and a low hover.',
   },
 ];
 
