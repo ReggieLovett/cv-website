@@ -215,7 +215,7 @@
 /* The expanded repertoires add attacks, summons and defenses to the same body.
    Local shapes, including release paths, stay inside x=-92…156. */
 .massiveBarrage, .uzumakiBarrage, .toadSummon, .shurikenFeint,
-.truthseekerSalvo, .chakraRebirth, .superTailedShuriken, .beastBombBarrage,
+.truthseekerSalvo, .superTailedShuriken, .beastBombBarrage,
 .scarletRasengan, .baryonCharge, .destructiveFist, .scarletFlash,
 .kirin, .indraArrow, .chidoriFlame, .sasukeFireball {
   position: absolute;
@@ -224,7 +224,7 @@
   pointer-events: none;
 }
 .massiveBarrage > *, .uzumakiBarrage > *, .toadSummon > *, .shurikenFeint > *,
-.truthseekerSalvo > *, .chakraRebirth > *, .superTailedShuriken > *, .beastBombBarrage > *,
+.truthseekerSalvo > *, .superTailedShuriken > *, .beastBombBarrage > *,
 .scarletRasengan > *, .baryonCharge > *, .destructiveFist > *, .scarletFlash > *,
 .kirin > *, .indraArrow > *, .chidoriFlame > *, .sasukeFireball > * {
   position: absolute;
@@ -232,7 +232,7 @@
   margin: 0;
   opacity: 0;
 }
-.massiveBarrage i, .uzumakiBarrage i, .shurikenFeint i, .beastBombBarrage i {
+.massiveBarrage i, .uzumakiBarrage i, .shurikenFeint i {
   left: 8px;
   top: 0;
   width: 48px;
@@ -299,36 +299,19 @@
 @keyframes truthseekerShot { 0%, 14% { opacity: 0; transform: translate3d(0, 0, 0); } 29% { opacity: 1; } 82% { opacity: 1; transform: translate3d(var(--salvo-x), var(--salvo-y), 0); } 100% { opacity: 0; transform: translate3d(var(--salvo-x), var(--salvo-y), 0); } }
 @keyframes truthseekerStaff { 0%, 19% { opacity: 0; transform: scaleX(0.95); } 38%, 62% { opacity: 0.9; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(0.95); } }
 
-/* Rebirth is a defensive support technique, expressed as a palm seal and local field. */
-.chakraRebirth b { left: 38px; top: 45px; width: 25px; height: 25px; border-radius: 50%; background: radial-gradient(circle, rgb(248 253 188), rgb(118 211 166 / 0.8) 60%, transparent 72%); }
-.chakraRebirth b::after { position: absolute; content: ''; inset: 5px; background: rgb(245 248 186); clip-path: polygon(36% 0, 64% 0, 64% 36%, 100% 36%, 100% 64%, 64% 64%, 64% 100%, 36% 100%, 36% 64%, 0 64%, 0 36%, 36% 36%); }
-.chakraRebirth em { left: -26px; top: -17px; width: 116px; height: 98px; border: 2px solid rgb(225 235 153 / 0.7); border-radius: 50%; }
-.chakraRebirth i { left: 16px; top: 58px; width: 5px; height: 5px; background: rgb(216 244 183); --rebirth-rise: -24px; }
-.chakraRebirth i:nth-of-type(2) { left: 35px; --rebirth-rise: -36px; }
-.chakraRebirth i:nth-of-type(3) { left: 52px; --rebirth-rise: -27px; }
-:global([data-battle='six-paths-chakra-rebirth']) .chakraRebirth :is(b, em) { animation: rebirthField var(--battle-duration) var(--ease-out) both; }
-:global([data-battle='six-paths-chakra-rebirth']) .chakraRebirth i { animation: rebirthMotes var(--battle-duration) var(--ease-out) both; }
-@keyframes rebirthField { 0%, 9% { opacity: 0; transform: scale(0.95); } 36%, 73% { opacity: 0.85; transform: scale(1); } 100% { opacity: 0; transform: scale(1.08); } }
-@keyframes rebirthMotes { 0%, 21% { opacity: 0; transform: translateY(0) rotate(0deg); } 44%, 72% { opacity: 0.9; } 100% { opacity: 0; transform: translateY(var(--rebirth-rise)) rotate(90deg); } }
-
-/* A multi-nature shuriken spread has five visibly spinning, traveling projectiles. */
-.superTailedShuriken i { left: 39px; top: 19px; width: 23px; height: 23px; background: rgb(255 230 147); clip-path: polygon(50% 0, 62% 35%, 100% 50%, 63% 62%, 50% 100%, 37% 63%, 0 50%, 35% 38%); --nature-x: 65px; --nature-y: -12px; --nature-delay: 0ms; }
-.superTailedShuriken i:nth-child(2) { top: 31px; background: rgb(227 113 66); --nature-x: 79px; --nature-y: -5px; --nature-delay: 60ms; }
-.superTailedShuriken i:nth-child(3) { top: 42px; background: rgb(218 245 255); --nature-x: 80px; --nature-y: 0px; --nature-delay: 120ms; }
-.superTailedShuriken i:nth-child(4) { top: 53px; background: rgb(164 135 223); --nature-x: 73px; --nature-y: 4px; --nature-delay: 180ms; }
-.superTailedShuriken i:nth-child(5) { top: 61px; background: rgb(152 219 211); --nature-x: 57px; --nature-y: 5px; --nature-delay: 240ms; }
+/* Chakra discs fan outward from the enlarged hand; bombs launch at the fox muzzle. */
+.superTailedShuriken i { left: 80px; top: 36px; width: 23px; height: 23px; background: rgb(255 230 147); clip-path: polygon(50% 0, 62% 35%, 100% 50%, 63% 62%, 50% 100%, 37% 63%, 0 50%, 35% 38%); --nature-x: 37px; --nature-y: -27px; --nature-delay: 0ms; }
+.superTailedShuriken i:nth-child(2) { background: rgb(227 113 66); --nature-x: 42px; --nature-y: -14px; --nature-delay: 60ms; }
+.superTailedShuriken i:nth-child(3) { background: rgb(218 245 255); --nature-x: 45px; --nature-y: 0px; --nature-delay: 120ms; }
+.superTailedShuriken i:nth-child(4) { background: rgb(164 135 223); --nature-x: 38px; --nature-y: 14px; --nature-delay: 180ms; }
+.superTailedShuriken i:nth-child(5) { background: rgb(152 219 211); --nature-x: 27px; --nature-y: 25px; --nature-delay: 240ms; }
 :global([data-battle='six-paths-super-tailed-shuriken']) .superTailedShuriken i { animation: tailedShurikenFlight calc(var(--battle-duration) - 240ms) linear var(--nature-delay) both; }
 @keyframes tailedShurikenFlight { 0%, 17% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg); } 31% { opacity: 1; } 84% { opacity: 1; transform: translate3d(var(--nature-x), var(--nature-y), 0) rotate(620deg); } 100% { opacity: 0; transform: translate3d(var(--nature-x), var(--nature-y), 0) rotate(780deg); } }
-.beastBombBarrage b { left: 42px; top: 35px; width: 18px; height: 18px; border: 2px solid rgb(227 192 101); border-radius: 50%; background: radial-gradient(circle at 40% 35%, rgb(136 80 155), rgb(31 23 45) 64%); --bomb-delay: 0ms; }
-.beastBombBarrage b:nth-of-type(2) { top: 45px; width: 19px; height: 19px; --bomb-delay: 120ms; }
-.beastBombBarrage b:nth-of-type(3) { top: 54px; width: 22px; height: 22px; --bomb-delay: 240ms; }
-.beastBombBarrage em { left: 42px; top: 28px; width: 27px; height: 50px; border-right: 2px solid rgb(237 200 107); border-radius: 50%; }
-:global([data-battle='six-paths-tailed-beast-barrage']) .beastBombBarrage i { animation: beastClone var(--battle-duration) var(--ease-out) both; }
+.beastBombBarrage b { left: 83px; top: -50px; width: 18px; height: 18px; border: 2px solid rgb(227 192 101); border-radius: 50%; background: radial-gradient(circle at 40% 35%, rgb(136 80 155), rgb(31 23 45) 64%); --bomb-delay: 0ms; }
+.beastBombBarrage b:nth-of-type(2) { top: -50px; width: 19px; height: 19px; --bomb-delay: 120ms; }
+.beastBombBarrage b:nth-of-type(3) { left: 81px; top: -51px; width: 22px; height: 22px; --bomb-delay: 240ms; }
 :global([data-battle='six-paths-tailed-beast-barrage']) .beastBombBarrage b { animation: smallBombFlight calc(var(--battle-duration) - 240ms) var(--ease-out) var(--bomb-delay) both; }
-:global([data-battle='six-paths-tailed-beast-barrage']) .beastBombBarrage em { animation: bombLaunch var(--battle-duration) var(--ease-out) both; }
-@keyframes beastClone { 0%, 11% { opacity: 0; transform: translateX(10px); } 27%, 75% { opacity: 0.75; transform: translateX(24px); } 100% { opacity: 0; transform: translateX(24px); } }
-@keyframes smallBombFlight { 0%, 19% { opacity: 0; transform: translateX(0); } 31% { opacity: 1; } 81% { opacity: 1; transform: translateX(82px); } 100% { opacity: 0; transform: translateX(82px); } }
-@keyframes bombLaunch { 0%, 19% { opacity: 0; transform: scaleX(0.95); } 36%, 67% { opacity: 0.8; } 100% { opacity: 0; transform: scaleX(1.1); } }
+@keyframes smallBombFlight { 0%, 19% { opacity: 0; transform: translateX(0); } 31% { opacity: 1; } 81% { opacity: 1; transform: translateX(44px); } 100% { opacity: 0; transform: translateX(44px); } }
 
 /* Baryon game techniques: a scarlet orb detonation, charge, spin, and high-speed contact. */
 .scarletRasengan b { left: 48px; top: 40px; width: 29px; height: 29px; border: 2px solid rgb(255 220 134); border-radius: 50%; background: repeating-conic-gradient(rgb(252 147 63) 0deg 40deg, rgb(192 45 34) 48deg 70deg); }
@@ -435,7 +418,7 @@
   .flameControl,
   .planetarySeal,
   .massiveBarrage, .uzumakiBarrage, .toadSummon, .shurikenFeint,
-  .truthseekerSalvo, .chakraRebirth, .superTailedShuriken, .beastBombBarrage,
+  .truthseekerSalvo, .superTailedShuriken, .beastBombBarrage,
   .scarletRasengan, .baryonCharge, .destructiveFist, .scarletFlash,
   .kirin, .indraArrow, .chidoriFlame, .sasukeFireball { display: none; }
 }

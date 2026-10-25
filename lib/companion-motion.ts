@@ -335,7 +335,7 @@ export const POWER_UPS: readonly { action: PowerUpAction; label: string; descrip
   {
     action: 'chakra-mode',
     label: 'Six Paths KCM',
-    description: 'Naruto’s golden magatama cloak, cross-shaped pupils, Truth-Seeking Orbs, and a nine-tailed Kurama avatar for chakra-arm, bomb and Rasenshuriken attacks.',
+    description: 'Naruto’s golden magatama cloak, cross-shaped pupils, Truth-Seeking Orbs, partial Kurama head for bombs, giant chakra hands, and a fox-head shield dome.',
   },
   {
     action: 'sword-draw',

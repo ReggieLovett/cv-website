@@ -1649,11 +1649,11 @@
   animation: rasenganStrike var(--battle-duration) var(--ease-out) both;
 }
 .companion[data-battle='chakra-arm-rasengan'] .battleOrb i:nth-child(2) {
-  left: 98px; top: 45px; width: 38px; height: 38px;
+  left: 94px; top: 45px; width: 38px; height: 38px;
   border-color: rgb(255 224 139);
 }
 .companion[data-battle='chakra-arm-rasengan'] .battleOrb i:nth-child(3) {
-  left: 97px; top: 57px; width: 40px; height: 14px;
+  left: 92px; top: 57px; width: 36px; height: 14px;
 }
 @keyframes rasenganStrike {
   0%, 10% { opacity: 0; transform: translateX(0) rotate(-30deg) scale(0.9); }
@@ -2228,6 +2228,9 @@
 .companion[data-battle]:not([data-battle='none'])[data-form='spirit-dive'] .saintBlade { opacity: 0; }
 .companion[data-battle='black-divider'] .battleSlash i:first-child,
 .companion[data-battle='spirit-of-zephyr'] .battleWind i:first-child { display: none; }
+
+/* Partial chakra hands own these strikes; keep the old thin arm layer hidden. */
+.companion[data-form='chakra-mode']:is([data-battle='chakra-arm-barrage'], [data-battle='chakra-arm-rasengan']) .battleArms { display: none; }
 
 /* Kurama charges the bomb at its muzzle and releases it across the lane. */
 .companion[data-form='chakra-mode'][data-battle='tailed-beast-bomb'] .battleOrb i { left: 75px; top: -59px; width: 30px; height: 30px; animation: kuramaBombRelease var(--battle-duration) var(--ease-out) both; }

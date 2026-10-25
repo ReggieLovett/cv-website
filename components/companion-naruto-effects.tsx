@@ -20,9 +20,8 @@ export default function NarutoBattleEffects() {
       <span className={styles.toadSummon} aria-hidden="true"><b /><i /><i /><em /><strong /></span>
       <span className={styles.shurikenFeint} aria-hidden="true"><i /><b /><em /><strong /></span>
       <span className={styles.truthseekerSalvo} aria-hidden="true"><i /><i /><i /><i /><i /><b /></span>
-      <span className={styles.chakraRebirth} aria-hidden="true"><b /><em /><i /><i /><i /></span>
       <span className={styles.superTailedShuriken} aria-hidden="true"><i /><i /><i /><i /><i /></span>
-      <span className={styles.beastBombBarrage} aria-hidden="true"><i /><b /><b /><b /><em /></span>
+      <span className={styles.beastBombBarrage} aria-hidden="true"><b /><b /><b /></span>
       <span className={styles.scarletRasengan} aria-hidden="true"><b /><em /><i /><i /><i /></span>
       <span className={styles.baryonCharge} aria-hidden="true"><b /><i /><i /><i /><em /></span>
       <span className={styles.destructiveFist} aria-hidden="true"><i /><i /><b /><b /><b /><b /></span>

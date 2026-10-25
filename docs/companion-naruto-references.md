@@ -100,9 +100,9 @@ These four additions per kit preserve the existing six. The labels below disting
 | Sage | Summoning Jutsu: Toad Assist | A bounded toad head rises from smoke and releases a short water stream. Summoning is established; the small assist is creative choreography. |
 | Sage | Shadow Clone: Rasenshuriken Feint | One decoy fades as a rotating wind disc releases; descriptive use of clones and the sourced ranged technique. |
 | Six Paths KCM | Truth-Seeking Orbs: Salvo | Five dark, gold-edged orbs separate and travel; descriptive application of the Six Paths orb arsenal. |
-| Six Paths KCM | Six Paths Chakra: Rebirth | A gold hand seal and warm expanding restorative rings; support, rather than a fabricated damaging blast. The [official Last Battle DLC listing](https://store.playstation.com/en-us/product/UP0700-CUSA08789_00-SPASS3CHARANRTRD) names this Heal Type technique and Truthseeker Orbs: Cycle. |
-| Six Paths KCM | Six Paths: Super Tailed Beast Rasen Shuriken | Several colored chakra-nature discs spin and travel away; licensed Ninja Voltage name. Kurama's avatar surrounds this companion performance. |
-| Six Paths KCM | Six Paths: Tailed Beast Barrage | A clone and three staggered dark chakra bombs; licensed Ninja Voltage name. The companion adds Kurama's outline as a chakra-construct adaptation. |
+| Six Paths KCM | Kurama Chakra: Fox-Head Guard | A golden fox-head-shaped shield dome protects the same original knight. This is the user's requested defensive visual adaptation, not an asserted canonical or licensed-game jutsu name. It replaces the healing move while preserving ten techniques. |
+| Six Paths KCM | Six Paths: Super Tailed Beast Rasen Shuriken | Giant chakra hands accompany several colored chakra-nature discs that spin and travel away; licensed Ninja Voltage name. The hands are a partial construct without a full fox body. |
+| Six Paths KCM | Six Paths: Tailed Beast Barrage | A partial Kurama head charges and fires three staggered dark chakra bombs; licensed Ninja Voltage name, adapted to the requested head-only presentation. |
 | Baryon | Baryon: Scarlet Rasengan | A concentrated warm Rasengan with red arcs and a compact impact; [official game card](https://naruto-official.com/en/news/01_1633). |
 | Baryon | Baryon: Charge | Orange speed wake, original-body echoes and a contact burst; the same official game announcement names the forward charge. |
 | Baryon | Baryon: Destructive Fist | Two staged chakra fists and four compact impacts; [official Baryon game notes](https://naruto-official.com/en/news/01_1340). |
@@ -112,10 +112,16 @@ These four additions per kit preserve the existing six. The labels below disting
 | Sasuke | Chidori Flame Control: Conclusion | A blue-white hand thrust wrapped in violet-edged black flame; licensed Final Showdown game technique. |
 | Sasuke | Fire Style: Fireball Jutsu | An orange/yellow fireball detaches, travels and blooms at its endpoint. The [official Vengeance-arc retrospective](https://naruto-official.com/en/news/01_1316) anchors Sasuke's fire arsenal. |
 
-## Visible chakra avatars
+## Visible chakra constructs
 
 Sasuke's **Susano’o Sword Slash**, **Inferno Style: Susano’o Flame Control**, and **Indra’s Arrow** summon a large purple translucent warrior with a pointed tengu-style helmet, bright eye slits, segmented ribs, armored arms and paired wings. Its corresponding sword or bow remains the attacking weapon; the knight/elf stays visible inside. The [official Final Showdown notes](https://naruto-official.com/en/news/01_1472) explicitly describe Susano’o swinging a katana and producing a shock wave. The larger armor silhouette is a stylized construct around the sprite, not a replacement character atlas.
 
-Six Paths KCM's **Chakra Arm Barrage**, **Tailed Beast Bomb**, **Super Tailed Beast Rasen Shuriken**, and **Tailed Beast Barrage** summon a translucent golden **Kurama avatar** with a pointed fox profile, black chakra markings, claws and nine distinct tails. Tailed Beast Bomb visibly charges at its muzzle and travels across the bottom lane. The [official Kurama/bomb cards](https://naruto-official.com/en/news/01_1825) support that mouth-fired behavior; [official Kurama Link weapon notes](https://naruto-official.com/en/news/01_1794?nolangsuggestion=1) also describe using Kurama's claws. Applying the outline to the hand/disc combinations is creative companion staging of the same chakra construct.
+Six Paths KCM uses **partial Kurama constructs** rather than a complete nine-tailed body:
 
-Avatars emerge only during their designated moves and fade before the next performance. Their 220 × 200 local SVG is layered behind the 48 × 84 original character, remains within the existing horizontal effect reserve, shares facing and the bottom clip, pauses with controls/hidden/chat state, and is absent under reduced motion. Only transform and opacity animate. Baryon and Sage do not summon the Kurama avatar.
+- **Tailed Beast Bomb** and **Tailed Beast Barrage** form a translucent golden fox head. Dark bombs charge at its muzzle, then visibly travel across the bottom lane.
+- **Chakra Arm Barrage**, **Chakra Arm Rasengan**, and **Super Tailed Beast Rasen Shuriken** form giant chakra hands. The hands strike or carry the orb/disc release without summoning a fox torso, legs or tails.
+- **Kurama Chakra: Fox-Head Guard** forms a head-shaped shield dome. Its descriptive name and defensive choreography are the user's requested creative companion adaptation.
+
+The [official Kurama/bomb cards](https://naruto-official.com/en/news/01_1825) support the mouth-fired bomb behavior; [official Kurama Link weapon notes](https://naruto-official.com/en/news/01_1794?nolangsuggestion=1) describe Kurama's claws. The compact head, hands and shield are visual adaptations of that chakra language. These references do not establish Fox-Head Guard as a separate named canonical technique.
+
+Constructs emerge only during their designated moves and fade before the next performance. They layer behind the 48 × 84 original character, remain within the existing horizontal effect reserve, share facing and the bottom clip, pause with controls/hidden/chat state, and are absent under reduced motion. Only transform and opacity animate. These partial Kurama effects belong to Six Paths KCM; Baryon and Sage retain their own distinct effects. Every repertoire still contains ten techniques.

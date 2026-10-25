@@ -20,7 +20,7 @@ export const NARUTO_TECHNIQUES = {
   'sage-toad-summoning': makeTechnique('Summoning Jutsu: Toad Assist', 'sage-toad-summoning', 'hover', 'brace', 1180),
   'sage-shuriken-feint': makeTechnique('Shadow Clone: Rasenshuriken Feint', 'sage-shuriken-feint', 'dash', 'vanish', 1120),
   'six-paths-truthseeker-salvo': makeTechnique('Truth-Seeking Orbs: Salvo', 'six-paths-truthseeker-salvo', 'hover', 'cast', 1100),
-  'six-paths-chakra-rebirth': makeTechnique('Six Paths Chakra: Rebirth', 'six-paths-chakra-rebirth', 'hover', 'brace', 1080),
+  'kurama-head-guard': makeTechnique('Kurama Chakra: Fox-Head Guard', 'kurama-head-guard', 'hover', 'brace', 1180),
   'six-paths-super-tailed-shuriken': makeTechnique('Six Paths: Super Tailed Beast Rasen Shuriken', 'six-paths-super-tailed-shuriken', 'hover', 'cast', 1200),
   'six-paths-tailed-beast-barrage': makeTechnique('Six Paths: Tailed Beast Barrage', 'six-paths-tailed-beast-barrage', 'hover', 'cast', 1180),
   'baryon-scarlet-rasengan': makeTechnique('Baryon: Scarlet Rasengan', 'baryon-scarlet-rasengan', 'advance', 'cast', 1160),
@@ -36,7 +36,7 @@ export const NARUTO_TECHNIQUES = {
 /** Complete repertoires preserve the established signature order and techniques. */
 export const NARUTO_REPERTOIRES = {
   'sage-mode': ['frog-kumite', 'sage-giant-rasengan', 'rasenshuriken', 'sage-twin-rasengan', 'sage-rasengan-barrage', 'sage-shadow-clone', 'sage-massive-rasengan-barrage', 'sage-uzumaki-barrage', 'sage-toad-summoning', 'sage-shuriken-feint'],
-  'chakra-mode': ['chakra-arm-barrage', 'chakra-arm-rasengan', 'rasenshuriken', 'tailed-beast-bomb', 'lava-rasenshuriken', 'six-paths-shadow-rasen', 'six-paths-truthseeker-salvo', 'six-paths-chakra-rebirth', 'six-paths-super-tailed-shuriken', 'six-paths-tailed-beast-barrage'],
+  'chakra-mode': ['chakra-arm-barrage', 'chakra-arm-rasengan', 'rasenshuriken', 'tailed-beast-bomb', 'lava-rasenshuriken', 'six-paths-shadow-rasen', 'six-paths-truthseeker-salvo', 'kurama-head-guard', 'six-paths-super-tailed-shuriken', 'six-paths-tailed-beast-barrage'],
   'baryon-mode': ['baryon-rasengan', 'baryon-tail-breaker', 'baryon-breakthrough', 'baryon-bullet-barrage', 'baryon-counter-kick', 'baryon-tail-barrage', 'baryon-scarlet-rasengan', 'baryon-charge', 'baryon-destructive-fist', 'baryon-scarlet-flash'],
   'six-paths-eyes': ['chidori', 'amaterasu', 'susanoo-slash', 'heavenly-hand-power', 'inferno-flame-control', 'planetary-devastation', 'sasuke-kirin', 'indra-arrow', 'sasuke-chidori-flame-control', 'sasuke-fireball'],
 } as const;

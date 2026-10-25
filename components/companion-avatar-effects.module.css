@@ -1,25 +1,55 @@
-/* Full chakra constructs fit the existing horizontal battle reserve. The fox
-   and armored warrior emerge behind the original knight, never as a new body. */
-.susanoo, .kurama { position: absolute; inset: 0; z-index: 0; display: none; pointer-events: none; }
+/* Chakra constructs fit the existing battle reserve and leave the active
+   knight/elf visible. Susano'o is complete; Kurama manifests only in parts. */
+.susanoo, .kuramaHead, .chakraHand, .kuramaGuard { position: absolute; inset: 0; display: none; pointer-events: none; }
+.susanoo, .kuramaGuard { z-index: 0; }
+.kuramaHead { z-index: 2; }
+.chakraHand { z-index: 3; }
 .susanooShockwave { position: absolute; inset: 0; z-index: 3; display: none; pointer-events: none; }
 .susanooShockwave i { position: absolute; left: 51px; top: -9px; width: 35px; height: 82px; border-right: 4px solid rgb(213 180 255); border-radius: 50%; opacity: 0; }
 :global([data-form='six-paths-eyes'][data-battle='susanoo-slash']) .susanooShockwave { display: block; }
 :global([data-battle='susanoo-slash']) .susanooShockwave i { animation: spectralWave var(--battle-duration) var(--ease-out) both; }
-.susanoo svg, .kurama svg { position: absolute; left: -78px; top: -116px; width: 220px; height: 200px; overflow: visible; opacity: 0; transform-origin: 50% 100%; }
+.susanoo svg { position: absolute; left: -78px; top: -116px; width: 220px; height: 200px; overflow: visible; opacity: 0; transform-origin: 50% 100%; }
 :global([data-form='six-paths-eyes'][data-battle='susanoo-slash']) .susanoo,
 :global([data-form='six-paths-eyes'][data-battle='inferno-flame-control']) .susanoo,
-:global([data-form='six-paths-eyes'][data-battle='indra-arrow']) .susanoo,
-:global([data-form='chakra-mode'][data-battle='tailed-beast-bomb']) .kurama,
-:global([data-form='chakra-mode'][data-battle='chakra-arm-barrage']) .kurama,
-:global([data-form='chakra-mode'][data-battle='six-paths-super-tailed-shuriken']) .kurama,
-:global([data-form='chakra-mode'][data-battle='six-paths-tailed-beast-barrage']) .kurama { display: block; }
+:global([data-form='six-paths-eyes'][data-battle='indra-arrow']) .susanoo { display: block; }
 :global([data-battle]) .susanoo svg { animation: spectralAvatar var(--battle-duration) var(--ease-out) both; }
-:global([data-battle]) .kurama svg { animation: foxAvatar var(--battle-duration) var(--ease-out) both; }
-:global([data-battle]) .nineTails { transform-origin: 112px 163px; animation: avatarTails var(--battle-duration) var(--ease-in-out) both; }
 :global([data-battle]) .spectralWings { transform-origin: 112px 106px; animation: avatarWings var(--battle-duration) var(--ease-out) both; }
 @keyframes spectralAvatar { 0% { opacity: 0; transform: scale(0.94); } 17%, 37% { opacity: 0.94; transform: scale(1); } 67%, 83% { opacity: 1; transform: translateX(3px) scale(1.01); } 100% { opacity: 0; transform: translateX(4px) scale(1.015); } }
-@keyframes foxAvatar { 0% { opacity: 0; transform: scale(0.94); } 17%, 42% { opacity: 0.98; transform: scale(1); } 68%, 85% { opacity: 1; transform: translateX(3px) scale(1.01); } 100% { opacity: 0; transform: translateX(4px) scale(1.015); } }
-@keyframes avatarTails { 0% { transform: rotate(-3deg); } 50% { transform: rotate(0deg); } 100% { transform: rotate(2deg); } }
 @keyframes avatarWings { 0% { transform: scaleX(0.95); } 30%, 80% { transform: scaleX(1); } 100% { transform: scaleX(1.02); } }
 @keyframes spectralWave { 0%, 35% { opacity: 0; transform: translateX(-7px) scaleX(0.9); } 49% { opacity: 1; transform: translateX(8px) scaleX(1); } 85% { opacity: 1; transform: translateX(52px) scaleX(1); } 100% { opacity: 0; transform: translateX(60px) scaleX(1); } }
-@media (prefers-reduced-motion: reduce) { .susanoo, .kurama, .susanooShockwave { display: none !important; } }
+
+/* Only a fox head emerges beside the knight. The muzzle meets the existing
+   bomb origin near local (94,-43); it never brings a torso, legs or tail fan. */
+.kuramaHead svg { position: absolute; left: -28px; top: -100px; width: 132px; height: 115px; overflow: visible; opacity: 0; transform-origin: 42% 100%; }
+:global([data-form='chakra-mode'][data-battle='tailed-beast-bomb']) .kuramaHead,
+:global([data-form='chakra-mode'][data-battle='six-paths-tailed-beast-barrage']) .kuramaHead { display: block; }
+:global([data-battle]) .kuramaHead svg { animation: foxHeadRelease var(--battle-duration) var(--ease-out) both; }
+@keyframes foxHeadRelease { 0% { opacity: 0; transform: scale(0.94); } 17%, 44% { opacity: 0.96; transform: scale(1); } 65%, 85% { opacity: 1; transform: translateX(2px) scale(1.01); } 100% { opacity: 0; transform: translateX(3px) scale(1.015); } }
+
+/* A single enlarged chakra fist grows from the active sprite's arm. */
+.chakraHand svg { position: absolute; left: 21px; top: 15px; width: 112px; height: 68px; overflow: visible; opacity: 0; transform-origin: 0 60%; }
+:global([data-form='chakra-mode'][data-battle='chakra-arm-barrage']) .chakraHand,
+:global([data-form='chakra-mode'][data-battle='chakra-arm-rasengan']) .chakraHand,
+:global([data-form='chakra-mode'][data-battle='six-paths-super-tailed-shuriken']) .chakraHand { display: block; }
+:global([data-battle='chakra-arm-barrage']) .chakraHand svg { animation: giantHandBarrage var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='chakra-arm-rasengan']) .chakraHand svg { animation: giantHandRasengan var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='six-paths-super-tailed-shuriken']) .chakraHand svg { animation: giantHandCast var(--battle-duration) var(--ease-out) both; }
+@keyframes giantHandBarrage { 0%, 9%, 43%, 75%, 100% { opacity: 0; transform: translateX(-4px) scaleX(0.94); } 26%, 60%, 87% { opacity: 1; transform: translateX(14px) scaleX(1); } }
+@keyframes giantHandRasengan { 0%, 8% { opacity: 0; transform: translateX(-3px) scaleX(0.94); } 26% { opacity: 1; transform: translateX(0) scaleX(1); } 62% { opacity: 1; transform: translateX(9px) scaleX(1); } 82% { opacity: 1; transform: translateX(17px) scaleX(1); } 100% { opacity: 0; transform: translateX(17px) scaleX(0.98); } }
+@keyframes giantHandCast { 0%, 7% { opacity: 0; transform: translateX(-4px) scaleX(0.94); } 23%, 42% { opacity: 1; transform: translateX(0) scaleX(1); } 70% { opacity: 0.9; transform: translateX(10px) scaleX(1); } 100% { opacity: 0; transform: translateX(13px) scaleX(0.98); } }
+
+/* The defensive construct is a hollow fox-head dome around the sprite. An
+   incoming bolt breaks against its cheek, showing the guard's purpose. */
+.kuramaGuard svg { position: absolute; left: -60px; top: -76px; width: 184px; height: 160px; overflow: visible; opacity: 0; transform-origin: 50% 100%; }
+.guardIncoming, .guardImpact { position: absolute; opacity: 0; }
+.guardIncoming { left: 123px; top: 38px; width: 18px; height: 4px; background: rgb(211 225 240); clip-path: polygon(0 50%, 27% 0, 100% 15%, 100% 85%, 27% 100%); }
+.guardImpact { left: 104px; top: 30px; width: 24px; height: 24px; border: 2px solid rgb(255 230 153); border-radius: 50%; }
+.guardImpact::after { position: absolute; inset: 4px; background: rgb(255 227 149); clip-path: polygon(50% 0, 64% 35%, 100% 50%, 64% 64%, 50% 100%, 35% 64%, 0 50%, 35% 35%); content: ''; }
+:global([data-form='chakra-mode'][data-battle='kurama-head-guard']) .kuramaGuard { display: block; }
+:global([data-battle='kurama-head-guard']) .kuramaGuard svg { animation: foxHeadGuard var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='kurama-head-guard']) .guardIncoming { animation: guardDeflect var(--battle-duration) var(--ease-out) both; }
+:global([data-battle='kurama-head-guard']) .guardImpact { animation: guardContact var(--battle-duration) var(--ease-out) both; }
+@keyframes foxHeadGuard { 0% { opacity: 0; transform: scale(0.94); } 18%, 43% { opacity: 0.9; transform: scale(1); } 55% { opacity: 1; transform: scale(1.015); } 83% { opacity: 0.85; transform: scale(1); } 100% { opacity: 0; transform: scale(1); } }
+@keyframes guardDeflect { 0%, 27% { opacity: 0; transform: translateX(12px); } 33% { opacity: 1; transform: translateX(12px); } 47% { opacity: 1; transform: translateX(-12px); } 64% { opacity: 0; transform: translate3d(8px, -12px, 0) rotate(-30deg); } 100% { opacity: 0; transform: translate3d(8px, -12px, 0) rotate(-30deg); } }
+@keyframes guardContact { 0%, 42% { opacity: 0; transform: scale(0.94); } 50% { opacity: 1; transform: scale(1); } 72%, 100% { opacity: 0; transform: scale(1.18); } }
+@media (prefers-reduced-motion: reduce) { .susanoo, .susanooShockwave, .kuramaHead, .chakraHand, .kuramaGuard { display: none !important; } }

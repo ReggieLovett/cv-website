@@ -28,35 +28,32 @@ export function CompanionAvatarEffects() {
       </svg>
     </span>
     <span className={styles.susanooShockwave} aria-hidden="true"><i /></span>
-    <span className={styles.kurama} aria-hidden="true">
-      <svg viewBox="0 0 220 200" fill="none" shapeRendering="geometricPrecision">
-        <g className={styles.nineTails} fill="#f4b942" fillOpacity=".24" stroke="#ffe59a" strokeWidth="2">
-          <path d="M105 157 63 143 12 141 30 128 8 113 48 118 90 140Z" />
-          <path d="m102 149-49-35L9 84l22 1L18 64l36 29 47 42Z" />
-          <path d="m105 139-38-40L30 35l22 10-3-24 35 62 31 45Z" />
-          <path d="M112 135 86 78 72 12 89 27 94 5l10 66 20 61Z" />
-          <path d="m121 136-5-63 5-67 11 19 16-15-13 68-2 59Z" />
-          <path d="m131 142 17-59 30-57 1 23 21-4-36 51-22 56Z" />
-          <path d="m134 150 26-36 45-40-6 24 14 2-42 26-30 34Z" />
-          <path d="m131 158 40-26 43-10-14 17 13 8-46 1-27 18Z" />
-          <path d="m118 164 35-4 51 7-18 9 12 13-49-15-32-1Z" />
-        </g>
-        <g fill="#f8c651" fillOpacity=".25" stroke="#ffe7a5" strokeWidth="2.5" strokeLinejoin="miter">
-          <path d="m93 83 27-2 22 29-8 46-20 35-34-6-7-41Z" />
-          <path d="m92 100-16 13-15 41 22 8 13-32m35-24 24 17 22 26-10 12-33-25-12-24" />
-          <path d="m85 157-15 22 3 16 29-3 8-28m12-6 12 17 27 18 15-4-31-35" />
-        </g>
-        <g fill="#f9cc5e" fillOpacity=".65" stroke="#ffedb2" strokeWidth="2">
-          <path d="m93 93-11-25 5-31-10-26 24 19 19-4 20 11 29 13-10 9 14 9-21 13-17 21-26 7Z" />
-          <path d="m93 43 6-8-8-15m31 17 11 3 12-12-10 17m-34 3 15 3 14-2-11 10-15-1Z" fill="#63402b" stroke="none" />
-          <path d="m131 61 13 3-14 6m14 1 18-1-12 9-20 3" stroke="#66412b" strokeWidth="3" />
-          <path d="m136 76 4 7 5-7m4-1 3 5 5-7" fill="#fff8d8" stroke="none" />
-        </g>
-        <g stroke="#8d5c2c" strokeWidth="2.5" strokeOpacity=".85">
-          <path d="m97 102 19 9 12-10m-34 18 21 8 17-9m-39 17 21 5 13-10m-44 18 9 5m66-8 3 8m3-3 3 7" />
-          <circle cx="111" cy="92" r="5" /><path d="m111 97 2 12" />
-        </g>
+    <span className={styles.kuramaHead} aria-hidden="true">
+      <svg viewBox="0 0 156 136" fill="none">
+        <path d="m26 88-8-30 8-28 4-23 26 22 23-5 18 7 14-26 6 34 16 14 13 7-10 8 13 8-15 12-17 4-17 17-29 4-24-11Z" fill="#facb58" fillOpacity=".38" stroke="#ffeba4" strokeWidth="2.5" />
+        <path d="m31 30 1-15 15 19m48 2 10-20 3 25m-56 6 17 5 19-2-13 12-20-3Z" fill="#785027" fillOpacity=".85" />
+        <path d="m78 53 8-1-7 6" fill="#fff8cf" />
+        <path d="m100 63 14 4-14 6m15 1 17-1-11 10-20 1m-63-9 13 6m-8 2 12 7m7 6 18 7" stroke="#84542c" strokeWidth="3" />
+        <path d="m116 78 4 7 5-8m2-1 3 5 4-8" fill="#fff7d8" />
+        <path d="m42 103 22 18 17-13 17 13-4-24" fill="#f8c64f" fillOpacity=".18" stroke="#ffe9a1" strokeOpacity=".5" strokeWidth="2" />
       </svg>
+    </span>
+    <span className={styles.chakraHand} aria-hidden="true">
+      <svg viewBox="0 0 148 90" fill="none">
+        <path d="m2 45 57-7 14-15 11-8 13 3 7 10 25-1 9 6v11l-4 4 5 6-5 10-13 4-12 11H82L62 67H2Z" fill="#f6c355" fillOpacity=".54" stroke="#ffe9a0" strokeWidth="2.5" />
+        <path d="m75 32 15 5 11-9m-9 12 11 8 29 1m-33 9 32 1m-27 9 17 0M8 53l48-5m-39 13 39-4" stroke="#8d5a28" strokeWidth="3" />
+        <path d="m110 32 20 1m-21 6 21 1" stroke="#fff0b8" strokeWidth="2" />
+      </svg>
+    </span>
+    <span className={styles.kuramaGuard} aria-hidden="true">
+      <svg viewBox="0 0 184 160" fill="none">
+        <path d="M12 148C4 104 14 66 40 47L32 10 66 38C82 32 102 32 118 38L152 10 144 47C170 66 180 104 172 148Q92 165 12 148Z" fill="#f5c34f" fillOpacity=".09" stroke="#ffe6a1" strokeWidth="2.5" />
+        <path d="m40 48-3-25 22 20m64 0 24-20-3 25M43 76l27 10 11-4m60-6-27 10-11-4m-34 18 23 15 23-15m-30 18 7 10 7-10" stroke="#ecc970" strokeWidth="3" strokeLinejoin="round" />
+        <path d="m51 82 17 5-7 5m72-10-17 5 7 5" fill="#ffe9a6" />
+        <path d="M22 139Q17 93 47 66m115 73q5-46-25-73M29 146q63 13 126 0" stroke="#f9d17b" strokeOpacity=".48" strokeWidth="1.5" />
+      </svg>
+      <i className={styles.guardIncoming} />
+      <i className={styles.guardImpact} />
     </span>
   </>;
 }
