@@ -26,7 +26,7 @@ export default async function OpengraphImage() {
           width: '100%',
           height: '100%',
           display: 'flex',
-          background: '#04060c',
+          background: '#0C1315',
           backgroundImage:
             'radial-gradient(900px 500px at 50% -10%, rgba(77,141,255,0.30), transparent 70%), radial-gradient(600px 400px at 100% 100%, rgba(252,61,33,0.12), transparent 70%)',
           padding: 72,
@@ -40,7 +40,7 @@ export default async function OpengraphImage() {
               display: 'flex',
               fontSize: 21,
               letterSpacing: 6,
-              color: '#8AB4FF',
+              color: '#5EC8EC',
               textTransform: 'uppercase',
             }}
           >
@@ -52,7 +52,7 @@ export default async function OpengraphImage() {
               display: 'flex',
               fontSize: 96,
               fontWeight: 700,
-              color: '#F5F5F7',
+              color: '#F0EBDE',
               letterSpacing: -4,
               lineHeight: 1.02,
               marginTop: 26,
@@ -65,7 +65,7 @@ export default async function OpengraphImage() {
             style={{
               display: 'flex',
               fontSize: 27,
-              color: '#989EAA',
+              color: '#B2B2A4',
               marginTop: 26,
               lineHeight: 1.4,
               maxWidth: 620,
@@ -81,10 +81,10 @@ export default async function OpengraphImage() {
                 width: 11,
                 height: 11,
                 borderRadius: 999,
-                background: '#34D399',
+                background: '#84CC76',
               }}
             />
-            <div style={{ display: 'flex', fontSize: 19, letterSpacing: 4, color: '#6E7480' }}>
+            <div style={{ display: 'flex', fontSize: 19, letterSpacing: 4, color: '#8E9288' }}>
               {profile.school.toUpperCase()}
             </div>
           </div>

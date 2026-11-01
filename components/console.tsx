@@ -17,6 +17,10 @@ import { ThemeToggle } from './theme-toggle';
 import { ZeldaCornerEmblem, ZeldaCrest, useZeldaSwitch } from './zelda-emblem';
 import { SectionHeading } from './section-heading';
 import { LocalTime } from './local-time';
+import { SpotlightPanel } from './spotlight-panel';
+import { useAccent } from './use-accent';
+import ClickSpark from './react-bits/ClickSpark';
+import CircularText from './react-bits/CircularText';
 import { MotionProvider, fadeIn, riseIn, stagger, staggerSlow, viewport } from './motion';
 
 /**
@@ -38,6 +42,11 @@ import { MotionProvider, fadeIn, riseIn, stagger, staggerSlow, viewport } from '
  * It wraps everything, because `MotionConfig` only reaches its descendants.
  * This is what makes every Framer Motion entrance on the page respect
  * `prefers-reduced-motion`; see components/motion.tsx.
+ *
+ * ---- On ClickSpark ----
+ * The press already makes a sound (SoundEffects); the spark is the same
+ * acknowledgement for the eye — a short burst in the accent, gone in under
+ * half a second. Small and quick so it reads as feedback, not decoration.
  */
 
 const SECTIONS = [
@@ -92,115 +101,126 @@ export function Console({ swordSoundSrc }: { swordSoundSrc: string | null }) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
+  const accent = useAccent();
+
   return (
     <MotionProvider>
       <Preloader />
       <SoundEffects />
 
-      <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:px-8">
-        {/* ===== The index rail (sticky on desktop) ==================== */}
-        <aside className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:py-12">
-          <div className="flex h-full flex-col justify-between px-6">
-            <div>
-              <button
-                type="button"
-                onClick={() => jump('top')}
-                className="press flex items-baseline gap-3 text-left"
-              >
-                <span className="text-title font-semibold tracking-tight text-bone">
-                  {profile.initials}
-                </span>
-                <span className="readout text-faint">{profile.name}</span>
-              </button>
+      <ClickSpark
+        sparkColor={accent}
+        sparkSize={9}
+        sparkRadius={20}
+        sparkCount={8}
+        sparkWidth={1.5}
+        duration={420}
+      >
+        <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:px-8">
+          {/* ===== The index rail (sticky on desktop) ==================== */}
+          <aside className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:py-12">
+            <div className="flex h-full flex-col justify-between px-6">
+              <div>
+                <button
+                  type="button"
+                  onClick={() => jump('top')}
+                  className="press flex items-baseline gap-3 text-left"
+                >
+                  <span className="text-title font-semibold tracking-tight text-bone">
+                    {profile.initials}
+                  </span>
+                  <span className="readout text-faint">{profile.name}</span>
+                </button>
 
-              <nav aria-label="Sections" className="mt-14">
-                <ul>
-                  {SECTIONS.map((section, i) => (
-                    <li key={section.id}>
-                      <button
-                        type="button"
-                        onClick={() => jump(section.id)}
-                        aria-current={active === section.id ? 'true' : undefined}
-                        className="group press flex w-full items-baseline gap-3 py-2 text-left"
-                      >
-                        <span
-                          className={`readout transition-colors duration-hover ${
-                            active === section.id ? 'text-signal' : 'text-faint'
-                          }`}
+                <nav aria-label="Sections" className="mt-14">
+                  <ul>
+                    {SECTIONS.map((section, i) => (
+                      <li key={section.id}>
+                        <button
+                          type="button"
+                          onClick={() => jump(section.id)}
+                          aria-current={active === section.id ? 'true' : undefined}
+                          className="group press flex w-full items-baseline gap-3 py-2 text-left"
                         >
-                          {/* Counted from 00 so each number matches the index
-                              on its section heading — the intro has none. */}
-                          {String(i).padStart(2, '0')}
-                        </span>
-                        <span
-                          className={`readout transition-colors duration-hover ${
-                            active === section.id
-                              ? 'text-bone'
-                              : 'text-dim group-hover:text-bone'
-                          }`}
-                        >
-                          {section.label}
-                        </span>
-                        {/* Scales rather than animating width, so the marker
-                            never asks the rail to re-lay-out on scroll. */}
-                        <span
-                          className={`ml-auto block h-px w-6 origin-left bg-signal transition-transform duration-panel ease-out ${
-                            active === section.id
-                              ? 'scale-x-100'
-                              : 'scale-x-0 group-hover:scale-x-100'
-                          }`}
-                          aria-hidden="true"
-                        />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
+                          <span
+                            className={`readout transition-colors duration-hover ${
+                              active === section.id ? 'text-signal' : 'text-faint'
+                            }`}
+                          >
+                            {/* Counted from 00 so each number matches the index
+                                on its section heading — the intro has none. */}
+                            {String(i).padStart(2, '0')}
+                          </span>
+                          <span
+                            className={`readout transition-colors duration-hover ${
+                              active === section.id
+                                ? 'text-bone'
+                                : 'text-dim group-hover:text-bone'
+                            }`}
+                          >
+                            {section.label}
+                          </span>
+                          {/* Scales rather than animating width, so the marker
+                              never asks the rail to re-lay-out on scroll. */}
+                          <span
+                            className={`ml-auto block h-px w-6 origin-left bg-signal shadow-[0_0_8px_rgb(var(--signal)/0.8)] transition-transform duration-panel ease-out ${
+                              active === section.id
+                                ? 'scale-x-100'
+                                : 'scale-x-0 group-hover:scale-x-100'
+                            }`}
+                            aria-hidden="true"
+                          />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
+
+              <footer>
+                <p className="tag">
+                  © {new Date().getFullYear()} {profile.name}
+                </p>
+                <p className="tag mt-2 text-faint">Set in Cinzel &amp; Geist · Next.js</p>
+                <p className="tag mt-2 max-w-[13rem] normal-case tracking-normal text-faint">A fan tribute to The Legend of Zelda&rsquo;s 40th anniversary. Not affiliated with or endorsed by Nintendo.</p>
+              </footer>
             </div>
+          </aside>
 
-            <footer>
+          {/* ===== The column ============================================ */}
+          <main className="lg:py-12">
+            <Hero swordSoundSrc={swordSoundSrc} />
+            <Gallery
+              id="projects"
+              index="01"
+              title="Projects"
+              note="The software that ships — product over process, links included."
+              entries={projects}
+            />
+            <DesignGallery
+              id="media"
+              index="02"
+              title="Media & Design"
+              note="The pictures, marks, and print made along the way."
+              entries={media}
+            />
+            <SkillsGrid />
+            <TechStack />
+            <GitHubActivity />
+            <AcademicJourney />
+            <CredentialsPreview />
+            <Contact />
+
+            <footer className="rail mt-24 flex flex-wrap justify-between gap-4 border-t border-line py-8 lg:hidden">
               <p className="tag">
                 © {new Date().getFullYear()} {profile.name}
               </p>
-              <p className="tag mt-2 text-faint">Set in Cinzel &amp; Geist · Next.js</p>
-              <p className="tag mt-2 max-w-[13rem] normal-case tracking-normal text-faint">A fan tribute to The Legend of Zelda&rsquo;s 40th anniversary. Not affiliated with or endorsed by Nintendo.</p>
+              <p className="tag text-faint">Set in Cinzel &amp; Geist · Next.js</p>
+              <p className="tag w-full normal-case tracking-normal text-faint">A fan tribute to The Legend of Zelda&rsquo;s 40th anniversary. Not affiliated with or endorsed by Nintendo.</p>
             </footer>
-          </div>
-        </aside>
-
-        {/* ===== The column ============================================ */}
-        <main className="lg:py-12">
-          <Hero swordSoundSrc={swordSoundSrc} />
-          <Gallery
-            id="projects"
-            index="01"
-            title="Projects"
-            note="The software that ships — product over process, links included."
-            entries={projects}
-          />
-          <DesignGallery
-            id="media"
-            index="02"
-            title="Media & Design"
-            note="The pictures, marks, and print made along the way."
-            entries={media}
-          />
-          <SkillsGrid />
-          <TechStack />
-          <GitHubActivity />
-          <AcademicJourney />
-          <CredentialsPreview />
-          <Contact />
-
-          <footer className="rail mt-24 flex flex-wrap justify-between gap-4 border-t border-line py-8 lg:hidden">
-            <p className="tag">
-              © {new Date().getFullYear()} {profile.name}
-            </p>
-            <p className="tag text-faint">Set in Cinzel &amp; Geist · Next.js</p>
-            <p className="tag w-full normal-case tracking-normal text-faint">A fan tribute to The Legend of Zelda&rsquo;s 40th anniversary. Not affiliated with or endorsed by Nintendo.</p>
-          </footer>
-        </main>
-      </div>
+          </main>
+        </div>
+      </ClickSpark>
     </MotionProvider>
   );
 }
@@ -294,6 +314,25 @@ function Hero({ swordSoundSrc }: { swordSoundSrc: string | null }) {
               <span>{profile.initials} — Portrait</span>
               <span>Philippines</span>
             </figcaption>
+            {/* The seal on the frame's corner — a printer's mark, not a
+                second caption, so it stays out of the accessibility tree.
+                It can be spun by hand and slows under the pointer. */}
+            <div className="portrait-stamp" aria-hidden="true">
+              <CircularText
+                text={`${profile.name.toUpperCase()} • ${profile.headline} • `}
+                size={96}
+                fontSize={8.5}
+                fontWeight={500}
+                spinDuration={28}
+                onHover="slowDown"
+                draggable
+                className="font-mono"
+              >
+                <span className="text-[0.95rem] font-semibold tracking-tight text-signal">
+                  {profile.initials}
+                </span>
+              </CircularText>
+            </div>
           </motion.figure>
         </div>
 
@@ -396,12 +435,16 @@ function Contact() {
             href={row.href}
             target={row.href.startsWith('mailto:') ? undefined : '_blank'}
             rel={row.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
-            className="card group p-6 md:p-7"
+            className="group flex rounded-[var(--r-card)]"
           >
-            <span className="tag">{row.term}</span>
-            <span className="mt-10 break-words text-title font-medium tracking-tight text-bone transition-colors duration-hover ease-out group-hover:text-signal">
-              <Breakable text={row.value} />
-            </span>
+            <SpotlightPanel className="w-full">
+              <span className="flex flex-1 flex-col p-6 md:p-7">
+                <span className="tag">{row.term}</span>
+                <span className="mt-10 break-words text-title font-medium tracking-tight text-bone transition-colors duration-hover ease-out group-hover:text-signal">
+                  <Breakable text={row.value} />
+                </span>
+              </span>
+            </SpotlightPanel>
           </motion.a>
         ))}
       </motion.div>

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { credentials, credentialCategories, profile } from '@/data/portfolio';
-import { CredentialGrid } from '@/components/credential-grid';
+import { credentials, profile } from '@/data/portfolio';
+import { CertificateInventory } from '@/components/certificate-inventory';
 
 /**
  * /certificates — the full credential index.
@@ -16,13 +16,14 @@ import { CredentialGrid } from '@/components/credential-grid';
  *
  * The homepage keeps a short preview and links here.
  *
- * ---- Why no tabs ----
- * Categories are headings on one scroll. Tabs are for switching between things
- * you would not want side by side; these are a list, and a list wants to be
- * read top to bottom.
+ * ---- The inventory ----
+ * The index is laid out like a game's inventory screen — category tabs, a
+ * slot grid under a bracket cursor, and a detail band for the selection (see
+ * components/certificate-inventory.tsx). Its first tab is every credential,
+ * so the page still opens on the whole set; the categories only narrow it.
  *
- * The page itself is a server component. The grids are the client islands —
- * each owns the open/closed state of its certificate viewer.
+ * The page itself is a server component. The inventory is the client island,
+ * and owns the open/closed state of the certificate viewer.
  */
 
 const verifiable = credentials.filter((c) => c.verifyUrl).length;
@@ -50,26 +51,8 @@ export default function CertificatesPage() {
         </p>
       </header>
 
-      <div className="mt-16 space-y-16 md:mt-24">
-        {credentialCategories.map((category) => {
-          const items = credentials.filter((item) => item.category === category);
-          if (items.length === 0) return null;
-
-          return (
-            <section key={category}>
-              <div className="rule-top flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 pt-5">
-                <h2 className="readout text-bone">{category}</h2>
-                <span className="tag">
-                  {items.length} {items.length === 1 ? 'credential' : 'credentials'}
-                </span>
-              </div>
-
-              {/* Gap-less on purpose — see `.cred-cell`. Each card opens the
-                  full record; the grid owns that state (CredentialGrid). */}
-              <CredentialGrid items={items} className="mt-6" />
-            </section>
-          );
-        })}
+      <div className="mt-14 md:mt-20">
+        <CertificateInventory />
       </div>
     </main>
   );

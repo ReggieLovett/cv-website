@@ -15,7 +15,7 @@ export type Theme = 'dark' | 'light';
 const STORAGE_KEY = 'theme';
 // Browser chrome colour per ground. The Zelda values apply only while that
 // theme is switched on (see lib/zelda.ts).
-const CHROME_COLOR = { dark: '#0A0D14', light: '#F7F9FC' } as const;
+const CHROME_COLOR = { dark: '#0C1315', light: '#EFECE1' } as const;
 const ZELDA_CHROME_COLOR = { dark: '#000E0C', light: '#F1E9D2' } as const;
 
 let theme: Theme | null = null;

@@ -551,6 +551,18 @@ html.zelda-theme .frame::before {
   transition: opacity var(--dur-panel) var(--ease-out);
 }
 
+/* The default theme's selection cursor and atmosphere give way to the gilded
+   corners and this theme's own light (`.zelda-atmos`). */
+html.zelda-theme .card::after,
+html.zelda-theme .cred-cell::after,
+html.zelda-theme .frame::after {
+  content: none;
+}
+
+html.zelda-theme .atmos {
+  opacity: 0;
+}
+
 /* The credential cells are quiet at rest; their brackets appear only under the
    pointer, with the card surface. */
 html.zelda-theme .cred-cell::before {

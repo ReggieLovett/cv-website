@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowUpRight, Maximize2 } from 'lucide-react';
 import { type WorkEntry } from '@/data/portfolio';
 import { Lightbox, type LightboxItem } from './lightbox';
+import GlareHover from './react-bits/GlareHover';
 import { SectionHeading } from './section-heading';
 import { riseInTight, stagger, viewport } from './motion';
 
@@ -127,13 +128,30 @@ function Plate({
         className="card__media"
         aria-label={`View ${entry.title} — ${entry.discipline} for ${entry.client}`}
       >
-        <Image
-          src={entry.image}
-          alt={entry.alt}
-          fill
-          sizes={sizes}
-          className={upright ? 'object-contain p-6' : 'object-cover object-top'}
-        />
+        {/* One pass of light across the screenshot as the pointer arrives —
+            the plate reads as glass over the work. White, not the accent:
+            a glare is the room's light, not the brand's. */}
+        <GlareHover
+          width="100%"
+          height="100%"
+          glareColor="#ffffff"
+          glareOpacity={0.22}
+          glareAngle={-35}
+          glareSize={40}
+          softness={0.85}
+          variant="sheen"
+          rimGlint={false}
+          transitionDuration={850}
+          playOnce
+        >
+          <Image
+            src={entry.image}
+            alt={entry.alt}
+            fill
+            sizes={sizes}
+            className={upright ? 'object-contain p-6' : 'object-cover object-top'}
+          />
+        </GlareHover>
       </button>
 
       <figcaption className="flex flex-1 flex-col p-5">

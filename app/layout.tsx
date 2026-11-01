@@ -81,7 +81,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   // The theme-color meta is repainted at runtime by the theme store; this
   // static default just voices the dark ground until that runs.
-  themeColor: '#0A0D14',
+  themeColor: '#0C1315',
   colorScheme: 'dark light',
 };
 
@@ -141,6 +141,9 @@ export default function RootLayout({
         </a>
         {children}
         <PortfolioCompanion />
+        {/* The world behind the page: a faint glow from above and shadowed
+            edges, on one fixed layer — see `.atmos` in globals.css. */}
+        <div className="atmos" aria-hidden="true" />
         {/* Reading position, painted by the compositor — see `.progress`. */}
         <div className="progress" aria-hidden="true" />
         {/* Print tooth over the whole document. Fixed and inert — see `.grain`

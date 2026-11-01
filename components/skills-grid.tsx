@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { type Capability, capabilities } from '@/data/portfolio';
 import { SectionHeading } from './section-heading';
+import { SpotlightPanel } from './spotlight-panel';
 import { riseIn, stagger, viewport } from './motion';
 
 /**
@@ -14,7 +15,9 @@ import { riseIn, stagger, viewport } from './motion';
  * overflowed the second row and left the last cell stranded on a third.
  *
  * No outlines. Each entry is a hairline, a number, a title, and its tools —
- * grouped by the rule above it and the air around it.
+ * grouped by the rule above it and the air around it. The cards catch the
+ * pointer with a low accent light (SpotlightPanel); the light never moves the
+ * layout, so the grid stays exactly as composed.
  */
 const SPANS = ['md:col-span-6', 'md:col-span-6', 'md:col-span-4', 'md:col-span-4', 'md:col-span-4'];
 
@@ -38,9 +41,13 @@ export function SkillsGrid() {
           <motion.article
             key={capability.no}
             variants={riseIn}
-            className={`card p-6 md:p-7 ${SPANS[i % SPANS.length]}`}
+            className={`flex ${SPANS[i % SPANS.length]}`}
           >
-            <Cell capability={capability} />
+            <SpotlightPanel className="w-full">
+              <div className="flex flex-1 flex-col p-6 md:p-7">
+                <Cell capability={capability} />
+              </div>
+            </SpotlightPanel>
           </motion.article>
         ))}
       </motion.div>

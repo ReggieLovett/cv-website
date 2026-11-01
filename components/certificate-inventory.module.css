@@ -1,0 +1,498 @@
+/* =========================================================================
+   CERTIFICATE INVENTORY — /certificates (components/certificate-inventory.tsx)
+
+   Everything reads the theme tokens, so the index follows the default
+   Sheikah palette, light, and the Zelda theme's gold without a second set of
+   colours. Motion follows the site contract: transform and opacity only.
+   ========================================================================= */
+
+.inventory {
+  --slot: 5.5rem;
+  --gap: 0.5rem;
+}
+
+/* Stacked, the inventory holds one centred column: full width on a tablet,
+   the slots would grow past 150px and the pack would read as a wall of
+   tiles rather than a bag of items. */
+@media (max-width: 1023px) {
+  .inventory {
+    max-width: 34rem;
+    margin-inline: auto;
+  }
+}
+
+/* Key caps, shaped like a pad's face buttons: round and quiet. */
+.inventory kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.4rem;
+  border: 1px solid rgb(var(--bone) / 0.3);
+  border-radius: 9999px;
+  background: rgb(var(--void) / 0.4);
+  color: rgb(var(--bone));
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  line-height: 1;
+}
+
+.inventory kbd svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* ---------- Layout ---------------------------------------------------- */
+.body {
+  display: grid;
+  gap: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+  .body {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(3rem, 5vw, 5.5rem);
+  }
+}
+
+/* ---------- Categories ------------------------------------------------ */
+.catLabel {
+  color: rgb(var(--bone));
+  text-align: center;
+}
+
+.cats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.625rem;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid rgb(var(--bone) / 0.14);
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Six 44px targets only fit a phone's width with the air taken out. */
+@media (max-width: 639px) {
+  .cats {
+    gap: 0.125rem;
+  }
+
+  .tabs {
+    gap: 0;
+  }
+}
+
+.tab {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--r-sm);
+  color: rgb(var(--faint));
+  transition:
+    color var(--dur-hover) ease,
+    transform var(--dur-press) var(--ease-out);
+}
+
+.tab:active {
+  transform: scale(0.94);
+}
+
+.tab[aria-selected='true'] {
+  color: rgb(var(--bone));
+}
+
+/* The marker sits on the hairline under the row, the way a stick indicator
+   rests under a game's category strip. */
+.tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(-0.875rem - 3.5px);
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 9999px;
+  background: rgb(var(--signal));
+  box-shadow: 0 0 8px rgb(var(--signal) / 0.7);
+}
+
+/* The cap is small; the press target matches the tabs beside it. */
+.step {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--r-sm);
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.step:active {
+  transform: scale(0.94);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tab:not([aria-selected='true']):hover {
+    color: rgb(var(--dim));
+  }
+
+  .step:hover kbd {
+    border-color: rgb(var(--signal) / 0.7);
+  }
+}
+
+/* ---------- The slot grid --------------------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gap);
+  margin-top: 1.25rem;
+  /* Room inside the scroll window for the cursor's brackets, pulled back out
+     with the margin so the slots line up with the hairline above. */
+  margin-inline: -0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--r-sm);
+}
+
+/* The cursor is the focus indicator — see the bracket colour below. */
+.grid:focus-visible {
+  outline: none;
+}
+
+/* Five across from here up, the same as desktop, so the pack keeps one
+   shape and up/down always moves by the same step. */
+@media (min-width: 560px) {
+  .grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(5, var(--slot));
+    max-height: calc(4 * var(--slot) + 3 * var(--gap) + 1rem);
+    overflow-y: auto;
+    scrollbar-color: rgb(var(--line2)) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+.slot {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid rgb(var(--bone) / 0.1);
+  border-radius: 4px;
+  background: rgb(var(--void) / 0.5);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform var(--dur-press) var(--ease-out);
+}
+
+.slot:active {
+  transform: scale(0.96);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .slot:hover {
+    border-color: rgb(var(--bone) / 0.32);
+  }
+}
+
+.slot[aria-selected='true'] {
+  border-color: rgb(var(--bone) / 0.9);
+  background: rgb(var(--signal) / 0.14);
+}
+
+/* The cursor: four corner brackets standing just outside the slot. Drawn
+   with gradients on one pseudo-element — no extra nodes, no layout. */
+.slot[aria-selected='true']::after {
+  --c: rgb(var(--bone));
+  content: '';
+  position: absolute;
+  inset: -6px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--c), var(--c)) left top / 12px 2px,
+    linear-gradient(var(--c), var(--c)) left top / 2px 12px,
+    linear-gradient(var(--c), var(--c)) right top / 12px 2px,
+    linear-gradient(var(--c), var(--c)) right top / 2px 12px,
+    linear-gradient(var(--c), var(--c)) left bottom / 12px 2px,
+    linear-gradient(var(--c), var(--c)) left bottom / 2px 12px,
+    linear-gradient(var(--c), var(--c)) right bottom / 12px 2px,
+    linear-gradient(var(--c), var(--c)) right bottom / 2px 12px;
+  background-repeat: no-repeat;
+  /* A slow breathe, so the eye finds the cursor without hunting. It starts
+     over on each new slot, which reads as the cursor landing. */
+  animation: cursor-breathe 900ms cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
+/* With the grid focused, the cursor takes the accent — the focus ring. */
+.grid:focus-visible .slot[aria-selected='true']::after {
+  --c: rgb(var(--signal));
+}
+
+@keyframes cursor-breathe {
+  to {
+    transform: scale(1.05);
+  }
+}
+
+/* Empty slots: on a tablet they only finish the last row; on desktop they
+   fill the pack out to four rows. A phone shows none. */
+.empty {
+  display: none;
+  aspect-ratio: 1;
+  border: 1px solid rgb(var(--bone) / 0.06);
+  border-radius: 4px;
+  background: rgb(var(--void) / 0.28);
+}
+
+@media (min-width: 560px) {
+  .empty[data-row-fill] {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .empty {
+    display: block;
+  }
+}
+
+.slotArt {
+  position: absolute;
+  inset: 4px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 2px;
+  color: rgb(var(--bone));
+}
+
+/* A scan under the year gets a scrim so the number stays legible. */
+.slot[data-scrim] .slotArt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(var(--void) / 0.85), transparent 55%);
+}
+
+.slotGlyph {
+  width: 42%;
+  height: 42%;
+}
+
+/* Where a game prints a count. Here it is the year the credential was
+   issued — a true value, never an invented number. */
+.badge {
+  position: absolute;
+  left: 6px;
+  bottom: 5px;
+  color: rgb(var(--bone));
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1;
+  text-shadow:
+    0 1px 2px rgb(var(--void)),
+    0 0 6px rgb(var(--void));
+}
+
+/* Verifiable at source. */
+.mark {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  background: rgb(var(--signal));
+  box-shadow: 0 0 0 2px rgb(var(--void) / 0.7);
+  transform: rotate(45deg);
+}
+
+/* ---------- Detail ---------------------------------------------------- */
+.detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hold {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.holdCount {
+  font-size: 1.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* The preview — where a game stands the character holding the item. It is a
+   button: pressing the certificate opens it full size. */
+.stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  /* Shorter on a phone, so a tapped credential's name and summary land on
+     screen under the grid instead of a scroll below it. */
+  height: clamp(10rem, 26vh, 15rem);
+  margin-top: 1rem;
+  overflow: hidden;
+  border-radius: var(--r-card);
+  background: radial-gradient(closest-side, rgb(var(--signal) / 0.16), transparent 78%);
+  color: rgb(var(--bone));
+  cursor: zoom-in;
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.stage:active {
+  transform: scale(0.99);
+}
+
+@media (min-width: 1024px) {
+  .stage {
+    height: clamp(13rem, 34vh, 21rem);
+  }
+}
+
+.stageGlyph {
+  width: 5.5rem;
+  height: 5.5rem;
+  filter: drop-shadow(0 0 1.5rem rgb(var(--signal) / 0.45));
+}
+
+/* The description band: a translucent strip ruled top and bottom. */
+.band {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-block: 1px solid rgb(var(--bone) / 0.14);
+  background: rgb(var(--void) / 0.55);
+}
+
+/* The reserved height only matters beside the grid, where a changing band
+   would nudge the pack; stacked on a phone it would just be empty scroll. */
+@media (min-width: 1024px) {
+  .band {
+    min-height: 15rem;
+  }
+}
+
+.name {
+  color: rgb(var(--bone));
+  font-size: clamp(1.375rem, 2vw, 1.875rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  min-width: 0;
+}
+
+.metaIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid rgb(var(--bone) / 0.3);
+  border-radius: 4px;
+  color: rgb(var(--signal));
+}
+
+.desc {
+  max-width: 54ch;
+  margin-top: 1rem;
+  color: rgb(var(--dim));
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.75rem;
+  margin-top: 1.5rem;
+}
+
+.markLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgb(var(--signal));
+}
+
+.markDot {
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
+/* ---------- Key hints ------------------------------------------------- */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem 1.75rem;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(var(--bone) / 0.1);
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* Key hints mean nothing on a phone. */
+@media (hover: none) {
+  .foot {
+    display: none;
+  }
+}
+
+/* ---------- The anniversary theme ------------------------------------- */
+:global(html.zelda-theme) .name {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Reduced motion -------------------------------------------- */
+/* Nothing travels, and the cursor holds still. */
+@media (prefers-reduced-motion: reduce) {
+  .slot[aria-selected='true']::after {
+    animation: none;
+  }
+
+  .slot:active,
+  .tab:active,
+  .step:active,
+  .stage:active {
+    transform: none;
+  }
+}

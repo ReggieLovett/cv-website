@@ -23,9 +23,9 @@ import { SectionHeading } from './section-heading';
  * The ramp itself lives in CSS (`.gh-cal` in globals.css), mixed from the live
  * `--line` and `--signal` tokens, so it follows light, dark, and the Zelda
  * theme's gold without this file knowing any of them exist. The hex values
- * passed below are the dark/light blues as a fallback for a browser without
- * `color-mix()` — CSS beats the SVG `fill` attribute, so they only show when
- * the stylesheet rule cannot apply.
+ * passed below are the dark/light Sheikah ramps as a fallback for a browser
+ * without `color-mix()` — CSS beats the SVG `fill` attribute, so they only
+ * show when the stylesheet rule cannot apply.
  *
  * ---- The width ----
  * The SVG carries a viewBox, so from md up it is scaled to the column rather
@@ -127,8 +127,8 @@ export function GitHubActivity() {
             blockSize={BLOCK_SIZE}
             blockMargin={BLOCK_MARGIN}
             theme={{
-              light: ['#dfe6ef', '#bcb5ee', '#9285e3', '#6a5bdb', '#4434d4'],
-              dark: ['#222a3a', '#34457f', '#4b62b6', '#5b77dc', '#6a8dff'],
+              light: ['#d8d3c2', '#a5b9b4', '#729fa5', '#3f8497', '#0c6a88'],
+              dark: ['#293739', '#365b66', '#448093', '#51a4bf', '#5ec8ec'],
             }}
             labels={{ totalCount: '{{count}} contributions in the last year' }}
           />
