@@ -6,9 +6,7 @@ const effects = (
   <>
     <span className={`${styles.effect} ${styles.counterCut}`} aria-hidden="true"><i /><b /><em /></span>
     <span className={`${styles.effect} ${styles.fateRelease}`} aria-hidden="true"><i /><i /><i /><b /></span>
-    <span className={`${styles.effect} ${styles.bullThrust}`} aria-hidden="true"><i /><i /><b /><b /></span>
     <span className={`${styles.effect} ${styles.blackBarrage}`} aria-hidden="true"><i /><i /><i /></span>
-    <span className={`${styles.effect} ${styles.causalityGuard}`} aria-hidden="true"><i /><i /><b /><b /></span>
     <span className={`${styles.effect} ${styles.crossCut}`} aria-hidden="true"><i /><i /><b /></span>
     <span className={`${styles.effect} ${styles.starWhip}`} aria-hidden="true"><i /><b /><b /><b /><b /></span>
     <span className={`${styles.effect} ${styles.starCounter}`} aria-hidden="true"><i /><i /><b /><em /></span>
@@ -30,13 +28,6 @@ const effects = (
     <span className={`${styles.effect} ${styles.waterVortex}`} aria-hidden="true"><i /><i /><i /><b /></span>
     <span className={`${styles.effect} ${styles.waterTail}`} aria-hidden="true"><i /><b /><em /></span>
     <span className={`${styles.effect} ${styles.slasherDraw}`} aria-hidden="true"><i /><b /><em /></span>
-    <span className={`${styles.effect} ${styles.slayerRebound}`} aria-hidden="true"><i /><b /><em /></span>
-    <span className={`${styles.effect} ${styles.dwellerReturn}`} aria-hidden="true"><i /><b /><em /></span>
-    <span className={`${styles.effect} ${styles.destroyerPulse}`} aria-hidden="true"><i /><i /><b /><em /></span>
-    <span className={`${styles.effect} ${styles.dividerCleave}`} aria-hidden="true"><i /><b /><em /></span>
-    <span className={`${styles.effect} ${styles.selectiveDraw}`} aria-hidden="true"><i /><b /><em /></span>
-    <span className={`${styles.effect} ${styles.devilReturn}`} aria-hidden="true"><i /><i /><b /><em /></span>
-    <span className={`${styles.effect} ${styles.releaseWave}`} aria-hidden="true"><i /><i /><b /></span>
     <span className={`${styles.effect} ${styles.lightningPalm}`} aria-hidden="true"><i /><b /><em /></span>
     <span className={`${styles.effect} ${styles.ceranosReturn}`} aria-hidden="true"><i /><i /><b /><b /><b /><b /><b /></span>
     <span className={`${styles.effect} ${styles.scatterBolts}`} aria-hidden="true"><i /><i /><i /><b /></span>

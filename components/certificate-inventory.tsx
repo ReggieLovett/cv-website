@@ -113,13 +113,16 @@ export function CertificateInventory() {
   const optionId = (i: number) => `${id}-item-${tab}-${i}`;
   const listId = `${id}-list`;
 
-  // This route has no delegated sound listener (that lives on the homepage),
-  // so the inventory voices its own moves, pointer and keyboard alike.
+  // The inventory voices its own moves (`data-sound="own"` keeps the site's
+  // delegated listener out), pointer and keyboard alike: a glassy cursor tap
+  // per slot, an airy swish per category, and the two-stage confirm when a
+  // credential opens (CertificateModal). Only real moves sound — the cursor
+  // here moves on a click or an arrow, so hovering a slot stays silent.
   const selectTab = useCallback(
     (target: number) => {
       const wrapped = (target + TABS.length) % TABS.length;
       if (wrapped === tab) return;
-      play('switch');
+      play('page');
       moved.current = true;
       setTab(wrapped);
     },
@@ -127,10 +130,10 @@ export function CertificateInventory() {
   );
 
   const pick = useCallback(
-    (target: number) => {
+    (target: number, { silent = false } = {}) => {
       const clamped = Math.max(0, Math.min(current.items.length - 1, target));
       if (clamped === index) return;
-      play('tick');
+      if (!silent) play('cursor');
       moved.current = true;
       setPicks((all) => {
         const copy = all.slice();
@@ -219,7 +222,7 @@ export function CertificateInventory() {
   };
 
   return (
-    <div className={styles.inventory} onKeyDown={onInventoryKey}>
+    <div className={styles.inventory} data-sound="own" onKeyDown={onInventoryKey}>
       <div className={styles.body}>
         {/* ===== The pack: categories over the slot grid ================ */}
         <section className={styles.pack} aria-label="Credentials">
@@ -291,11 +294,13 @@ export function CertificateInventory() {
                 aria-label={`${entry.title}, ${entry.issuer}`}
                 data-scrim={entry.image ? '' : undefined}
                 onClick={() => {
-                  pick(i);
                   // Below the desktop layout the detail band sits under the
                   // whole grid, off screen — a tap there opens the full record
-                  // instead of changing something the reader cannot see.
-                  if (window.matchMedia(STACKED).matches) setOpen(entry);
+                  // instead of changing something the reader cannot see, and
+                  // only the confirm sounds, not a cursor tap under it.
+                  const stacked = window.matchMedia(STACKED).matches;
+                  pick(i, { silent: stacked });
+                  if (stacked) setOpen(entry);
                   else listRef.current?.focus({ preventScroll: true });
                 }}
                 // A second press on the slot under the cursor opens it, the
@@ -404,6 +409,7 @@ export function CertificateInventory() {
                 </button>
                 {item.verifyUrl && (
                   <a
+                    data-sound="select"
                     href={item.verifyUrl}
                     target="_blank"
                     rel="noopener noreferrer"

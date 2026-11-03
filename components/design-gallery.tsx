@@ -88,6 +88,7 @@ export function DesignGallery({
             <button
               type="button"
               onClick={() => setOpen(i)}
+              aria-haspopup="dialog"
               className="frame block w-full"
               aria-label={`View ${entry.title} — ${entry.discipline} for ${entry.client}`}
             >

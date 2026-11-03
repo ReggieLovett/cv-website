@@ -1,6 +1,6 @@
 # Black Clover companion repertoires
 
-These six kits keep the original knight sprite and add costume, weapon, and magic layers. Each has exactly ten choices. They are small screen adaptations of a character's broader arsenal, rather than claims that every move debuted in the selected form. Yuno's Star Magic is merged into his Spirit Dive kit, retaining both magic systems. The scheduler still performs only one to three moves per combo.
+These five kits keep the original knight sprite and add costume, weapon, and magic layers. Each has exactly ten choices. They are small screen adaptations of a character's broader arsenal, rather than claims that every move debuted in the selected form. Yuno's Star Magic is merged into his Spirit Dive kit, retaining both magic systems, and Asta's Zetten is merged into his complete Devil Union. The scheduler still performs only one to three moves per combo.
 
 The additions live in `lib/companion-clover-techniques.ts` and `components/companion-clover-effects.*`. Each new move has its own effect ID and renderer. All root travel stays on the bottom lane (`y = 0`); an eligible form's small body hover is separate. Effects last 650–1200 ms, follow the shared facing and pause state, and disappear under reduced motion. Their visible horizontal bounds fit the existing mobile battle corridor.
 
@@ -12,48 +12,37 @@ Primary references:
 
 - [VIZ, Black Clover volume 35](https://www.viz.com/manga-books/manga/black-clover-volume-35-0/product/7830/paperback) covers Asta's Land of the Sun training. [Official Shonen Jump chapter 340 post](https://x.com/shonenjump/status/1579488432757559297) supplies the training-period costume reference.
 - [Official Asta profile](https://bclover.jp/en/character/asta.php) describes his sword cutting through and deflecting magic, supporting the Spell Rebound application below.
-- [Official anime Devil Union announcement](https://bclover.jp/news/detail.php?id=1136710) supplies Asta's Devil Union visual. It is separate from the hornless Zetten training costume.
+- [Official anime Devil Union announcement](https://bclover.jp/news/detail.php?id=1136710) supplies Asta's Devil Union visual. Zetten, a technique he uses inside it, adds no costume of its own.
 - [Official Yuno character page](https://bclover.jp/character/yuno.php) and [official Spirit Dive merchandise](https://bclover.jp/season1/goods/item.php?id=1021444) establish the wind-spirit visual context. The latter shows an earlier Spirit Dive appearance, not proof of every later manga feature. [VIZ chapter 310](https://www.viz.com/shonenjump/black-clover-chapter-310/chapter/23457) is the licensed Saint Spirit of Zephyr reference.
 - [Official Luck character page](https://bclover.jp/en/character/luck.php) and [official Mereoleona character page](https://bclover.jp/en/character/mereoleona.php) establish their lightning and flame magic. [Shueisha volume 28](https://books.shueisha.co.jp/items/contents.html?jdcn=08882594880416315501) contains the chapter 275 Hellfire Incarnate period.
 - [Official Noelle character page](https://www.shonenjump.com/j/sp_bclover/character/chara005.html), [VIZ volume 36](https://www.viz.com/manga-books/manga/black-clover-volume-36/product/8148), and [Shueisha volume 36](https://books.shueisha.co.jp/items/contents.html?isbn=978-4-08-883665-2) establish her water magic and the later new power. The publisher cover asset did not load during research, so this implementation does not claim its blue/silver pixel palette reproduces a visually inspected official Dragon Form color sheet.
 
-## Asta: Zetten and Devil Union
+## Asta: complete Devil Union with Zetten
 
-The first kit combines Zetten with Asta's established swords. Devil Union keeps a separate pool. Black Slash barrages, a guard, and a cross cut are recognizable uses of that arsenal, not newly named spells. Demon-Destroyer's VIZ ability name is **Fate Release**; its inward removal of magical effects motivates the contracting rings. Bull Thrust uses two forward-pointing blades and a committed rush. Secondary references: [Demon-Destroyer Sword](https://blackclover.fandom.com/wiki/Demon-Destroyer_Sword), [Bull Thrust](https://blackclover.fandom.com/wiki/Bull_Thrust), and [Anti Magic](https://blackclover.fandom.com/wiki/Anti_Magic).
+Zetten is a sword technique Asta learned in the Land of the Sun by swapping ki for anti-magic, and in the final arc he wields it inside his complete Devil Union ([Asta overview](https://en.wikipedia.org/wiki/Asta_(Black_Clover)), [Judgment Day reference](https://blackclover.fandom.com/wiki/Judgment_Day)). So it is not a transformation of its own: one Devil Union + Zetten form carries five Zetten-pool cuts beside five Devil Union techniques, the same way Yuno's Star Magic was merged into Spirit Dive. Black Slash barrages and a cross cut are recognizable uses of that arsenal, not newly named spells. Demon-Destroyer's VIZ ability name is **Fate Release**; its inward removal of magical effects motivates the contracting rings. Secondary references: [Demon-Destroyer Sword](https://blackclover.fandom.com/wiki/Demon-Destroyer_Sword) and [Anti Magic](https://blackclover.fandom.com/wiki/Anti_Magic).
 
-The two return attacks use Demon-Dweller's established absorption and projected-slash mechanic; their display labels describe an application, not a new canonical spell. The return projectile visibly leaves the sword after the absorption cue. Secondary references: [Demon-Dweller Sword](https://blackclover.fandom.com/wiki/Demon-Dweller_Sword) and [Black Slash](https://blackclover.fandom.com/wiki/Demon-Dweller_Sword%3A_Black_Slash).
-
-| New ID | Display label | Status and effect cue |
+| ID | Display label | Status and effect cue |
 | --- | --- | --- |
 | `zetten-counter-cut` | Anti-Magic Zetten: Counter Cut | Descriptive counter application: a brief concentrated cut and dark contact flash. |
 | `asta-causality-break` | Demon-Destroyer: Fate Release | Named sword ability: magic contracts inward and vanishes around the sword. The internal ID retains the commonly used Causality Break wording. |
-| `asta-bull-thrust` | Bull Thrust | Named technique: paired forward blades, narrow horizontal thrust, and a trailing rush. |
 | `zetten-slasher-draw` | Demon-Slasher: Zetten Draw | Descriptive concentrated draw: a katana and a narrow contact line. |
-| `zetten-slayer-rebound` | Demon-Slayer: Spell Rebound | Descriptive flat-blade deflection: an incoming projectile reverses course after contact with the broad sword. |
-| `zetten-dweller-return` | Demon-Dweller: Magic Return | Descriptive absorption and release: an inward charge followed by a traveling colored crescent. |
-| `zetten-destroyer-pulse` | Demon-Destroyer: Fate Release Pulse | Descriptive Fate Release application: an expanding broken ring nullifies an incoming spell. |
 | `devil-black-slash-barrage` | Demon-Dweller: Black Slash Barrage | Descriptive repeated Black Slash application: three staggered dark crescents. |
-| `devil-causality-guard` | Demon-Destroyer: Anti-Magic Guard | Descriptive defensive use: incoming magic fades against a sword-centered nullification field. |
 | `devil-cross-slash` | Demon-Slasher: Cross Cut | Descriptive sword application: two intersecting cuts; not a claim of another named Demon-Slasher spell. |
-| `devil-divider-cleave` | Demon-Slayer: Black Divider Cleave | Descriptive Black Divider application: an enlarged dark cutting arc and ground contact wake. |
-| `devil-slasher-draw` | Demon-Slasher: Selective Draw | Descriptive selective-cut application: an ally-like echo remains behind the katana's narrow target line. |
-| `devil-dweller-return` | Demon-Dweller: Spell Return | Descriptive absorption and release: two separately timed dark projectiles leave the sword. |
-| `devil-destroyer-release` | Demon-Destroyer: Fate Release Wave | Descriptive Fate Release application: nested nullification rings release a short outward wave. |
 
-Complete Zetten pool: `anti-magic-zetten`, `black-slash`, `black-meteorite`, `zetten-counter-cut`, `asta-causality-break`, `asta-bull-thrust`, `zetten-slasher-draw`, `zetten-slayer-rebound`, `zetten-dweller-return`, `zetten-destroyer-pulse`.
+Complete Devil Union + Zetten pool: `anti-magic-zetten`, `black-divider`, `zetten-slasher-draw`, `infinite-slash-equinox`, `zetten-counter-cut`, `black-hurricane`, `devil-black-slash-barrage`, `black-meteorite`, `devil-cross-slash`, `asta-causality-break`. Zetten leads the scheduler's weighting. Black Slash, Bull Thrust, Spell Rebound, both Return attacks, the Fate Release Pulse and Wave, Anti-Magic Guard, Black Divider Cleave and Selective Draw left with the separate Zetten form.
 
-Complete Devil Union pool: `infinite-slash-equinox`, `black-divider`, `black-hurricane`, `devil-black-slash-barrage`, `devil-causality-guard`, `devil-cross-slash`, `devil-divider-cleave`, `devil-slasher-draw`, `devil-dweller-return`, `devil-destroyer-release`.
+The form's look: the anti-magic body and inside red rim, five horns, torn wings, red eyes with dark marks around them, the Demon-Slayer greatsword strapped across the back, and the Demon-Slasher katana in hand. Zetten itself adds no costume: it is the katana's bright honed edge, a slow ki ripple at the feet, and a charge that settles before one forward cut.
 
 Visible battle weapon coverage:
 
 | Weapon | Silhouette | Attack IDs |
 | --- | --- | --- |
-| Demon-Slayer | Broad blunt slab, straight crossguard, wrapped grip | `black-meteorite`, `black-divider`, `black-hurricane`, `asta-bull-thrust`, `zetten-slayer-rebound`, `devil-divider-cleave` |
-| Demon-Dweller | Slimmer patterned double-edged blade and diamond guard | `black-slash`, `devil-black-slash-barrage`, `asta-bull-thrust`, `zetten-dweller-return`, `devil-dweller-return` |
-| Demon-Destroyer | Scalloped blade and large ornate guard | `asta-causality-break`, `devil-causality-guard`, `zetten-destroyer-pulse`, `devil-destroyer-release` |
-| Demon-Slasher | Narrow curved katana, small guard, wrapped hilt | `anti-magic-zetten`, `zetten-counter-cut`, `zetten-slasher-draw`, `infinite-slash-equinox`, `devil-cross-slash`, `devil-slasher-draw` |
+| Demon-Slayer | Broad blunt slab, straight crossguard, wrapped grip | `black-meteorite`, `black-divider`, `black-hurricane` |
+| Demon-Dweller | Slimmer patterned double-edged blade and diamond guard | `devil-black-slash-barrage` |
+| Demon-Destroyer | Scalloped blade and large ornate guard | `asta-causality-break` |
+| Demon-Slasher | Narrow curved katana, small guard, wrapped hilt | `anti-magic-zetten`, `zetten-counter-cut`, `zetten-slasher-draw`, `infinite-slash-equinox`, `devil-cross-slash` |
 
-Bull Thrust visibly equips both swords. These silhouettes are compact CSS interpretations, not traced official weapon art.
+These silhouettes are compact CSS interpretations, not traced official weapon art.
 
 ## Yuno: Star Magic and Saint Spirit Dive
 

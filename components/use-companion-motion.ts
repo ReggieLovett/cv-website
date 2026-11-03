@@ -12,6 +12,7 @@ import { ACTOR_HEIGHT, ACTOR_WIDTH, clampBattlePoint, clampPoint, planTravel, ty
 type Options = {
   roamerRef: RefObject<HTMLDivElement>;
   poseRef: RefObject<HTMLSpanElement>;
+  speechRef: RefObject<HTMLSpanElement>;
   persona: CompanionPersona;
   open: boolean;
   paused: boolean;
@@ -24,8 +25,17 @@ const NO_CONTROLS: Controls = { sync: () => {}, trick: () => {}, battle: () => {
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
 const pointTransform = ({ x }: CompanionPoint) => `translate3d(${x}px, 0px, 0)`;
 
+/**
+ * Custom properties inherit, so a write on the companion root restyles every
+ * node under it. Each value is written on the element that reads it, and only
+ * when it changes.
+ */
+function writeVar(element: HTMLElement | null, name: string, value: string) {
+  if (element && element.style.getPropertyValue(name) !== value) element.style.setProperty(name, value);
+}
+
 /** One owner coordinates bottom-edge travel, transformations, and form-specific battles. */
-export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, reducedMotion, onMoment }: Options) {
+export function useCompanionMotion({ roamerRef, poseRef, speechRef, persona, open, paused, reducedMotion, onMoment }: Options) {
   const [form, setForm] = useState<PowerUpAction | null>(null);
   const formRef = useRef<PowerUpAction | null>(null);
   const controlsRef = useRef<Controls>(NO_CONTROLS);
@@ -43,6 +53,10 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
     const roamer = roamerRef.current;
     const pose = poseRef.current;
     if (!roamer || !pose) return;
+    // Attribute writes invalidate styles even when the value is unchanged.
+    const setData = (key: string, value: string) => { if (roamer.dataset[key] !== value) roamer.dataset[key] = value; };
+    const speech = speechRef.current;
+    const dashTrail = roamer.querySelector<HTMLElement>('[data-dash-trail]');
     let disposed = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let activeSince: number | null = null;
@@ -65,7 +79,7 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
     });
     const applyForm = (value: PowerUpAction | null) => {
       formRef.current = value;
-      roamer.dataset.form = value ?? 'none';
+      setData('form', value ?? 'none');
       setForm(value);
     };
     if (personaRef.current !== persona) {
@@ -77,7 +91,7 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
     }
     const enabled = () => !disposed && !open && !pausedRef.current && !reducedMotion && !document.hidden;
     const allowed = () => enabled() && !controlsOpenRef.current && (!heldRef.current || manual);
-    const setPhase = (value: typeof phase) => { phase = value; roamer.dataset.phase = value; };
+    const setPhase = (value: typeof phase) => { phase = value; setData('phase', value); };
     const clearTimer = () => { if (timer !== undefined) clearTimeout(timer); timer = undefined; };
     const advanceClocks = () => {
       if (activeSince === null) return;
@@ -99,11 +113,13 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
       const top = height - inset - ACTOR_HEIGHT + point.y;
       const bubbleWidth = Math.min(208, Math.max(64, width - 32));
       const bubbleLeft = Math.max(16, Math.min(width - 16 - bubbleWidth, left + 32 - bubbleWidth / 2));
-      roamer.style.setProperty('--speech-x', `${bubbleLeft - left}px`);
-      roamer.style.setProperty('--speech-tail-x', `${Math.max(10, Math.min(bubbleWidth - 18, left + 28 - bubbleLeft))}px`);
+      writeVar(speech, '--speech-x', `${bubbleLeft - left}px`);
+      writeVar(speech, '--speech-tail-x', `${Math.max(10, Math.min(bubbleWidth - 18, left + 28 - bubbleLeft))}px`);
       const labelLeft = Math.max(16, Math.min(width - 196, left - 58));
-      roamer.style.setProperty('--attack-x', `${labelLeft - left}px`);
-      roamer.dataset.speechSide = top < 90 ? 'below' : 'above';
+      // Read only by the root's own label; registered non-inheriting in the stylesheet.
+      writeVar(roamer, '--attack-x', `${labelLeft - left}px`);
+      const side = top < 90 ? 'below' : 'above';
+      setData('speechSide', side);
     };
     const freezeTravel = () => {
       positionRef.current = livePoint();
@@ -124,12 +140,12 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
       continuation = null;
       continuationRemaining = 0;
       moves = [];
-      roamer.dataset.action = 'none';
-      roamer.dataset.effect = 'none';
-      roamer.dataset.battle = 'none';
-      roamer.dataset.battleMove = 'none';
-      roamer.dataset.battleLabel = '';
-      roamer.dataset.form = formRef.current ?? 'none';
+      setData('action', 'none');
+      setData('effect', 'none');
+      setData('battle', 'none');
+      setData('battleMove', 'none');
+      setData('battleLabel', '');
+      setData('form', formRef.current ?? 'none');
       pendingManualBattle = false;
       manual = false;
     };
@@ -140,12 +156,12 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
         activeSince = null;
         movement?.pause();
         performance?.pause();
-        roamer.dataset.motion = 'paused';
+        setData('motion', 'paused');
         positionSpeech();
         return;
       }
       activeSince = window.performance.now();
-      roamer.dataset.motion = 'running';
+      setData('motion', 'running');
       if (movement?.playState === 'paused') movement.play();
       if (performance?.playState === 'paused') performance.play();
       if (phase === 'battling' && continuation) {
@@ -194,13 +210,13 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
       const origin = positionRef.current;
       const plan = planTravel(origin, viewport(), config.travel, profile.speed);
       const pathLength = Math.max(1, Math.hypot(plan.destination.x - origin.x, plan.destination.y - origin.y));
-      roamer.style.setProperty('--dash-trail-x', `${-Math.abs(plan.destination.x - origin.x) / pathLength * 30}px`);
-      roamer.style.setProperty('--dash-trail-y', `${-(plan.destination.y - origin.y) / pathLength * 30}px`);
-      roamer.dataset.direction = plan.direction;
-      roamer.dataset.battle = config.effect;
-      roamer.dataset.battleMove = move;
-      roamer.dataset.battleLabel = config.label;
-      roamer.style.setProperty('--battle-duration', `${config.duration}ms`);
+      writeVar(dashTrail, '--dash-trail-x', `${-Math.abs(plan.destination.x - origin.x) / pathLength * 30}px`);
+      writeVar(dashTrail, '--dash-trail-y', `${-(plan.destination.y - origin.y) / pathLength * 30}px`);
+      setData('direction', plan.direction);
+      setData('battle', config.effect);
+      setData('battleMove', move);
+      setData('battleLabel', config.label);
+      writeVar(roamer, '--battle-duration', `${config.duration}ms`);
       previousBattleRef.current = move;
       movement = roamer.animate(
         [{ transform: pointTransform(origin) }, { transform: pointTransform(plan.destination) }],
@@ -217,9 +233,9 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
         advanceClocks();
         freezeTravel();
         cancelPose();
-        roamer.dataset.battle = 'none';
-        roamer.dataset.battleMove = 'none';
-        roamer.dataset.battleLabel = '';
+        setData('battle', 'none');
+        setData('battleMove', 'none');
+        setData('battleLabel', '');
         if (!moves.length) { finishBattle(); return; }
         continuation = nextMove;
         continuationRemaining = 160;
@@ -262,8 +278,8 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
       const action = chosen ?? pickSpriteAction(persona, previousActionRef.current);
       const config = SPRITE_ACTIONS[action];
       if (isPowerUp(action)) {
-        roamer.dataset.direction = 'left';
-        roamer.dataset.form = 'none';
+        setData('direction', 'left');
+        setData('form', 'none');
         previousPowerRef.current = action;
         clocks.power = nextPowerUpDelay();
         // Enter the effect-safe area during the initial crouch, before the lift.
@@ -284,9 +300,9 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
       previousActionRef.current = action;
       manual = requested;
       setPhase('performing');
-      roamer.dataset.action = action;
-      roamer.dataset.effect = config.effect;
-      roamer.style.setProperty('--moment-duration', `${config.duration}ms`);
+      setData('action', action);
+      setData('effect', config.effect);
+      writeVar(roamer, '--moment-duration', `${config.duration}ms`);
       const keyframes = interruptedPose
         ? config.keyframes.map((frame, index) => index === 0 ? { ...frame, ...interruptedPose } : frame)
         : config.keyframes;
@@ -317,7 +333,7 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
       const plan = planTravel(origin, viewport(), 'wander', speed);
       clocks.travel = nextTravelDelay();
       if (Math.hypot(plan.destination.x - origin.x, plan.destination.y - origin.y) < 2) { sync(); return; }
-      roamer.dataset.direction = plan.direction;
+      setData('direction', plan.direction);
       setPhase('walking');
       movement = roamer.animate(
         [{ transform: pointTransform(origin) }, { transform: pointTransform(plan.destination) }],
@@ -380,9 +396,9 @@ export function useCompanionMotion({ roamerRef, poseRef, persona, open, paused, 
       freezeTravel();
       cancelAction();
       setPhase('idle');
-      roamer.dataset.motion = 'paused';
+      setData('motion', 'paused');
     };
-  }, [roamerRef, poseRef, persona, open, reducedMotion, onMoment]);
+  }, [roamerRef, poseRef, speechRef, persona, open, reducedMotion, onMoment]);
 
   useEffect(() => {
     pausedRef.current = paused;

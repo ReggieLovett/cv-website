@@ -10,7 +10,7 @@ export type BattleMove =
   | 'chakra-arm-barrage' | 'chakra-arm-rasengan' | 'tailed-beast-bomb'
   | 'baryon-rasengan' | 'baryon-tail-breaker' | 'baryon-breakthrough'
   | 'chidori' | 'amaterasu' | 'susanoo-slash'
-  | 'anti-magic-zetten' | 'black-slash' | 'black-meteorite'
+  | 'anti-magic-zetten' | 'black-meteorite'
   | 'infinite-slash-equinox' | 'black-divider' | 'black-hurricane'
   | 'quartile-hasta' | 'quartile-scutum' | 'conjunction'
   | 'spirit-storm' | 'spirit-of-zephyr' | 'spirit-of-euros'
@@ -58,7 +58,6 @@ export const BATTLE_MOVES: Record<BattleMove, BattleMoveConfig> = {
   amaterasu: move('Amaterasu', 'amaterasu', 'hover', 'cast', 1100),
   'susanoo-slash': move('Susano’o Sword Slash', 'susanoo-slash', 'advance', 'draw', 1080),
   'anti-magic-zetten': move('Anti-Magic Zetten', 'anti-magic-zetten', 'advance', 'draw', 960),
-  'black-slash': move('Demon-Dweller: Black Slash', 'black-slash', 'hover', 'draw', 1040),
   'black-meteorite': move('Black Meteorite', 'black-meteorite', 'dash', 'rush', 900),
   'infinite-slash-equinox': move('Demon-Slasher: Infinite Slash Equinox', 'infinite-slash-equinox', 'advance', 'draw', 1180),
   'black-divider': move('Demon-Slayer: Black Divider', 'black-divider', 'advance', 'draw', 1080),
@@ -93,8 +92,7 @@ export const FORM_BATTLES: Record<PowerUpAction, { moves: readonly BattleMove[];
   'lightning-dash': { moves: CLOVER_REPERTOIRES['lightning-dash'], speed: 580 },
   'fire-mode': { moves: CLOVER_REPERTOIRES['fire-mode'], speed: 340 },
   'water-mode': { moves: CLOVER_REPERTOIRES['water-mode'], speed: 400 },
-  'zetten-mode': { moves: CLOVER_REPERTOIRES['zetten-mode'], speed: 440 },
-  'devil-union': { moves: CLOVER_REPERTOIRES['devil-union'], speed: 380 },
+  'devil-union': { moves: CLOVER_REPERTOIRES['devil-union'], speed: 420 },
   'spirit-dive': { moves: CLOVER_REPERTOIRES['spirit-dive'], speed: 460 },
   'baryon-mode': { moves: NARUTO_REPERTOIRES['baryon-mode'], speed: 700 },
   'six-paths-eyes': { moves: NARUTO_REPERTOIRES['six-paths-eyes'], speed: 560 },
@@ -103,6 +101,30 @@ export const FORM_BATTLES: Record<PowerUpAction, { moves: readonly BattleMove[];
     speed: 620,
   },
   'hyper-sonic': { moves: HYPER_REPERTOIRE, speed: 800 },
+};
+
+/** The stylesheet sets in components/companion-*-effects that draw each form's techniques. */
+export type BattleEffectSet = 'naruto' | 'clover' | 'hyper' | 'extra' | 'field' | 'avatar';
+
+/**
+ * Which effect sets a held form fights with. Only these mount: every unused
+ * set is hundreds of invisible nodes the browser would otherwise restyle on
+ * each action change. tests/companion-battle.test.cjs checks this against the
+ * stylesheets, so a technique moved between sets cannot lose its renderer.
+ */
+export const FORM_EFFECT_SETS: Record<PowerUpAction, readonly BattleEffectSet[]> = {
+  'sage-mode': ['naruto'],
+  'chakra-mode': ['naruto', 'avatar'],
+  'sword-draw': ['extra'],
+  'lightning-dash': ['clover'],
+  'fire-mode': ['clover', 'field'],
+  'water-mode': ['clover'],
+  'devil-union': ['clover'],
+  'spirit-dive': ['clover', 'field'],
+  'baryon-mode': ['naruto'],
+  'six-paths-eyes': ['naruto', 'avatar'],
+  'deku-overdrive': ['extra'],
+  'hyper-sonic': ['hyper'],
 };
 
 function randomUnit(random: () => number): number {

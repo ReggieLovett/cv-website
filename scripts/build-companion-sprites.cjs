@@ -142,11 +142,78 @@ function buildAtlas(name) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" shape-rendering="crispEdges"><title>Champion tunic elf companion</title><desc>One Zelda-inspired clothing variant of the original 0x72 CC0 elf, preserving its face and eight source poses. Four idle and four running frames.</desc>${frames.join('')}</svg>\n`;
 }
 
+// Eye masks share each persona atlas's exact layout, so a layer masked by
+// one and positioned like the sprite lights only the current frame's eyes.
+const KNIGHT_TILESET = { width: 512, height: 512, idle: [128, 100], run: [192, 100] };
+const KNIGHT_COLORS = { face: '#72d6ce', visor: '#417089' };
+
+/** The knight's two forward visor slits: face pixels framed by visor on both sides. */
+function knightEyePixels(pose) {
+  const animation = pose < 4 ? 'idle' : 'run';
+  const grid = readSourcePng(path.resolve(__dirname, '../public/sprites', `knight_m_${animation}_anim_f${pose % 4}.png`));
+  const slits = [];
+  for (let y = 0; y < FRAME_HEIGHT; y += 1) for (let x = 1; x < FRAME_WIDTH - 1; x += 1) {
+    if (grid[y][x] === KNIGHT_COLORS.face && grid[y][x - 1] === KNIGHT_COLORS.visor && grid[y][x + 1] === KNIGHT_COLORS.visor) slits.push([x, y]);
+  }
+  const forward = [...new Set(slits.map(([x]) => x))].sort((a, b) => a - b).slice(-2);
+  return slits.filter(([x]) => forward.includes(x));
+}
+
+function elfEyePixels(pose) {
+  const grid = makeFrame('zelda', pose);
+  const eyes = [];
+  for (let y = 0; y < FRAME_HEIGHT; y += 1) for (let x = 0; x < FRAME_WIDTH; x += 1) {
+    if (grid[y][x] === PALETTES.zelda.eyes) eyes.push([x, y]);
+  }
+  return eyes;
+}
+
+/** The face pixels touching an eye (8-neighbourhood): visor around the knight's
+ * slits, skin around the elf's irises. Forms paint pigment or markings here. */
+function eyeRingPixels(persona, pose) {
+  const knight = persona === 'knight';
+  const animation = pose < 4 ? 'idle' : 'run';
+  const grid = knight
+    ? readSourcePng(path.resolve(__dirname, '../public/sprites', `knight_m_${animation}_anim_f${pose % 4}.png`))
+    : makeFrame('zelda', pose);
+  const face = knight ? [KNIGHT_COLORS.visor] : [SOURCE_COLORS.skin, SOURCE_COLORS.skinShade];
+  const eyes = new Set((knight ? knightEyePixels(pose) : elfEyePixels(pose)).map(([x, y]) => `${x},${y}`));
+  const ring = [];
+  for (let y = 0; y < FRAME_HEIGHT; y += 1) for (let x = 0; x < FRAME_WIDTH; x += 1) {
+    if (eyes.has(`${x},${y}`) || !face.includes(grid[y][x])) continue;
+    const touches = [-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => eyes.has(`${x + dx},${y + dy}`)));
+    if (touches) ring.push([x, y]);
+  }
+  return ring;
+}
+
+function buildEyeMask(persona, part = 'eyes') {
+  const knight = persona === 'knight';
+  if (!knight && persona !== 'elf') throw new Error('Unknown eye mask');
+  if (part !== 'eyes' && part !== 'rings') throw new Error('Unknown eye mask part');
+  const width = knight ? KNIGHT_TILESET.width : FRAME_WIDTH * COLUMNS;
+  const height = knight ? KNIGHT_TILESET.height : FRAME_HEIGHT;
+  const rects = Array.from({ length: COLUMNS }, (_, pose) => {
+    const [x0, y0] = knight
+      ? [KNIGHT_TILESET[pose < 4 ? 'idle' : 'run'][0] + (pose % 4) * FRAME_WIDTH, KNIGHT_TILESET.idle[1]]
+      : [pose * FRAME_WIDTH, 0];
+    const pixels = part === 'rings' ? eyeRingPixels(persona, pose) : knight ? knightEyePixels(pose) : elfEyePixels(pose);
+    return pixels.map(([x, y]) => `<rect x="${x0 + x}" y="${y0 + y}" width="1" height="1"/>`).join('');
+  });
+  const title = part === 'rings' ? 'eye-ring' : 'eye';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="#fff" shape-rendering="crispEdges"><title>Companion ${persona} ${title} mask</title>${rects.join('')}</svg>\n`;
+}
+
 function writeAtlases() {
   const output = path.resolve(__dirname, '../public/sprites/companion-variants.svg');
   fs.writeFileSync(output, buildAtlas('variants'));
   process.stdout.write('companion-variants.svg: 128 × 28, one Zelda row, four idle + four run poses\n');
+  for (const persona of ['knight', 'elf']) {
+    fs.writeFileSync(path.resolve(__dirname, `../public/sprites/companion-eyes-${persona}.svg`), buildEyeMask(persona));
+    fs.writeFileSync(path.resolve(__dirname, `../public/sprites/companion-eye-rings-${persona}.svg`), buildEyeMask(persona, 'rings'));
+    process.stdout.write(`companion-eyes-${persona}.svg + companion-eye-rings-${persona}.svg: eye and surrounding face pixels on the ${persona} atlas grid\n`);
+  }
 }
 
 if (require.main === module) writeAtlases();
-module.exports = { ATLASES, COLUMNS, FRAME_HEIGHT, FRAME_WIDTH, SOURCE_COLORS, PALETTES, readSourcePng, sourceFrame, makeFrame, buildAtlas, writeAtlases };
+module.exports = { ATLASES, COLUMNS, FRAME_HEIGHT, FRAME_WIDTH, SOURCE_COLORS, PALETTES, readSourcePng, sourceFrame, makeFrame, buildAtlas, buildEyeMask, writeAtlases };

@@ -7,6 +7,7 @@ import { GeistMono } from 'geist/font/mono';
 import { Cinzel } from 'next/font/google';
 import { profile, contactInfo } from '@/data/portfolio';
 import { PortfolioCompanion } from '@/components/portfolio-companion';
+import { SoundEffects } from '@/components/sound-effects';
 
 /**
  * Cinzel — the display face for the anniversary theme.
@@ -139,6 +140,8 @@ export default function RootLayout({
         >
           Skip to content
         </a>
+        {/* The interface voice for every page — see components/sound-effects.tsx. */}
+        <SoundEffects />
         {children}
         <PortfolioCompanion />
         {/* The world behind the page: a faint glow from above and shadowed

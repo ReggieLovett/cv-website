@@ -1,7 +1,15 @@
 'use client';
 
+/*
+ * Local edit to the vendored React Bits component: the constant cruise spin
+ * runs as a Web Animation on its own wrapper, so the compositor turns the ring
+ * without a main-thread frame. Hover speed changes go through
+ * updatePlaybackRate (no jump in angle). JavaScript only runs while the ring
+ * is dragged or coasting after a fling.
+ */
+
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { cancelFrame, frame, motion, useMotionValue, useReducedMotion, useSpring, type FrameData } from 'motion/react';
+import { motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react';
 
 import './CircularText.css';
 
@@ -68,6 +76,9 @@ const CircularText: React.FC<CircularTextProps> = ({
   className = ''
 }: CircularTextProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
+  const spinRef = useRef<HTMLDivElement>(null);
+  const cruiseRef = useRef<Animation | null>(null);
+  const flingRef = useRef(0);
   const glyphRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const stateRef = useRef<SpinState>({
     dragging: false,
@@ -83,7 +94,6 @@ const CircularText: React.FC<CircularTextProps> = ({
   const [dragging, setDragging] = useState(false);
   const reduceMotion = useReducedMotion();
   const rotation = useMotionValue(0);
-  const speed = useSpring(1, { stiffness: 60, damping: 18 });
   const scale = useSpring(1, { stiffness: 300, damping: 20 });
   const tiltX = useSpring(0, { stiffness: 150, damping: 18 });
   const tiltY = useSpring(0, { stiffness: 150, damping: 18 });
@@ -143,31 +153,52 @@ const CircularText: React.FC<CircularTextProps> = ({
     const state = stateRef.current;
     const turn = direction === 'counterclockwise' ? -1 : 1;
     state.cruise = spinDuration > 0 && !reduceMotion ? (360 / spinDuration) * turn : 0;
-    if (!root || reduceMotion) return undefined;
+    const spinner = spinRef.current;
+    if (!root || !spinner || !state.cruise || typeof spinner.animate !== 'function') return undefined;
 
-    const spin = ({ delta }: FrameData) => {
-      if (state.dragging) return;
-      const dt = Math.min(delta, 100) / 1000;
-      state.fling *= Math.exp(-dt / 0.7);
-      if (Math.abs(state.fling) < 1) state.fling = 0;
-      const velocity = state.cruise * speed.get() + state.fling;
-      if (velocity) rotation.set((rotation.get() + velocity * dt) % 360);
-    };
-
-    let running = false;
+    const cruise = spinner.animate(
+      [{ transform: 'rotate(0deg)' }, { transform: `rotate(${360 * turn}deg)` }],
+      { duration: spinDuration * 1000, iterations: Infinity, easing: 'linear' }
+    );
+    cruiseRef.current = cruise;
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting === running) return;
-      running = entry.isIntersecting;
-      if (running) frame.update(spin, true);
-      else cancelFrame(spin);
+      if (!entry.isIntersecting) cruise.pause();
+      else if (!state.dragging) cruise.play();
     });
     observer.observe(root);
 
     return () => {
       observer.disconnect();
-      cancelFrame(spin);
+      cruise.cancel();
+      cruiseRef.current = null;
     };
-  }, [spinDuration, direction, reduceMotion, rotation, speed]);
+  }, [spinDuration, direction, reduceMotion]);
+
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(flingRef.current);
+    },
+    []
+  );
+
+  const coast = () => {
+    const state = stateRef.current;
+    cancelAnimationFrame(flingRef.current);
+    if (!state.fling) return;
+    let last = performance.now();
+    const step = (now: number) => {
+      const dt = Math.min(now - last, 100) / 1000;
+      last = now;
+      if (state.dragging) return;
+      state.fling *= Math.exp(-dt / 0.7);
+      if (Math.abs(state.fling) < 1) state.fling = 0;
+      if (state.fling) {
+        rotation.set((rotation.get() + state.fling * dt) % 360);
+        flingRef.current = requestAnimationFrame(step);
+      }
+    };
+    flingRef.current = requestAnimationFrame(step);
+  };
 
   useEffect(() => {
     if (hoverTilt && !reduceMotion) return;
@@ -193,13 +224,13 @@ const CircularText: React.FC<CircularTextProps> = ({
 
   const handleEnter = () => {
     stateRef.current.hovering = true;
-    if (onHover && !reduceMotion) speed.set(HOVER_SPEED[onHover] ?? 1);
+    if (onHover && !reduceMotion) cruiseRef.current?.updatePlaybackRate(HOVER_SPEED[onHover] ?? 1);
     applyScale();
   };
 
   const handleLeave = () => {
     stateRef.current.hovering = false;
-    speed.set(1);
+    cruiseRef.current?.updatePlaybackRate(1);
     tiltX.set(0);
     tiltY.set(0);
     applyScale();
@@ -239,6 +270,8 @@ const CircularText: React.FC<CircularTextProps> = ({
     const state = stateRef.current;
     state.dragging = true;
     state.fling = 0;
+    cancelAnimationFrame(flingRef.current);
+    cruiseRef.current?.pause();
     state.angle = pointerAngle(e);
     state.travel = 0;
     state.samples = [[e.timeStamp, 0]];
@@ -257,7 +290,11 @@ const CircularText: React.FC<CircularTextProps> = ({
     const lastTime = state.samples[state.samples.length - 1][0];
     const elapsed = e.timeStamp - startTime;
     const velocity = elapsed > 0 && e.timeStamp - lastTime < 80 ? ((state.travel - startTravel) / elapsed) * 1000 : 0;
-    state.fling = reduceMotion ? 0 : clamp(velocity, -MAX_FLING, MAX_FLING) - state.cruise * speed.get();
+    const cruise = cruiseRef.current;
+    const rate = cruise ? cruise.playbackRate : 0;
+    cruise?.play();
+    state.fling = reduceMotion ? 0 : clamp(velocity, -MAX_FLING, MAX_FLING) - state.cruise * rate;
+    coast();
   };
 
   return (
@@ -294,6 +331,7 @@ const CircularText: React.FC<CircularTextProps> = ({
               opacity: ring ? 1 : 0
             }}
           />
+          <div ref={spinRef} className="circular-text__spin">
           <motion.div className="circular-text__ring" role="img" aria-label={text} style={{ rotate: rotation }}>
             {letters.map((letter, i) => (
               <span key={i} className="circular-text__letter" style={{ transform: `rotate(${angles[i] ?? 0}deg)` }}>
@@ -311,6 +349,7 @@ const CircularText: React.FC<CircularTextProps> = ({
               </span>
             ))}
           </motion.div>
+          </div>
         </div>
         {children != null && children !== false ? <div className="circular-text__center">{children}</div> : null}
       </motion.div>

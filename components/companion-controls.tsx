@@ -29,7 +29,6 @@ const POWER_ICONS: Record<PowerUpAction, LucideIcon> = {
   'lightning-dash': Zap,
   'fire-mode': Flame,
   'water-mode': Droplets,
-  'zetten-mode': Swords,
   'devil-union': Skull,
   'spirit-dive': Wind,
   'baryon-mode': Flame,
@@ -38,7 +37,7 @@ const POWER_ICONS: Record<PowerUpAction, LucideIcon> = {
   'hyper-sonic': Zap,
 };
 
-const BLACK_CLOVER_ACTIONS = new Set<PowerUpAction>(['zetten-mode', 'devil-union', 'spirit-dive', 'lightning-dash', 'fire-mode', 'water-mode']);
+const BLACK_CLOVER_ACTIONS = new Set<PowerUpAction>(['devil-union', 'spirit-dive', 'lightning-dash', 'fire-mode', 'water-mode']);
 const NINJA_ACTIONS = new Set<PowerUpAction>(['baryon-mode', 'six-paths-eyes', 'sage-mode', 'chakra-mode']);
 const HERO_ACTIONS = new Set<PowerUpAction>(['deku-overdrive', 'hyper-sonic']);
 const POWER_GROUPS = [

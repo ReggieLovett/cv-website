@@ -10,9 +10,23 @@
  * mechanical switch, a sheet of paper — because those read as "physical
  * confirmation" rather than "computer noise". Each is a short transient plus
  * a decaying body, which is how a struck object actually behaves.
+ *
+ * The menu voices (cursor, select, back, page) borrow the *feel* of an
+ * open-world game's pause menu rather than any of its recordings, and they are
+ * the site's interface language everywhere (components/sound-effects.tsx):
+ * the cursor landing on something is barely there, a glassy tap with a breath
+ * of air; confirming is a soft pluck that blooms upward; backing out is the
+ * same glass falling away; changing section is a panel of air sliding past.
+ * All four are built here from the same two primitives as the rest.
  */
 
-export type SoundName = 'tap' | 'tick' | 'switch' | 'open' | 'close' | 'chime' | 'blade';
+export type SoundName =
+  | 'tap' | 'tick' | 'switch' | 'open' | 'close' | 'chime' | 'blade'
+  | 'cursor' | 'select' | 'back' | 'page';
+
+export const SOUND_NAMES: readonly SoundName[] = [
+  'tap', 'tick', 'switch', 'open', 'close', 'chime', 'blade', 'cursor', 'select', 'back', 'page',
+];
 
 const STORAGE_KEY = 'sound-enabled';
 const MASTER_GAIN = 0.45;
@@ -21,23 +35,29 @@ let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let noise: AudioBuffer | null = null;
 let enabled: boolean | null = null;
+/** A press has happened this visit (fallback where navigator.userActivation is missing). */
+let gestured = false;
 
 /* ---------------------------------------------------------------- context */
+
+function create(): AudioContext | null {
+  if (ctx) return ctx;
+  const Ctor =
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!Ctor) return null;
+
+  ctx = new Ctor();
+  master = ctx.createGain();
+  master.gain.value = MASTER_GAIN;
+  master.connect(ctx.destination);
+  return ctx;
+}
 
 function audio(): { ctx: AudioContext; master: GainNode } | null {
   if (typeof window === 'undefined') return null;
 
-  if (!ctx) {
-    const Ctor =
-      window.AudioContext ??
-      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctor) return null;
-
-    ctx = new Ctor();
-    master = ctx.createGain();
-    master.gain.value = MASTER_GAIN;
-    master.connect(ctx.destination);
-  }
+  if (!create() || !ctx) return null;
 
   // Browsers start the context suspended until a real user gesture; every
   // caller here is inside a pointer event, so this is the legal moment to run.
@@ -61,9 +81,13 @@ function noiseBuffer(c: AudioContext): AudioBuffer {
 
 type BurstOptions = {
   frequency: number;
+  /** Sweep the filter here over the decay — air moving past, not a hit. */
+  to?: number;
   q?: number;
   gain: number;
   decay: number;
+  /** A swell instead of a hit; omitted, the burst starts at full gain. */
+  attack?: number;
   type?: BiquadFilterType;
 };
 
@@ -72,18 +96,24 @@ function burst(
   c: AudioContext,
   out: GainNode,
   at: number,
-  { frequency, q = 1.2, gain, decay, type = 'bandpass' }: BurstOptions,
+  { frequency, to, q = 1.2, gain, decay, attack, type = 'bandpass' }: BurstOptions,
 ) {
   const source = c.createBufferSource();
   source.buffer = noiseBuffer(c);
 
   const filter = c.createBiquadFilter();
   filter.type = type;
-  filter.frequency.value = frequency;
+  filter.frequency.setValueAtTime(frequency, at);
+  if (to) filter.frequency.exponentialRampToValueAtTime(to, at + decay);
   filter.Q.value = q;
 
   const envelope = c.createGain();
-  envelope.gain.setValueAtTime(gain, at);
+  if (attack) {
+    envelope.gain.setValueAtTime(0.0001, at);
+    envelope.gain.exponentialRampToValueAtTime(gain, at + attack);
+  } else {
+    envelope.gain.setValueAtTime(gain, at);
+  }
   envelope.gain.exponentialRampToValueAtTime(0.0001, at + decay);
 
   source.connect(filter).connect(envelope).connect(out);
@@ -256,9 +286,136 @@ const voices: Record<SoundName, (c: AudioContext, out: GainNode, at: number) => 
 
     burst(c, out, landing, { frequency: 6000, q: 0.4, gain: 0.06, decay: 0.7, type: 'highpass' });
   },
+
+  /**
+   * A fingertip on a pane of glass — the inventory cursor moving one slot.
+   *
+   * It plays dozens of times a visit, so it is the quietest voice here and
+   * shorter than a tenth of a second. A pinprick of high noise is the touch;
+   * a high sine with one inharmonic partial (2.76×, the overtone of a struck
+   * glass bar) is the pane ringing; a wisp of air keeps it from sounding like
+   * a beep. Each move is detuned by up to ±2.5%, so a sweep across a row
+   * reads as a hand moving, not a machine repeating itself.
+   */
+  cursor(c, out, at) {
+    const pitch = 2350 * (1 + (Math.random() - 0.5) * 0.05);
+    burst(c, out, at, { frequency: 6200, q: 1.8, gain: 0.16, decay: 0.012 });
+    tone(c, out, at, { frequency: pitch, to: pitch * 0.985, gain: 0.12, decay: 0.07, attack: 0.002 });
+    tone(c, out, at, { frequency: pitch * 2.76, gain: 0.035, decay: 0.035, attack: 0.002 });
+    burst(c, out, at, { frequency: 7500, q: 0.5, gain: 0.03, decay: 0.06, type: 'highpass' });
+  },
+
+  /**
+   * A soft pluck that blooms into light — confirming an item.
+   *
+   * Two stages, so the ear hears the decision and then its answer: first a
+   * short plucked triangle with a touch of contact noise, then, a beat later,
+   * a brighter bell a fifth above that rings on. That bell is doubled 0.4%
+   * sharp, and the two drifting against each other give the slow shimmer;
+   * an inharmonic partial and a breath of high air finish it. A rising pair
+   * of notes is an interval, not a melody, which keeps the cue our own.
+   */
+  select(c, out, at) {
+    burst(c, out, at, { frequency: 4200, q: 1.2, gain: 0.14, decay: 0.015 });
+    tone(c, out, at, { frequency: 1046.5, to: 1040, gain: 0.16, decay: 0.11, attack: 0.003, type: 'triangle' });
+
+    const bloom = at + 0.06;
+    tone(c, out, bloom, { frequency: 1568, gain: 0.13, decay: 0.45, attack: 0.006 });
+    tone(c, out, bloom, { frequency: 1568 * 1.004, gain: 0.06, decay: 0.5, attack: 0.012 });
+    tone(c, out, bloom, { frequency: 1568 * 2.4, gain: 0.035, decay: 0.25, attack: 0.006 });
+    tone(c, out, bloom, { frequency: 2000, to: 3800, gain: 0.025, decay: 0.18, attack: 0.03 });
+    burst(c, out, bloom, { frequency: 6800, q: 0.4, gain: 0.05, decay: 0.35, type: 'highpass' });
+  },
+
+  /**
+   * The same glass, stepping back — closing a panel or cancelling.
+   *
+   * The mirror of `select`: where the confirm rises a fifth into a ringing
+   * bell, this starts at the bell's pitch and falls a fifth in one short
+   * pluck with no bloom, so leaving reads quieter than arriving. A breath of
+   * air sweeping downward underneath carries the panel away.
+   */
+  back(c, out, at) {
+    burst(c, out, at, { frequency: 3600, q: 1.2, gain: 0.1, decay: 0.012 });
+    tone(c, out, at, { frequency: 1568, to: 1046.5, gain: 0.13, decay: 0.12, attack: 0.003, type: 'triangle' });
+    tone(c, out, at, { frequency: 1568 * 2.4, to: 1046.5 * 2.4, gain: 0.02, decay: 0.05, attack: 0.003 });
+    burst(c, out, at, { frequency: 2600, to: 900, q: 0.8, gain: 0.07, decay: 0.12, attack: 0.02 });
+  },
+
+  /**
+   * A panel of air sliding past — switching section, category or picture.
+   *
+   * Band-passed noise swells in and sweeps from low to bright, the swish of
+   * something light moving across the ear, then a soft tap lands where the
+   * next category settles. No pitch climbs on its own, so stepping through
+   * every tab in a row never turns into a scale.
+   */
+  page(c, out, at) {
+    burst(c, out, at, { frequency: 700, to: 3800, q: 0.9, gain: 0.14, decay: 0.16, attack: 0.05 });
+    const land = at + 0.09;
+    burst(c, out, land, { frequency: 3000, q: 1.2, gain: 0.1, decay: 0.012 });
+    tone(c, out, land, { frequency: 660, to: 520, gain: 0.1, decay: 0.06 });
+  },
 };
 
+/**
+ * Shortest gap, in seconds, between two plays of the same voice. A held arrow
+ * key repeats about thirty times a second; past this rate the ticks smear into
+ * a buzz, so the extra repeats are dropped rather than stacked.
+ */
+const MIN_GAP: Partial<Record<SoundName, number>> = { cursor: 0.04, page: 0.08 };
+
+/** Repeats inside this window play softer, so a fast sweep sits back in the mix. */
+const SWEEP_WINDOW = 0.12;
+const SWEEP_GAIN = 0.6;
+
+const lastPlayed: Partial<Record<SoundName, number>> = {};
+
+/**
+ * A cursor landing right after another voice is the same moment heard twice —
+ * a press that moves focus, a panel that opens and focuses its close button —
+ * so it yields to whatever just played.
+ */
+const CURSOR_YIELD = 0.12;
+let lastVoice = -Infinity;
+
+/**
+ * Before the first press of a visit the browser keeps the context suspended
+ * with its clock stopped, so anything scheduled then would all sound at once
+ * on that first press. Hover and focus voices simply wait for it.
+ */
+function canSchedule(c: AudioContext): boolean {
+  if (c.state === 'running') return true;
+  const activation = typeof navigator !== 'undefined' ? navigator.userActivation : undefined;
+  return activation ? activation.hasBeenActive : gestured;
+}
+
+/** Called from the delegated press listener, for browsers without userActivation. */
+export function markGesture(): void {
+  gestured = true;
+}
+
 /* ------------------------------------------------------------------- api */
+
+/**
+ * Build the context before the first press. Constructing an AudioContext
+ * opens the audio device synchronously — about 140ms of blocked main thread
+ * on macOS, which landed inside the first click or arrow key as a visible
+ * hitch. Built during idle time it starts suspended (no gesture yet), and the
+ * first press only resumes it, which returns at once. Returns a cancel.
+ */
+export function warmSound(): () => void {
+  if (typeof window === 'undefined' || ctx || !isSoundEnabled()) return () => {};
+  const build = () => {
+    if (isSoundEnabled()) create();
+  };
+  if (typeof window.requestIdleCallback === 'function') {
+    const handle = window.requestIdleCallback(build, { timeout: 5000 });
+    return () => window.cancelIdleCallback(handle);
+  }
+  const handle = window.setTimeout(build, 1500);
+  return () => window.clearTimeout(handle);
+}
 
 export function isSoundEnabled(): boolean {
   if (enabled !== null) return enabled;
@@ -297,7 +454,7 @@ export function setSoundEnabled(next: boolean): void {
   } catch {
     /* storage unavailable; the in-memory flag still applies for this visit */
   }
-  if (next) play('tick');
+  if (next) play('select');
   listeners.forEach((listener) => listener());
 }
 
@@ -307,8 +464,26 @@ export function play(name: SoundName): void {
   const nodes = audio();
   if (!nodes) return;
 
+  if (!canSchedule(nodes.ctx)) return;
+
+  const now = nodes.ctx.currentTime;
+  if (name === 'cursor' && now - lastVoice < CURSOR_YIELD) return;
+  if (name !== 'cursor') lastVoice = now;
+  const gap = MIN_GAP[name];
+  const since = now - (lastPlayed[name] ?? -Infinity);
+  if (gap !== undefined) {
+    if (since < gap) return;
+    lastPlayed[name] = now;
+  }
+
   try {
-    voices[name](nodes.ctx, nodes.master, nodes.ctx.currentTime);
+    let out = nodes.master;
+    if (gap !== undefined && since < SWEEP_WINDOW) {
+      out = nodes.ctx.createGain();
+      out.gain.value = SWEEP_GAIN;
+      out.connect(nodes.master);
+    }
+    voices[name](nodes.ctx, out, now);
   } catch {
     /* An exhausted or interrupted context must never break an interaction. */
   }

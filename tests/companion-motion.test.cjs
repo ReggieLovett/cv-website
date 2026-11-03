@@ -54,7 +54,7 @@ test('every pose stays grounded, returns to visible neutral, and avoids layout a
     assert.ok(action.duration >= 600 && action.duration <= 3000, `${name} duration`);
     assert.ok([
       'none', 'dust', 'spark', 'ring', 'sage', 'chakra', 'sword', 'lightning', 'fire', 'water',
-      'zetten', 'devil', 'star', 'spirit', 'baryon', 'six-paths', 'deku', 'hyper',
+      'devil', 'star', 'spirit', 'baryon', 'six-paths', 'deku', 'hyper',
     ].includes(action.effect));
     assert.ok(action.label.trim());
     assert.equal(action.keyframes[0].offset, 0);
@@ -100,8 +100,7 @@ test('all persistent forms have direct chooser entries and distinct effect contr
     ['lightning-dash', 'Lightning Step', 'lightning'],
     ['fire-mode', 'Hellfire Incarnate', 'fire'],
     ['water-mode', 'Leviathan Dragon Armor', 'water'],
-    ['zetten-mode', 'Zetten', 'zetten'],
-    ['devil-union', 'Devil Union', 'devil'],
+    ['devil-union', 'Devil Union + Zetten', 'devil'],
     ['spirit-dive', 'Spirit Dive + Star Magic', 'spirit'],
     ['baryon-mode', 'Baryon Mode', 'baryon'],
     ['six-paths-eyes', 'Six Paths Eyes', 'six-paths'],
@@ -166,7 +165,7 @@ test('water replaces ice in both personas while the standalone Shadow Clone form
 });
 
 test('the Black Clover union performances have distinct poses within the local character bounds', () => {
-  const actions = ['zetten-mode', 'devil-union', 'spirit-dive'];
+  const actions = ['devil-union', 'spirit-dive'];
   const performances = new Set();
   for (const action of actions) {
     const config = SPRITE_ACTIONS[action];
@@ -192,6 +191,21 @@ test('Yuno has one combined Spirit Dive and Star Magic choice in both personas',
   const yuno = POWER_UPS.find(({ action }) => action === 'spirit-dive');
   assert.match(yuno.description, /Saint Stage/);
   assert.match(yuno.description, /Star Magic/);
+});
+
+test('Asta has one complete Devil Union choice that carries Zetten instead of a separate form', () => {
+  assert.equal(SPRITE_ACTIONS['zetten-mode'], undefined);
+  assert.equal(isPowerUp('zetten-mode'), false);
+  for (const pool of Object.values(ACTION_POOLS)) {
+    assert.ok(pool.includes('devil-union'));
+    assert.equal(pool.includes('zetten-mode'), false);
+  }
+  const asta = POWER_UPS.find(({ action }) => action === 'devil-union');
+  assert.match(asta.description, /Devil Union/);
+  assert.match(asta.description, /Zetten/);
+  // The charge closes with Zetten's forward cut after the union settles.
+  const cut = SPRITE_ACTIONS['devil-union'].keyframes.find(({ offset }) => offset > 0.45 && offset < 0.6);
+  assert.match(cut.transform, /translate3d\(1\d(?:\.\d+)?px, 0, 0\)/);
 });
 
 test('power selection reaches every form, avoids the held form, and survives repeated automatic changes', () => {

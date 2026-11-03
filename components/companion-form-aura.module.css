@@ -1,0 +1,513 @@
+/* Form light around the active sprite. Loops animate only transform and
+   opacity; masks and blur filters are static, so the compositor moves layers
+   that are already drawn. Silhouette masks use the persona's first idle frame:
+   once blurred and scaled, the one-pixel frame bob is invisible. Constructs
+   sit behind the body, which hides their roots, so they read as attached. */
+.back, .front { position: absolute; inset: 0; display: none; pointer-events: none; }
+.back { z-index: -1; transform-origin: 50% 100%; }
+/* The front wrapper never forms a stacking context: its leaves blend
+   (plus-lighter) straight onto the sprite inside the isolated pose. */
+.front { z-index: auto; }
+.back > span, .front > span, .arcs { position: absolute; inset: 0; display: none; }
+.back i, .front i { position: absolute; display: block; }
+:global([data-form]:not([data-form='none'])) :is(.back, .front) { display: block; }
+:global([data-form]:not([data-form='none'])) .back { animation: auraArrive 720ms var(--ease-out) both; }
+@keyframes auraArrive { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
+
+/* Shell: the body's own silhouette, blurred and breathing outward from the feet. */
+.shell i {
+  left: 8px;
+  top: 0;
+  width: 48px;
+  height: 84px;
+  transform-origin: 50% 94%;
+  transform: scale(var(--s0));
+  filter: blur(var(--shell-blur));
+  opacity: var(--shell-o);
+  animation: shellBreathe var(--shell-speed, 2800ms) var(--ease-in-out) infinite;
+}
+.shell i::before {
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--shell-rgb, var(--aura-rgb)));
+  mask: var(--sprite-image) var(--sprite-idle-x) var(--sprite-y) / var(--sprite-size) no-repeat;
+  content: '';
+}
+.shell i:nth-child(1) { --shell-blur: 2px; --shell-o: var(--shell-o-1, 0.5); --s0: 1.05; --s1: 1.1; }
+.shell i:nth-child(2) { --shell-blur: 6px; --shell-o: var(--shell-o-2, 0.36); --s0: 1.12; --s1: 1.22; --shell-rgb: var(--shell-2-rgb, var(--aura-rgb)); animation-delay: -1400ms; }
+.shell i:nth-child(3) { display: none; }
+@keyframes shellBreathe {
+  0%, 100% { opacity: var(--shell-o); transform: scale(var(--s0)); }
+  50% { opacity: calc(var(--shell-o) * 1.6); transform: scale(var(--s1)); }
+}
+
+/* Flames: tongues rooted just inside the outline, so each one appears to
+   leave an edge of the body. Roots follow the silhouette's turns. */
+.flames { --fw: 10px; --fh: 16px; }
+.flames i {
+  left: calc(var(--x) - var(--fw) / 2);
+  top: calc(var(--y) - var(--fh) * var(--k, 1));
+  width: var(--fw);
+  height: calc(var(--fh) * var(--k, 1));
+  border-radius: 50% 50% 42% 42% / 72% 72% 28% 28%;
+  background: radial-gradient(55% 70% at 50% 80%, rgb(var(--flame-core, var(--aura-hot-rgb)) / 0.95) 0 16%, rgb(var(--flame-rgb, var(--aura-rgb)) / 0.85) 40%, rgb(var(--flame-edge, var(--flame-rgb, var(--aura-rgb))) / 0.55) 58%, rgb(var(--flame-edge, var(--flame-rgb, var(--aura-rgb))) / 0) 76%);
+  transform-origin: 50% 100%;
+  transform: rotate(var(--r));
+  opacity: 0.7;
+  animation: flameLick var(--flame-speed, 1100ms) var(--ease-in-out) var(--d) infinite;
+}
+.flames i:nth-child(1) { --x: 12px; --y: 37px; --r: -36deg; --d: -120ms; }
+.flames i:nth-child(2) { --x: 20px; --y: 35px; --r: -14deg; --d: -560ms; }
+.flames i:nth-child(3) { --x: 28px; --y: 31px; --r: -2deg; --d: -880ms; }
+.flames i:nth-child(4) { --x: 40px; --y: 40px; --r: 10deg; --d: -300ms; }
+.flames i:nth-child(5) { --x: 50px; --y: 46px; --r: 22deg; --d: -720ms; }
+.flames i:nth-child(6) { --x: 53px; --y: 59px; --r: 32deg; --d: -40ms; }
+.flames i:nth-child(7) { --x: 46px; --y: 75px; --r: 28deg; --d: -460ms; }
+.flames i:nth-child(8) { --x: 19px; --y: 75px; --r: -28deg; --d: -960ms; }
+.flames i:nth-child(9) { --x: 18px; --y: 57px; --r: -32deg; --d: -240ms; }
+.flames i:nth-child(10) { --x: 19px; --y: 43px; --r: -22deg; --d: -640ms; }
+@keyframes flameLick {
+  0%, 100% { opacity: 0.4; transform: rotate(var(--r)) translateY(3px) scale(0.78, 0.5); }
+  40% { opacity: 0.95; transform: rotate(calc(var(--r) + 5deg)) translateY(0) scale(1); }
+  68% { opacity: 0.7; transform: rotate(calc(var(--r) - 4deg)) translateY(-2px) scale(0.72, 1.18); }
+}
+
+/* Streamers (tails, wings, capes) and gear (ears, horns, crown, quills)
+   pivot from a root hidden behind the body. */
+.streamers i, .gear i { transform-origin: var(--ox, 50%) var(--oy, 100%); }
+@keyframes streamerSway {
+  0%, 100% { transform: scaleX(var(--flip, 1)) rotate(var(--r)); }
+  50% { transform: scaleX(var(--flip, 1)) rotate(calc(var(--r) + var(--sway, 8deg))); }
+}
+
+.satellites i { animation: satelliteFloat var(--float-speed, 3200ms) var(--ease-in-out) var(--sd, 0ms) infinite; }
+@keyframes satelliteFloat {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50% { transform: translateY(-3px) rotate(calc(var(--tilt, 0deg) * -1)); }
+}
+
+.ground i { left: -6px; top: 44px; width: 76px; height: 76px; border-radius: 50%; }
+
+/* Front leaves carry their own z-index and blend onto the sprite's pixels.
+   The eye pixels themselves are recolored inside the sprite; this is only a
+   soft bloom around the knight's visor, so the frame bob never shows. The
+   elf's lit irises need no bloom over bright skin. */
+.eyes i, .charges i, .arcs, .motes i, .licks i { z-index: 5; }
+.eyes i {
+  top: calc(var(--eye-top) - 2px);
+  width: 10px;
+  height: 13px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(var(--eye-rgb) / 0.6), rgb(var(--eye-rgb) / 0));
+  mix-blend-mode: plus-lighter;
+}
+.eyes i:nth-child(1) { left: calc(var(--eye-1-left) - 1.5px); }
+.eyes i:nth-child(2) { left: calc(var(--eye-2-left) - 1.5px); background: radial-gradient(closest-side, rgb(var(--eye-2-rgb, var(--eye-rgb)) / 0.6), rgb(var(--eye-2-rgb, var(--eye-rgb)) / 0)); }
+
+.charges i {
+  left: calc(var(--cx) - 7px);
+  top: calc(var(--cy) - 7px);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(var(--aura-hot-rgb)), rgb(var(--aura-rgb) / 0.7) 45%, rgb(var(--aura-rgb) / 0));
+  mix-blend-mode: plus-lighter;
+  animation: chargePulse var(--charge-speed, 900ms) steps(3, jump-none) var(--cd, 0ms) infinite alternate;
+}
+.charges i:nth-child(1) { --cx: 18px; --cy: 66px; }
+.charges i:nth-child(2) { --cx: 53px; --cy: 58px; --cd: -300ms; }
+.charges i:nth-child(3) { --cx: 22px; --cy: 81px; --cd: -600ms; }
+.charges i:nth-child(4) { --cx: 41px; --cy: 81px; --cd: -150ms; }
+@keyframes chargePulse { from { opacity: 0.45; transform: scale(0.8); } to { opacity: 1; transform: scale(1.1); } }
+
+/* Licks: small flames in front of the body, rooted on its edges, adding
+   light to the pixels they cross. */
+.licks i {
+  z-index: 5;
+  left: calc(var(--x) - 4px);
+  top: calc(var(--y) - 12px);
+  width: 8px;
+  height: 12px;
+  border-radius: 50% 50% 42% 42% / 72% 72% 28% 28%;
+  background: radial-gradient(55% 70% at 50% 80%, rgb(var(--aura-hot-rgb) / 0.9) 0 18%, rgb(var(--aura-rgb) / 0.7) 46%, rgb(var(--aura-rgb) / 0) 76%);
+  mix-blend-mode: plus-lighter;
+  transform-origin: 50% 100%;
+  opacity: 0.6;
+  animation: flameLick var(--flame-speed, 1000ms) var(--ease-in-out) var(--d) infinite;
+}
+.licks i:nth-child(1) { --x: 20px; --y: 80px; --r: -8deg; --d: -300ms; }
+.licks i:nth-child(2) { --x: 44px; --y: 78px; --r: 10deg; --d: -650ms; }
+.licks i:nth-child(3) { --x: 50px; --y: 50px; --r: 18deg; --d: -100ms; }
+
+/* Arcs crawl along the limbs; each path flashes on its own short beat. */
+.arcs { width: 64px; height: 84px; overflow: visible; mix-blend-mode: plus-lighter; filter: drop-shadow(0 0 2px rgb(var(--aura-rgb))); }
+.arcs path { stroke: rgb(var(--arc-rgb, var(--aura-hot-rgb))); stroke-width: 1.5; opacity: 0; animation: arcFlicker var(--arc-speed, 1300ms) steps(1) var(--ad, 0ms) infinite; }
+.arcs path:nth-child(2) { --ad: -420ms; }
+.arcs path:nth-child(3) { --ad: -760ms; }
+.arcs path:nth-child(4) { --ad: -1080ms; }
+@keyframes arcFlicker { 0% { opacity: 0.95; } 9% { opacity: 0.3; } 15% { opacity: 0.9; } 24%, 100% { opacity: 0; } }
+
+.motes i {
+  left: var(--mx);
+  top: var(--my);
+  width: var(--mote-w, 3px);
+  height: var(--mote-h, 3px);
+  background: rgb(var(--mote-rgb, var(--aura-hot-rgb)));
+  box-shadow: 0 0 4px rgb(var(--aura-rgb) / 0.8);
+  opacity: 0;
+  animation: moteRise var(--mote-speed, 2400ms) var(--ease-out) var(--md) infinite;
+}
+.motes i:nth-child(1) { --mx: 14px; --my: 60px; --dx: -7px; --md: 0ms; }
+.motes i:nth-child(2) { --mx: 22px; --my: 36px; --dx: -4px; --md: -400ms; }
+.motes i:nth-child(3) { --mx: 33px; --my: 27px; --dx: 2px; --md: -1600ms; }
+.motes i:nth-child(4) { --mx: 46px; --my: 41px; --dx: 5px; --md: -800ms; }
+.motes i:nth-child(5) { --mx: 53px; --my: 55px; --dx: 8px; --md: -2000ms; }
+.motes i:nth-child(6) { --mx: 40px; --my: 72px; --dx: 6px; --md: -1200ms; }
+@keyframes moteRise {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  20% { opacity: 0.95; }
+  100% { opacity: 0; transform: translate3d(var(--dx), var(--rise, -30px), 0) rotate(var(--spin, 0deg)) scale(0.5); }
+}
+
+/* Every form gets the shell; each block below adds only its own pieces. */
+:global([data-form]:not([data-form='none'])) .shell { display: block; }
+
+/* Sage Mode: calm natural energy, toad-orange eyes behind the visor, and the
+   summoning scroll strapped across the lower back. */
+:global([data-form='sage-mode']) .back { --shell-o-1: 0.28; --shell-o-2: 0.18; }
+:global([data-form='sage-mode']) :is(.satellites, .eyes, .motes) { display: block; }
+:global([data-form='sage-mode']) .satellites i:not(:first-child) { display: none; }
+:global([data-form='sage-mode']) .satellites i:first-child {
+  left: -4px;
+  top: 55px;
+  width: 72px;
+  height: 15px;
+  border-block: 3px solid rgb(34 34 34);
+  background:
+    linear-gradient(90deg, rgb(34 34 34) 0 3px, rgb(126 74 42) 3px 9px, transparent 9px calc(100% - 9px), rgb(126 74 42) calc(100% - 9px) calc(100% - 3px), rgb(34 34 34) calc(100% - 3px)),
+    linear-gradient(rgb(242 232 196) 0 3px, rgb(214 196 150) 3px 6px, rgb(170 140 96) 6px);
+  animation: none;
+}
+:global([data-form='sage-mode']) .motes { --mote-rgb: 196 222 120; --mote-w: 4px; --mote-h: 3px; --mote-speed: 3800ms; --rise: -24px; --spin: 140deg; }
+:global([data-form='sage-mode']) .motes i { border-radius: 0 80% 0 80%; box-shadow: none; }
+
+/* Six Paths KCM: a flickering gold cloak of chakra along the whole outline and
+   nine Truth-Seeking Orbs arced behind the shoulders. */
+:global([data-form='chakra-mode']) .back { --shell-o-1: 0.55; --shell-o-2: 0.4; --shell-2-rgb: 255 140 30; }
+:global([data-form='chakra-mode']) :is(.flames, .streamers, .gear, .satellites, .eyes, .motes) { display: block; }
+/* The chakra's two horn-like flames rise from the head, as the hair does in
+   Kurama chakra mode; the Six Paths cloak flares into coattails behind. */
+:global([data-form='chakra-mode']) .gear i:nth-child(n + 3) { display: none; }
+:global([data-form='chakra-mode']) .gear i {
+  top: 12px;
+  width: 9px;
+  height: 26px;
+  border-radius: 50% 50% 46% 46% / 94% 94% 6% 6%;
+  background: radial-gradient(55% 80% at 50% 92%, rgb(var(--aura-hot-rgb)) 0 20%, rgb(var(--aura-rgb)) 48%, rgb(236 120 24 / 0) 82%);
+  animation: streamerSway 700ms var(--ease-in-out) infinite;
+}
+:global([data-form='chakra-mode']) .gear i:nth-child(1) { left: 18px; --r: -14deg; --sway: -6deg; }
+:global([data-form='chakra-mode']) .gear i:nth-child(2) { left: 34px; top: 16px; --r: 12deg; --sway: 6deg; animation-delay: -350ms; }
+:global([data-form='chakra-mode']) .streamers i:nth-child(n + 3) { display: none; }
+:global([data-form='chakra-mode']) .streamers i {
+  left: calc(19px - 7px);
+  top: calc(74px - var(--len));
+  width: 14px;
+  height: var(--len);
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 86%, rgb(var(--aura-hot-rgb) / 0.9) 0 10%, rgb(var(--aura-rgb) / 0.7) 34%, rgb(236 120 24 / 0.32) 58%, rgb(236 120 24 / 0) 74%);
+  animation: streamerSway 1300ms var(--ease-in-out) var(--td, 0ms) infinite;
+}
+:global([data-form='chakra-mode']) .streamers i:nth-child(1) { --len: 38px; --r: -118deg; --sway: 8deg; }
+:global([data-form='chakra-mode']) .streamers i:nth-child(2) { --len: 32px; --r: -146deg; --sway: -7deg; --td: -650ms; opacity: 0.85; }
+:global([data-form='chakra-mode']) .flames { --fw: 9px; --fh: 14px; --flame-speed: 900ms; --flame-edge: 236 120 24; }
+:global([data-form='chakra-mode']) .satellites i {
+  left: calc(var(--ox) - 3.5px);
+  top: calc(var(--oy) - 3.5px);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, rgb(128 120 110) 0 1px, rgb(30 26 22) 2.5px, rgb(8 8 10));
+  box-shadow: 0 0 0 1px rgb(255 214 110 / 0.5), 0 0 5px rgb(255 190 70 / 0.55);
+}
+:global([data-form='chakra-mode']) .satellites i:nth-child(1) { --ox: 1px; --oy: 44px; --sd: 0ms; }
+:global([data-form='chakra-mode']) .satellites i:nth-child(2) { --ox: 5px; --oy: 35px; --sd: -360ms; }
+:global([data-form='chakra-mode']) .satellites i:nth-child(3) { --ox: 12px; --oy: 28px; --sd: -720ms; }
+:global([data-form='chakra-mode']) .satellites i:nth-child(4) { --ox: 22px; --oy: 23px; --sd: -1080ms; }
+:global([data-form='chakra-mode']) .satellites i:nth-child(5) { --ox: 32px; --oy: 21px; --sd: -1440ms; }
+:global([data-form='chakra-mode']) .satellites i:nth-child(6) { --ox: 42px; --oy: 23px; --sd: -1800ms; }
+:global([data-form='chakra-mode']) .satellites i:nth-child(7) { --ox: 52px; --oy: 28px; --sd: -2160ms; }
+:global([data-form='chakra-mode']) .satellites i:nth-child(8) { --ox: 59px; --oy: 35px; --sd: -2520ms; }
+:global([data-form='chakra-mode']) .satellites i:nth-child(9) { --ox: 63px; --oy: 44px; --sd: -2880ms; }
+:global([data-form='chakra-mode']) .motes { --mote-speed: 1900ms; --rise: -26px; }
+
+/* Baryon Mode: a burning red-orange cloak, fox-ear tufts rising behind the
+   helmet, streaming chakra tails, and embers peeling off the body. */
+:global([data-form='baryon-mode']) .back { --shell-o-1: 0.55; --shell-o-2: 0.42; --shell-2-rgb: 200 30 30; }
+:global([data-form='baryon-mode']) :is(.flames, .streamers, .gear, .eyes, .motes, .licks) { display: block; }
+:global([data-form='baryon-mode']) .flames { --fw: 10px; --fh: 17px; --flame-speed: 760ms; --flame-edge: 170 24 28; }
+:global([data-form='baryon-mode']) .licks i:last-child { display: none; }
+:global([data-form='baryon-mode']) .streamers i {
+  left: calc(20px - 6px);
+  top: calc(67px - var(--len));
+  width: 12px;
+  height: var(--len);
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 88%, rgb(var(--aura-hot-rgb) / 0.95) 0 10%, rgb(var(--aura-rgb) / 0.8) 32%, rgb(196 36 30 / 0.45) 58%, rgb(150 20 24 / 0) 72%);
+  animation: streamerSway 1600ms var(--ease-in-out) var(--td) infinite;
+}
+:global([data-form='baryon-mode']) .streamers i:nth-child(1) { --len: 48px; --r: -32deg; --sway: 9deg; --td: 0ms; }
+:global([data-form='baryon-mode']) .streamers i:nth-child(2) { --len: 56px; --r: -56deg; --sway: -8deg; --td: -400ms; }
+:global([data-form='baryon-mode']) .streamers i:nth-child(3) { --len: 52px; --r: -80deg; --sway: 10deg; --td: -800ms; }
+:global([data-form='baryon-mode']) .streamers i:nth-child(4) { --len: 44px; --r: -102deg; --sway: -9deg; --td: -1200ms; }
+:global([data-form='baryon-mode']) .gear i:nth-child(n + 3) { display: none; }
+:global([data-form='baryon-mode']) .gear i {
+  top: 18px;
+  width: 12px;
+  height: 22px;
+  border-radius: 50% 50% 46% 46% / 92% 92% 8% 8%;
+  background: radial-gradient(60% 80% at 50% 90%, rgb(var(--aura-hot-rgb)) 0 22%, rgb(var(--aura-rgb)) 50%, rgb(var(--aura-rgb) / 0) 80%);
+  animation: streamerSway 1200ms var(--ease-in-out) infinite;
+}
+:global([data-form='baryon-mode']) .gear i:nth-child(1) { left: 15px; --r: -18deg; --sway: -5deg; }
+:global([data-form='baryon-mode']) .gear i:nth-child(2) { left: 35px; --r: 14deg; --sway: 5deg; animation-delay: -600ms; }
+:global([data-form='baryon-mode']) .motes { --mote-rgb: 255 120 60; --mote-w: 2px; --mote-h: 2px; --mote-speed: 1500ms; --rise: -34px; }
+
+/* Sasuke: cool, contained purple chakra; Susano'o wisps rise only from the
+   shoulders and back, and the two different eyes glow through the visor. */
+:global([data-form='six-paths-eyes']) .back { --shell-o-1: 0.28; --shell-o-2: 0.2; }
+:global([data-form='six-paths-eyes']) :is(.flames, .eyes) { display: block; }
+:global([data-form='six-paths-eyes']) .flames { --fw: 9px; --fh: 18px; --flame-speed: 1900ms; --flame-rgb: 104 64 186; --flame-core: 200 170 255; }
+:global([data-form='six-paths-eyes']) .flames i:nth-child(n + 4):nth-child(-n + 8) { display: none; }
+
+/* Devil Union + Zetten: the body is swallowed by anti-magic. Black flames
+   with red hearts, five horns rooted under the helmet, torn wings, the
+   greatsword on the back, and Zetten's ki ripple below. */
+:global([data-form='devil-union']) .back { --shell-o-1: 0.62; --shell-o-2: 0.32; --shell-rgb: 10 6 14; --shell-2-rgb: 196 30 50; }
+:global([data-form='devil-union']) :is(.flames, .streamers, .gear, .satellites, .ground, .eyes, .motes) { display: block; }
+/* Zetten's stillness inside the anti-magic: one slow ki ripple from the feet. */
+:global([data-form='devil-union']) .ground i:last-child { display: none; }
+:global([data-form='devil-union']) .ground i:first-child { border: 1px solid rgb(236 236 244 / 0.7); animation: kiRipple 3200ms var(--ease-out) infinite; }
+@keyframes kiRipple {
+  0% { opacity: 0; transform: scaleY(0.2) scale(0.5); }
+  25% { opacity: 0.7; }
+  100% { opacity: 0; transform: scaleY(0.2) scale(1.15); }
+}
+/* The Demon-Slayer greatsword rides diagonally across the back: hilt over the
+   shoulder, broad blunt slab hidden by the body, tip beside the feet. */
+:global([data-form='devil-union']) .satellites i:not(:first-child) { display: none; }
+:global([data-form='devil-union']) .satellites i:first-child {
+  left: 27px;
+  top: 9px;
+  width: 14px;
+  height: 82px;
+  background:
+    repeating-linear-gradient(rgb(128 82 84) 0 3px, rgb(40 30 38) 3px 5px) 0 0 / 100% 14% no-repeat,
+    linear-gradient(90deg, rgb(36 32 42), rgb(84 74 90) 38%, rgb(30 27 34) 70%, rgb(16 14 20));
+  clip-path: polygon(35% 0, 65% 0, 65% 14%, 100% 14%, 100% 19%, 88% 19%, 88% 100%, 12% 100%, 12% 19%, 0 19%, 0 14%, 35% 14%);
+  transform: rotate(-35deg);
+  animation: none;
+}
+:global([data-form='devil-union']) .flames { --fw: 10px; --fh: 16px; --flame-speed: 1000ms; --flame-rgb: 18 12 22; --flame-core: 224 40 62; }
+:global([data-form='devil-union']) .streamers i:nth-child(n + 3) { display: none; }
+:global([data-form='devil-union']) .streamers i {
+  top: 6px;
+  width: 40px;
+  height: 46px;
+  --ox: 100%;
+  background:
+    radial-gradient(70% 60% at 100% 100%, rgb(210 40 60 / 0.6), transparent 70%),
+    linear-gradient(225deg, rgb(120 30 50 / 0.35), rgb(40 22 38 / 0.9) 45%, rgb(14 10 18 / 0.95) 75%);
+  clip-path: polygon(100% 100%, 0 0, 22% 30%, 8% 34%, 32% 56%, 16% 62%, 46% 78%, 34% 88%, 72% 92%);
+  animation: streamerSway 2400ms var(--ease-in-out) infinite;
+}
+:global([data-form='devil-union']) .streamers i:nth-child(1) { left: -16px; --r: -6deg; --sway: 9deg; }
+:global([data-form='devil-union']) .streamers i:nth-child(2) { left: 4px; --flip: -1; --r: -4deg; --sway: 7deg; animation-delay: -1200ms; }
+:global([data-form='devil-union']) .gear { filter: drop-shadow(0 0 1.5px rgb(236 60 80)); }
+:global([data-form='devil-union']) .gear i {
+  width: 7px;
+  height: var(--horn, 16px);
+  background: linear-gradient(90deg, rgb(30 26 34), rgb(96 82 104) 58%, rgb(226 64 82));
+  clip-path: polygon(30% 100%, 100% 100%, 92% 64%, 76% 32%, 50% 10%, 0 0, 30% 26%, 44% 56%);
+  transform: scaleX(var(--flip, 1)) rotate(var(--r));
+}
+:global([data-form='devil-union']) .gear i:nth-child(1) { left: 14px; top: 22px; --horn: 18px; --r: -26deg; }
+:global([data-form='devil-union']) .gear i:nth-child(2) { left: 23px; top: 20px; --horn: 13px; --r: -8deg; }
+:global([data-form='devil-union']) .gear i:nth-child(3) { left: 33px; top: 24px; --horn: 13px; --flip: -1; --r: -8deg; }
+:global([data-form='devil-union']) .gear i:nth-child(4) { left: 41px; top: 27px; --horn: 18px; --flip: -1; --r: -26deg; }
+:global([data-form='devil-union']) .gear i:nth-child(5) { left: 28px; top: 12px; --horn: 14px; --r: -2deg; }
+:global([data-form='devil-union']) .motes { --mote-rgb: 240 60 80; --mote-w: 2px; --mote-h: 2px; --mote-speed: 2000ms; }
+
+/* Spirit Dive: wind made visible. Translucent spirit wings, a glowing
+   half-crown, Star Magic anchors and both grimoires drift around the body. */
+:global([data-form='spirit-dive']) .back { --shell-o-1: 0.45; --shell-o-2: 0.3; }
+:global([data-form='spirit-dive']) :is(.flames, .streamers, .gear, .satellites, .eyes, .motes) { display: block; }
+:global([data-form='spirit-dive']) .flames { --fw: 6px; --fh: 14px; --flame-speed: 1600ms; }
+:global([data-form='spirit-dive']) .streamers i {
+  width: var(--ww);
+  height: var(--wh);
+  left: calc(var(--wx) - var(--ww));
+  top: calc(var(--wy) - var(--wh));
+  --ox: 100%;
+  border-radius: 0 100% 0 100%;
+  background: radial-gradient(120% 120% at 100% 100%, rgb(var(--aura-hot-rgb) / 0.75), rgb(var(--aura-rgb) / 0.4) 45%, rgb(var(--aura-rgb) / 0.08) 80%);
+  box-shadow: inset 0 0 0 1px rgb(220 255 232 / 0.55);
+  animation: streamerSway 1500ms var(--ease-in-out) var(--td, 0ms) infinite;
+}
+:global([data-form='spirit-dive']) .streamers i:nth-child(1) { --wx: 23px; --wy: 50px; --ww: 26px; --wh: 34px; --r: -12deg; --sway: -8deg; }
+:global([data-form='spirit-dive']) .streamers i:nth-child(2) { --wx: 23px; --wy: 62px; --ww: 16px; --wh: 18px; --r: -58deg; --sway: -6deg; --td: -300ms; }
+:global([data-form='spirit-dive']) .streamers i:nth-child(3) { --wx: 45px; --wy: 50px; --ww: 22px; --wh: 30px; --flip: -1; --r: -12deg; --sway: -8deg; --td: -750ms; }
+:global([data-form='spirit-dive']) .streamers i:nth-child(4) { --wx: 45px; --wy: 62px; --ww: 14px; --wh: 16px; --flip: -1; --r: -58deg; --sway: -6deg; --td: -1050ms; }
+:global([data-form='spirit-dive']) .gear i:not(:first-child) { display: none; }
+:global([data-form='spirit-dive']) .gear i:first-child {
+  left: 21px;
+  top: 21px;
+  width: 27px;
+  height: 12px;
+  background: linear-gradient(rgb(var(--aura-hot-rgb)), rgb(var(--aura-rgb) / 0.6));
+  clip-path: polygon(0 100%, 0 50%, 11% 50%, 11% 0, 22% 0, 22% 50%, 39% 50%, 39% 0, 50% 0, 50% 50%, 67% 50%, 67% 0, 78% 0, 78% 50%, 89% 50%, 89% 25%, 100% 25%, 100% 100%);
+  opacity: 0.85;
+  --r: -6deg;
+  animation: satelliteFloat 3000ms var(--ease-in-out) infinite;
+  --tilt: -6deg;
+}
+:global([data-form='spirit-dive']) .satellites i:nth-child(n + 7) { display: none; }
+:global([data-form='spirit-dive']) .satellites i:nth-child(-n + 4) {
+  width: 8px;
+  height: 8px;
+  background: rgb(255 236 170);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  --float-speed: 2600ms;
+}
+:global([data-form='spirit-dive']) .satellites i:nth-child(1) { left: -12px; top: 14px; --sd: 0ms; --tilt: 12deg; }
+:global([data-form='spirit-dive']) .satellites i:nth-child(2) { left: 70px; top: 18px; --sd: -650ms; --tilt: -12deg; }
+:global([data-form='spirit-dive']) .satellites i:nth-child(3) { left: -16px; top: 62px; --sd: -1300ms; --tilt: 10deg; }
+:global([data-form='spirit-dive']) .satellites i:nth-child(4) { left: 74px; top: 60px; --sd: -1950ms; --tilt: -10deg; }
+:global([data-form='spirit-dive']) .satellites i:nth-child(5),
+:global([data-form='spirit-dive']) .satellites i:nth-child(6) {
+  width: 10px;
+  height: 13px;
+  border: 2px solid rgb(34 34 34);
+  background:
+    radial-gradient(circle at 50% 45%, rgb(236 218 150) 0 1.5px, transparent 2px),
+    linear-gradient(90deg, rgb(20 50 40) 0 2px, var(--cover) 2px calc(100% - 2px), rgb(236 230 206) calc(100% - 2px));
+  --float-speed: 3400ms;
+}
+:global([data-form='spirit-dive']) .satellites i:nth-child(5) { left: -6px; top: 40px; --cover: rgb(52 120 88); --tilt: -10deg; --sd: -400ms; }
+:global([data-form='spirit-dive']) .satellites i:nth-child(6) { left: 61px; top: 36px; --cover: rgb(34 46 72); --tilt: 10deg; --sd: -2100ms; }
+:global([data-form='spirit-dive']) .motes { --mote-rgb: 214 255 228; --mote-w: 6px; --mote-h: 1px; --mote-speed: 2200ms; --rise: -12px; }
+:global([data-form='spirit-dive']) .motes i { box-shadow: none; --dx: 14px; }
+
+/* Lightning Step: Luck's body carries the current. Arcs crawl the limbs,
+   the Thunder God gloves and boots spark, and mana arrays turn underfoot. */
+:global([data-form='lightning-dash']) .back { --shell-o-1: 0.45; --shell-o-2: 0.3; --shell-speed: 1700ms; }
+:global([data-form='lightning-dash']) :is(.ground, .eyes, .charges, .motes), :global([data-form='lightning-dash']) .arcs { display: block; }
+:global([data-form='lightning-dash']) .ground i { border: 2px dashed rgb(var(--aura-rgb) / 0.75); animation: runeTurn 6000ms linear infinite; transform: scaleY(0.22) rotate(0deg); }
+:global([data-form='lightning-dash']) .ground i:last-child { left: -14px; top: 36px; width: 92px; height: 92px; border: 1px solid rgb(var(--aura-hot-rgb) / 0.55); animation-direction: reverse; animation-duration: 9000ms; }
+@keyframes runeTurn { from { transform: scaleY(0.22) rotate(0deg); } to { transform: scaleY(0.22) rotate(360deg); } }
+:global([data-form='lightning-dash']) .motes { --mote-w: 2px; --mote-h: 2px; --mote-speed: 900ms; --rise: -14px; }
+
+/* Hellfire Incarnate: the body is the flame. Tall tongues make a mane at
+   the helmet and back, both fists burn, and embers keep rising. */
+:global([data-form='fire-mode']) .back { --shell-o-1: 0.6; --shell-o-2: 0.42; --shell-2-rgb: 230 60 24; }
+:global([data-form='fire-mode']) :is(.flames, .eyes, .charges, .motes, .licks) { display: block; }
+:global([data-form='fire-mode']) .flames { --fw: 13px; --fh: 22px; --flame-speed: 820ms; --flame-edge: 214 50 24; }
+:global([data-form='fire-mode']) .licks { --flame-speed: 760ms; }
+:global([data-form='fire-mode']) .flames i:nth-child(-n + 4) { --k: 1.4; }
+:global([data-form='fire-mode']) .flames i:nth-child(10) { --k: 1.2; }
+:global([data-form='fire-mode']) .charges i:nth-child(n + 3) { display: none; }
+:global([data-form='fire-mode']) .charges { --charge-speed: 700ms; }
+:global([data-form='fire-mode']) .motes { --mote-rgb: 255 200 100; --mote-w: 2px; --mote-h: 2px; --mote-speed: 1700ms; --rise: -36px; }
+
+/* Leviathan Valkyrie Armor: a thin water shell that wavers instead of
+   flickering, bubbles drifting up and ripples spreading below the feet. */
+:global([data-form='water-mode']) .back { --shell-o-1: 0.42; --shell-o-2: 0.24; --shell-speed: 3600ms; }
+:global([data-form='water-mode']) :is(.ground, .motes) { display: block; }
+:global([data-form='water-mode']) .ground i { border: 1px solid rgb(var(--aura-hot-rgb) / 0.7); animation: waterRipple 3000ms var(--ease-out) infinite; }
+:global([data-form='water-mode']) .ground i:last-child { animation-delay: -1500ms; }
+@keyframes waterRipple {
+  0% { opacity: 0; transform: scaleY(0.2) scale(0.4); }
+  20% { opacity: 0.8; }
+  100% { opacity: 0; transform: scaleY(0.2) scale(1.1); }
+}
+:global([data-form='water-mode']) .motes { --mote-w: 4px; --mote-h: 4px; --mote-speed: 3200ms; --rise: -26px; }
+:global([data-form='water-mode']) .motes i { border: 1px solid rgb(var(--aura-hot-rgb) / 0.9); border-radius: 50%; background: rgb(var(--aura-rgb) / 0.25); box-shadow: none; }
+
+/* Overdrive: green current crackles over the body while Gran Torino's
+   worn cape trails from the shoulders. */
+:global([data-form='deku-overdrive']) .back { --shell-o-1: 0.42; --shell-o-2: 0.26; }
+:global([data-form='deku-overdrive']) :is(.streamers, .eyes, .motes), :global([data-form='deku-overdrive']) .arcs { display: block; }
+:global([data-form='deku-overdrive']) .arcs { --arc-speed: 1100ms; --arc-rgb: 150 255 190; }
+:global([data-form='deku-overdrive']) .streamers i:nth-child(n + 3) { display: none; }
+/* The worn cape's ends taper to torn tips and trail down behind the back. */
+:global([data-form='deku-overdrive']) .streamers i {
+  left: calc(20px - 6px);
+  top: calc(50px - var(--len));
+  width: 12px;
+  height: var(--len);
+  background: linear-gradient(to top, rgb(120 92 36), rgb(206 172 76) 40%, rgb(232 204 116) 70%, rgb(196 160 70));
+  clip-path: polygon(10% 100%, 90% 100%, 80% 52%, 100% 30%, 70% 26%, 78% 0, 50% 16%, 30% 4%, 34% 30%, 0 38%, 20% 56%);
+  animation: streamerSway 900ms var(--ease-in-out) var(--td, 0ms) infinite;
+}
+:global([data-form='deku-overdrive']) .streamers i:nth-child(1) { --len: 24px; --r: -118deg; --sway: 10deg; }
+:global([data-form='deku-overdrive']) .streamers i:nth-child(2) { --len: 18px; --r: -142deg; --sway: -9deg; --td: -450ms; opacity: 0.85; }
+:global([data-form='deku-overdrive']) .motes { --mote-w: 2px; --mote-h: 2px; --mote-speed: 1100ms; --rise: -16px; }
+
+/* Hyper Sonic: a silver body whose glow drifts slowly through cyan, pink
+   and pale violet (never flashing, never gold), light quills sweeping back. */
+:global([data-form='hyper-sonic']) .back { --shell-o-1: 0.4; --shell-o-2: 0.3; }
+:global([data-form='hyper-sonic']) .shell i:nth-child(1) { --shell-rgb: 120 230 245; animation-name: prismShift; animation-duration: 3600ms; }
+:global([data-form='hyper-sonic']) .shell i:nth-child(2) { --shell-rgb: 240 150 230; animation-name: prismShift; animation-duration: 3600ms; animation-delay: -1200ms; }
+:global([data-form='hyper-sonic']) .shell i:nth-child(3) { display: block; --shell-blur: 4px; --shell-o: 0.35; --s0: 1.08; --s1: 1.16; --shell-rgb: 196 176 255; animation: prismShift 3600ms var(--ease-in-out) -2400ms infinite; }
+@keyframes prismShift {
+  0%, 100% { opacity: 0.08; transform: scale(var(--s0)); }
+  33% { opacity: 0.6; transform: scale(var(--s1)); }
+  66% { opacity: 0.18; transform: scale(var(--s0)); }
+}
+:global([data-form='hyper-sonic']) :is(.gear, .eyes, .motes) { display: block; }
+:global([data-form='hyper-sonic']) .gear i {
+  width: 8px;
+  height: var(--quill, 18px);
+  border-radius: 50% 50% 30% 30% / 90% 90% 10% 10%;
+  background: linear-gradient(to top, rgb(255 255 255 / 0.95), rgb(220 236 255 / 0.55) 60%, rgb(220 236 255 / 0));
+  animation: streamerSway 2400ms var(--ease-in-out) var(--qd, 0ms) infinite;
+}
+:global([data-form='hyper-sonic']) .gear i:nth-child(1) { left: 14px; top: 20px; --quill: 20px; --r: -62deg; --sway: -6deg; }
+:global([data-form='hyper-sonic']) .gear i:nth-child(2) { left: 17px; top: 14px; --quill: 22px; --r: -40deg; --sway: -6deg; --qd: -600ms; }
+:global([data-form='hyper-sonic']) .gear i:nth-child(3) { left: 23px; top: 11px; --quill: 20px; --r: -20deg; --sway: -5deg; --qd: -1200ms; }
+:global([data-form='hyper-sonic']) .gear i:nth-child(4) { left: 31px; top: 14px; --quill: 16px; --r: -4deg; --sway: -4deg; --qd: -1800ms; }
+:global([data-form='hyper-sonic']) .gear i:nth-child(5) { display: none; }
+:global([data-form='hyper-sonic']) .motes { --mote-w: 5px; --mote-h: 5px; --mote-speed: 2000ms; --rise: -10px; --spin: 90deg; }
+:global([data-form='hyper-sonic']) .motes i { clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); box-shadow: none; background: rgb(255 255 255); }
+
+/* Drawn sword: steel light, and a glint that runs to the blade's tip. */
+:global([data-form='sword-draw']) .back { --shell-o-1: 0.18; --shell-o-2: 0.1; }
+:global([data-form='sword-draw']) .motes { display: block; }
+:global([data-form='sword-draw']) .motes i:not(:first-child) { display: none; }
+:global([data-form='sword-draw']) .motes i:first-child {
+  --mx: 43px; --my: -2px; --dx: 0px; --rise: 0px; --spin: 90deg;
+  width: 7px;
+  height: 7px;
+  background: rgb(255 255 255);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  box-shadow: none;
+  animation: bladeGlint 3200ms var(--ease-out) infinite;
+}
+@keyframes bladeGlint {
+  0%, 70%, 100% { opacity: 0; transform: rotate(0deg) scale(0.4); }
+  80% { opacity: 1; transform: rotate(45deg) scale(1); }
+  90% { opacity: 0; transform: rotate(90deg) scale(0.5); }
+}
+
+/* Loops freeze with every other companion effect: pause, interaction holds,
+   a hidden tab and the open chat. The arrival fade on .back is left alone so
+   a form applied under a hold is never stuck invisible. */
+:global(:is([data-motion='paused'], [data-paused='true'], [data-open='true'])) :is(.back, .front) * { animation-play-state: paused; }
+
+/* Reduced motion keeps each form's look as a still frame. */
+@media (prefers-reduced-motion: reduce) {
+  .back, .back *, .front * { animation: none !important; }
+  .motes { display: none !important; }
+  .arcs path { opacity: 0.55; }
+}
+:global([data-persona='zelda']) .front .eyes { display: none; }

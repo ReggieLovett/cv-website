@@ -1,5 +1,13 @@
 'use client';
 
+/*
+ * Local edit to the vendored React Bits component: pointer and scroll events
+ * only wake cards that are on screen, and a card whose light is fully off
+ * skips its paint and sleeps instead of chasing the pointer. The original
+ * woke every card on every pointermove and scroll, and each one read layout
+ * and then wrote styles in turn, forcing a layout per card per frame.
+ */
+
 import React, { useEffect, useRef } from 'react';
 
 import './SpotlightCard.css';
@@ -202,6 +210,7 @@ const SpotlightCard = ({
         ty += (rect.height * (0.5 + 0.3 * Math.sin(state.time * 0.61 + 1.3)) - ty) * (drift / 0.6);
         target = 0.6;
       }
+      if (target === 0 && state.presence === 0 && state.flare === 0 && !state.pressed) return;
       if (state.presence < 0.02 && target > 0 && !s.ambient) {
         state.x = tx;
         state.y = ty;
@@ -232,7 +241,12 @@ const SpotlightCard = ({
       pointer.x = event.clientX;
       pointer.y = event.clientY;
       pointer.active = true;
-      if (state.presence > 0 || settingsRef.current.proximity > 0 || root.contains(event.target as Node | null)) wake();
+      if (
+        state.presence > 0 ||
+        root.contains(event.target as Node | null) ||
+        (state.visible && settingsRef.current.proximity > 0)
+      )
+        wake();
     };
     const onOut = (event: PointerEvent) => {
       if (event.relatedTarget) return;
@@ -263,7 +277,7 @@ const SpotlightCard = ({
       wake();
     };
     const onScroll = () => {
-      if (pointer.active || state.presence > 0) wake();
+      if (state.presence > 0 || (pointer.active && state.visible)) wake();
     };
 
     const observer = new IntersectionObserver(entries => {

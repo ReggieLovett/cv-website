@@ -8,7 +8,6 @@ export const FORM_MOBILITY: Readonly<Record<PowerUpAction, 'grounded' | 'hover'>
   'six-paths-eyes': 'grounded',
   'deku-overdrive': 'hover',
   'hyper-sonic': 'hover',
-  'zetten-mode': 'grounded',
   'devil-union': 'hover',
   'spirit-dive': 'hover',
   'sword-draw': 'grounded',

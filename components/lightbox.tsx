@@ -50,21 +50,27 @@ export function Lightbox({
 
   const close = useCallback(() => {
     setClosing(true);
-    play('close');
+    play('back');
     window.setTimeout(onClose, 180);
   }, [onClose]);
 
   const step = useCallback(
     (delta: number) => {
       if (!many) return;
+      play('page');
       onIndex((index + delta + items.length) % items.length);
     },
     [index, items.length, many, onIndex],
   );
 
+  // Opening a picture is confirming it: the menu's select, as everywhere.
+  // Its own effect, so stepping between pictures (which re-runs the key
+  // handler below) does not replay it.
   useEffect(() => {
-    play('open');
+    play('select');
+  }, []);
 
+  useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') close();
       if (event.key === 'ArrowRight') {
@@ -116,6 +122,7 @@ export function Lightbox({
               <button
                 type="button"
                 onClick={() => step(-1)}
+                data-sound="silent"
                 aria-label="Previous"
                 className="lightbox__nav"
               >
@@ -124,6 +131,7 @@ export function Lightbox({
               <button
                 type="button"
                 onClick={() => step(1)}
+                data-sound="silent"
                 aria-label="Next"
                 className="lightbox__nav"
               >
@@ -135,7 +143,7 @@ export function Lightbox({
             type="button"
             onClick={close}
             autoFocus
-            data-sound="close"
+            data-sound="silent"
             aria-label="Close"
             className="lightbox__nav"
           >

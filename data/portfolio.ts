@@ -615,10 +615,11 @@ export const globalExposure = [
 
 
 /**
- * Skills & Technologies — the category cards rendered as logo pills.
- * `icon` keys map to the inline SVG marks in components/tech-icons.tsx.
+ * Skills & Technologies — each tool is a tile with its mark, name and kind.
+ * `icon` keys map to the inline SVG marks in components/tech-icons.tsx;
+ * `kind` is what the tool is, never a self-rated proficiency.
  */
-export type TechItem = { name: string; icon: string };
+export type TechItem = { name: string; icon: string; kind: string };
 
 export type TechCategory = {
   label: string;
@@ -631,37 +632,38 @@ export const techStack: TechCategory[] = [
     label: 'PROGRAMMING LANGUAGES',
     caption: 'The languages I build and problem-solve in.',
     items: [
-      { name: 'JavaScript', icon: 'javascript' },
-      { name: 'TypeScript', icon: 'typescript' },
-      { name: 'Python', icon: 'python' },
-      { name: 'PHP', icon: 'php' },
-      { name: 'C++', icon: 'cpp' },
+      { name: 'JavaScript', icon: 'javascript', kind: 'Language' },
+      { name: 'TypeScript', icon: 'typescript', kind: 'Typed JS' },
+      { name: 'Python', icon: 'python', kind: 'Language' },
+      { name: 'PHP', icon: 'php', kind: 'Language' },
+      { name: 'C++', icon: 'cpp', kind: 'Language' },
     ],
   },
   {
     label: 'FRONTEND',
     caption: 'Interfaces, structure, and the layer people actually touch.',
     items: [
-      { name: 'HTML', icon: 'html' },
-      { name: 'CSS', icon: 'css' },
-      { name: 'React', icon: 'react' },
-      { name: 'Next.js', icon: 'next' },
+      { name: 'HTML', icon: 'html', kind: 'Markup' },
+      { name: 'CSS', icon: 'css', kind: 'Styling' },
+      { name: 'React', icon: 'react', kind: 'UI library' },
+      { name: 'Next.js', icon: 'next', kind: 'React framework' },
     ],
   },
   {
     label: 'BACKEND',
     caption: 'Server-side logic and application runtimes.',
     items: [
-      { name: 'Node.js', icon: 'node' },
-      { name: 'PHP', icon: 'php' },
+      { name: 'Node.js', icon: 'node', kind: 'JS runtime' },
+      { name: 'PHP', icon: 'php', kind: 'Server language' },
+      { name: 'Laravel', icon: 'laravel', kind: 'PHP framework' },
     ],
   },
   {
     label: 'DATABASE',
     caption: 'Storing, querying, and modelling data.',
     items: [
-      { name: 'SQL', icon: 'sql' },
-      { name: 'Postgres', icon: 'postgres' },
+      { name: 'SQL', icon: 'sql', kind: 'Query language' },
+      { name: 'Postgres', icon: 'postgres', kind: 'Relational DB' },
     ],
   },
 ];

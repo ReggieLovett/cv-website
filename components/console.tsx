@@ -12,7 +12,7 @@ import { TechStack } from './tech-stack';
 import { GitHubActivity } from './github-activity';
 import { AcademicJourney } from './academic-journey';
 import { CredentialsPreview } from './credentials-preview';
-import { SoundEffects, SoundToggle } from './sound-effects';
+import { SoundToggle } from './sound-effects';
 import { ThemeToggle } from './theme-toggle';
 import { ZeldaCornerEmblem, ZeldaCrest, useZeldaSwitch } from './zelda-emblem';
 import { SectionHeading } from './section-heading';
@@ -44,9 +44,10 @@ import { MotionProvider, fadeIn, riseIn, stagger, staggerSlow, viewport } from '
  * `prefers-reduced-motion`; see components/motion.tsx.
  *
  * ---- On ClickSpark ----
- * The press already makes a sound (SoundEffects); the spark is the same
- * acknowledgement for the eye — a short burst in the accent, gone in under
- * half a second. Small and quick so it reads as feedback, not decoration.
+ * The press already makes a sound (SoundEffects, mounted in the root layout);
+ * the spark is the same acknowledgement for the eye — a short burst in the
+ * accent, gone in under half a second. Small and quick so it reads as
+ * feedback, not decoration.
  */
 
 const SECTIONS = [
@@ -61,39 +62,56 @@ const SECTIONS = [
   { id: 'contact', label: 'Contact' },
 ] as const;
 
-export function Console({ swordSoundSrc }: { swordSoundSrc: string | null }) {
+/**
+ * The index rail. It owns the active-section state, so a section change
+ * re-renders these nine buttons rather than the whole page. Section offsets
+ * are measured only when the layout changes (a ResizeObserver on the body:
+ * images arriving, fonts swapping, the window resizing); a scroll compares
+ * `scrollY` against those numbers and reads no layout.
+ */
+function IndexRail() {
   const [active, setActive] = useState<string>('top');
 
   useEffect(() => {
     const nodes = SECTIONS.map((section) => document.getElementById(section.id)).filter(
       (node): node is HTMLElement => node !== null,
     );
+    if (nodes.length === 0) return;
 
+    let tops: number[] = [];
+    let bottom = 0;
+    let current = '';
     let frame = 0;
     const update = () => {
       frame = 0;
-      if (nodes.length === 0) return;
-      const atBottom =
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
-      const current = atBottom
-        ? nodes[nodes.length - 1]
-        : nodes.reduce<HTMLElement | null>(
-            (found, node) => (node.getBoundingClientRect().top <= 120 ? node : found),
-            null,
-          );
-      setActive(current?.id ?? '');
+      const y = window.scrollY;
+      let found = '';
+      if (y >= bottom) found = nodes[nodes.length - 1].id;
+      else for (let i = 0; i < nodes.length && tops[i] - y <= 120; i += 1) found = nodes[i].id;
+      if (found !== current) {
+        current = found;
+        setActive(found);
+      }
+    };
+    const measure = () => {
+      const y = window.scrollY;
+      tops = nodes.map((node) => node.getBoundingClientRect().top + y);
+      bottom = document.documentElement.scrollHeight - window.innerHeight - 2;
+      update();
     };
     const schedule = () => {
       if (frame === 0) frame = requestAnimationFrame(update);
     };
 
-    update();
+    const observer = new ResizeObserver(measure);
+    observer.observe(document.body);
     window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule, { passive: true });
+    window.addEventListener('resize', measure, { passive: true });
     return () => {
       if (frame !== 0) cancelAnimationFrame(frame);
+      observer.disconnect();
       window.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
+      window.removeEventListener('resize', measure);
     };
   }, []);
 
@@ -101,12 +119,86 @@ export function Console({ swordSoundSrc }: { swordSoundSrc: string | null }) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
+  return (
+    <aside className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:py-12">
+      <div className="flex h-full flex-col justify-between px-6">
+        <div>
+          <button
+            type="button"
+            onClick={() => jump('top')}
+            data-sound="page"
+            className="press flex items-baseline gap-3 text-left"
+          >
+            <span className="text-title font-semibold tracking-tight text-bone">
+              {profile.initials}
+            </span>
+            <span className="readout text-faint">{profile.name}</span>
+          </button>
+
+          <nav aria-label="Sections" className="mt-14">
+            <ul>
+              {SECTIONS.map((section, i) => (
+                <li key={section.id}>
+                  <button
+                    type="button"
+                    onClick={() => jump(section.id)}
+                    data-sound="page"
+                    aria-current={active === section.id ? 'true' : undefined}
+                    className="group press flex w-full items-baseline gap-3 py-2 text-left"
+                  >
+                    <span
+                      className={`readout transition-colors duration-hover ${
+                        active === section.id ? 'text-signal' : 'text-faint'
+                      }`}
+                    >
+                      {/* Counted from 00 so each number matches the index
+                          on its section heading — the intro has none. */}
+                      {String(i).padStart(2, '0')}
+                    </span>
+                    <span
+                      className={`readout transition-colors duration-hover ${
+                        active === section.id
+                          ? 'text-bone'
+                          : 'text-dim group-hover:text-bone'
+                      }`}
+                    >
+                      {section.label}
+                    </span>
+                    {/* Scales rather than animating width, so the marker
+                        never asks the rail to re-lay-out on scroll. */}
+                    <span
+                      className={`ml-auto block h-px w-6 origin-left bg-signal shadow-[0_0_8px_rgb(var(--signal)/0.8)] transition-transform duration-panel ease-out ${
+                        active === section.id
+                          ? 'scale-x-100'
+                          : 'scale-x-0 group-hover:scale-x-100'
+                      }`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+
+        <footer>
+          <p className="tag">
+            © {new Date().getFullYear()} {profile.name}
+          </p>
+          <p className="tag mt-2 text-faint">Set in Cinzel &amp; Geist · Next.js</p>
+          <p className="tag mt-2 max-w-[13rem] normal-case tracking-normal text-faint">A fan tribute to The Legend of Zelda&rsquo;s 40th anniversary. Not affiliated with or endorsed by Nintendo.</p>
+        </footer>
+      </div>
+    </aside>
+  );
+}
+
+export function Console({ swordSoundSrc }: { swordSoundSrc: string | null }) {
   const accent = useAccent();
 
   return (
     <MotionProvider>
       <Preloader />
-      <SoundEffects />
 
       <ClickSpark
         sparkColor={accent}
@@ -117,75 +209,7 @@ export function Console({ swordSoundSrc }: { swordSoundSrc: string | null }) {
         duration={420}
       >
         <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:px-8">
-          {/* ===== The index rail (sticky on desktop) ==================== */}
-          <aside className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:py-12">
-            <div className="flex h-full flex-col justify-between px-6">
-              <div>
-                <button
-                  type="button"
-                  onClick={() => jump('top')}
-                  className="press flex items-baseline gap-3 text-left"
-                >
-                  <span className="text-title font-semibold tracking-tight text-bone">
-                    {profile.initials}
-                  </span>
-                  <span className="readout text-faint">{profile.name}</span>
-                </button>
-
-                <nav aria-label="Sections" className="mt-14">
-                  <ul>
-                    {SECTIONS.map((section, i) => (
-                      <li key={section.id}>
-                        <button
-                          type="button"
-                          onClick={() => jump(section.id)}
-                          aria-current={active === section.id ? 'true' : undefined}
-                          className="group press flex w-full items-baseline gap-3 py-2 text-left"
-                        >
-                          <span
-                            className={`readout transition-colors duration-hover ${
-                              active === section.id ? 'text-signal' : 'text-faint'
-                            }`}
-                          >
-                            {/* Counted from 00 so each number matches the index
-                                on its section heading — the intro has none. */}
-                            {String(i).padStart(2, '0')}
-                          </span>
-                          <span
-                            className={`readout transition-colors duration-hover ${
-                              active === section.id
-                                ? 'text-bone'
-                                : 'text-dim group-hover:text-bone'
-                            }`}
-                          >
-                            {section.label}
-                          </span>
-                          {/* Scales rather than animating width, so the marker
-                              never asks the rail to re-lay-out on scroll. */}
-                          <span
-                            className={`ml-auto block h-px w-6 origin-left bg-signal shadow-[0_0_8px_rgb(var(--signal)/0.8)] transition-transform duration-panel ease-out ${
-                              active === section.id
-                                ? 'scale-x-100'
-                                : 'scale-x-0 group-hover:scale-x-100'
-                            }`}
-                            aria-hidden="true"
-                          />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              </div>
-
-              <footer>
-                <p className="tag">
-                  © {new Date().getFullYear()} {profile.name}
-                </p>
-                <p className="tag mt-2 text-faint">Set in Cinzel &amp; Geist · Next.js</p>
-                <p className="tag mt-2 max-w-[13rem] normal-case tracking-normal text-faint">A fan tribute to The Legend of Zelda&rsquo;s 40th anniversary. Not affiliated with or endorsed by Nintendo.</p>
-              </footer>
-            </div>
-          </aside>
+          <IndexRail />
 
           {/* ===== The column ============================================ */}
           <main className="lg:py-12">

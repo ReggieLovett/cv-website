@@ -7,6 +7,7 @@ import { CHAT_PERSONAS } from '@/lib/chat-persona';
 import { getZeldaServerSnapshot, isZeldaOn, subscribeToZelda } from '@/lib/zelda';
 import { getCompanionSpriteStyle } from '@/lib/companion-sprite';
 import { canCompanionHover } from '@/lib/companion-appearance';
+import { FORM_EFFECT_SETS } from '@/lib/companion-battle';
 import { CompanionControls } from './companion-controls';
 import { useCompanionMotion } from './use-companion-motion';
 import NarutoBattleEffects from './companion-naruto-effects';
@@ -15,6 +16,7 @@ import { HyperBattleEffects } from './companion-hyper-effects';
 import { ExtraBattleEffects } from './companion-extra-effects';
 import { CompanionFieldEffects } from './companion-field-effects';
 import { CompanionAvatarEffects } from './companion-avatar-effects';
+import { FormAuraBack, FormAuraFront } from './companion-form-aura';
 import { WaterArmor, WaterCharge } from './companion-water-armor';
 import styles from './portfolio-companion.module.css';
 
@@ -41,13 +43,15 @@ export function PortfolioCompanion() {
   const reducedMotion = useSyncExternalStore(subscribeToReducedMotion, getReducedMotion, () => true);
   const roamerRef = useRef<HTMLDivElement>(null);
   const poseRef = useRef<HTMLSpanElement>(null);
+  const speechRef = useRef<HTMLSpanElement>(null);
   const controlsOpenRef = useRef(false);
   const hoveringRef = useRef(false);
   const focusedRef = useRef(false);
   const advanceComment = useCallback(() => setComment((current) => current + 1), []);
   const { setHeld, setControlsOpen, showTrick, showBattle, form, resetForm } = useCompanionMotion({
-    roamerRef, poseRef, persona, open, paused, reducedMotion, onMoment: advanceComment,
+    roamerRef, poseRef, speechRef, persona, open, paused, reducedMotion, onMoment: advanceComment,
   });
+  const effectSets = form ? FORM_EFFECT_SETS[form] : [];
   const syncHeld = useCallback(() => {
     setHeld(hoveringRef.current || focusedRef.current || controlsOpenRef.current);
   }, [setHeld]);
@@ -100,11 +104,12 @@ export function PortfolioCompanion() {
           className={styles.launcher}
           aria-label={profile.launcherLabel}
           aria-haspopup="dialog"
+          data-sound="select"
           aria-expanded={open}
           aria-controls="portfolio-chat"
           onClick={() => { setVisited(true); setOpen(true); }}
         >
-          <span className={styles.comment} aria-hidden="true">
+          <span ref={speechRef} className={styles.comment} aria-hidden="true">
             <MessageCircle size={13} strokeWidth={1.6} />
             <span>{profile.comments[comment % profile.comments.length]}</span>
           </span>
@@ -115,39 +120,15 @@ export function PortfolioCompanion() {
                 <span className={styles.chakraAura}><i /><i /><i /><i /><i /></span>
                 <span className={styles.afterimages}><i /><i /></span>
                 <span ref={poseRef} className={styles.pose}>
-                  <span className={styles.formCape} />
-                  <span className={styles.foxTails}><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>
-                  <span className={styles.formWings}><i /><i /></span>
-                  <span className={styles.hyperAura}><i /><i /><i /></span>
-                  <span className={styles.hellfireMantle}><i /><i /><i /><i /><i /><i /><i /></span>
-                  <span className={styles.luckArmor}><i /><i /><i /><i /><i /><i /></span>
-                  <span className={styles.manaRunes}><i /><i /><i /><i /><i /></span>
-                  <span className={styles.truthOrbs}><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>
-                  <span className={styles.spriteIdle} />
-                  <span className={styles.spriteWalk} />
-                  <span className={styles.formHorns}><i /><i /><i /><i /></span>
-                  <span className={styles.formCrown} />
-                  <span className={styles.formMark} />
-                  <span className={styles.formOrbs}><i /><i /><i /></span>
-                  <span className={styles.formStars}><i /><i /><i /><i /></span>
-                  <span className={styles.powerEyes}><i /><i /></span>
+                  <FormAuraBack />
+                  <span className={styles.spriteIdle}><span className={styles.frames}><i /><i /><i /><i /></span></span>
+                  <span className={styles.spriteWalk}><span className={styles.frames}><i /><i /><i /><i /></span></span>
                   <span className={styles.chakraCloak} />
                   <span className={styles.sageEyes} />
                   <span className={styles.weapon} />
-                  <span className={styles.formCloth} />
-                  <span className={styles.formCollar} />
-                  <span className={styles.formCuffs}><i /><i /></span>
-                  <span className={styles.formScroll} />
-                  <span className={styles.formScarf} />
-                  <span className={styles.energyCrest} />
-                  <span className={styles.formGreaves}><i /><i /></span>
-                  <span className={styles.formArmor}><i /><i /></span>
-                  <span className={styles.formSigil} />
                   <span className={styles.saintBlade}><i /><i /><i /></span>
-                  <span className={styles.formSeals}><i /><i /><i /><i /><i /><i /></span>
-                  <span className={styles.formBook}><i /><i /></span>
-                  <span className={styles.spiritHalo}><i /><i /><i /><i /><i /><i /><i /><i /></span>
                   <WaterArmor />
+                  <FormAuraFront />
                 </span>
                 <span className={styles.slash}><i /><i /></span>
                 <span className={styles.lightning}><i /><i /><i /></span>
@@ -165,7 +146,7 @@ export function PortfolioCompanion() {
                 <span className={styles.battleStars}><i /><i /><i /></span>
                 <span className={styles.battleWind}><i /><i /><i /></span>
                 <span className={styles.battleImpact}><i /><i /><i /></span>
-                <span className={styles.battleAfterimages}><i /><i /></span>
+                <span className={styles.battleAfterimages} data-dash-trail=""><i /><i /></span>
                 <span className={styles.battleConstellation}><i /><i /><i /><i /><b /></span>
                 <span className={styles.battleArms}><i /><i /><i /></span>
                 <span className={styles.battleTails}><i /><i /><i /><i /></span>
@@ -180,12 +161,12 @@ export function PortfolioCompanion() {
                 <span className={styles.luckClaw}><i /><i /><i /></span>
                 <span className={styles.flameFists}><i /><i /><i /><i /><i /><i /></span>
                 <span className={styles.purgatoryFlame}><i /><i /><i /></span>
-                <NarutoBattleEffects />
-                <CloverBattleEffects />
-                <HyperBattleEffects />
-                <ExtraBattleEffects />
-                <CompanionFieldEffects />
-                <CompanionAvatarEffects />
+                {effectSets.includes('naruto') && <NarutoBattleEffects />}
+                {effectSets.includes('clover') && <CloverBattleEffects />}
+                {effectSets.includes('hyper') && <HyperBattleEffects />}
+                {effectSets.includes('extra') && <ExtraBattleEffects />}
+                {effectSets.includes('field') && <CompanionFieldEffects />}
+                {effectSets.includes('avatar') && <CompanionAvatarEffects />}
                 <WaterCharge />
                 <span className={styles.superEmeralds}><i /><i /><i /><i /><i /><i /><i /></span>
                 <span className={styles.hyperBloom}><i /><i /><i /></span>

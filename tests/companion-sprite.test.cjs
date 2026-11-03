@@ -56,7 +56,7 @@ test('the normal companion restores the exact original knight frames and four-fr
 
 test('Zelda has a separate hero while all other existing powers keep their original persona body', () => {
   assert.deepEqual(getCompanionSpriteStyle('zelda', null), variant(0));
-  assert.equal(POWER_UPS.length, 13);
+  assert.equal(POWER_UPS.length, 12);
   for (const { action } of POWER_UPS) {
     if (Object.hasOwn(POWER_UP_SPRITES, action)) continue;
     assert.deepEqual(getCompanionSpriteStyle('portfolio', action), classic, action);
@@ -64,7 +64,7 @@ test('Zelda has a separate hero while all other existing powers keep their origi
   }
 });
 
-test('every power retains its persona body, including Deku, Zetten, and Devil Union', () => {
+test('every power retains its persona body, including Deku and Devil Union', () => {
   assert.deepEqual(POWER_UP_SPRITES, {});
   for (const { action } of POWER_UPS) {
     assert.deepEqual(getCompanionSpriteStyle('portfolio', action), classic);
@@ -91,7 +91,9 @@ test('idle and run sequences stay within each atlas and reduced motion retains t
   }
   const css = fs.readFileSync(path.join(__dirname, '../components/portfolio-companion.module.css'), 'utf8');
   const reduced = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)'));
-  assert.match(reduced, /background-position: var\(--sprite-idle-x\) var\(--sprite-y\)/);
+  // The strip rests on the idle sequence's first frame, and reduced motion stops its step there.
+  assert.match(css, /\.spriteIdle \.frames \{\n  background-position: var\(--sprite-idle-x\) var\(--sprite-y\);/);
+  assert.match(reduced, /\.companion\[data-persona\] \.frames \{ animation: none; \}/);
   assert.doesNotMatch(css, /\.companion :is\([^\n]*\.formCape[^\n]*display: none !important/);
   assert.doesNotMatch(css, /\.companion:not\(\[data-form='shadow-mode'\]\) \.formOrbs \{ display: none/);
 });
@@ -103,5 +105,27 @@ test('flight belongs to airborne forms and Mana Zone while instant lightning pro
     'chakra-mode', 'deku-overdrive', 'devil-union', 'fire-mode', 'hyper-sonic', 'spirit-dive', 'water-mode',
   ]);
   assert.equal(canCompanionHover(null), false);
-  for (const form of ['sage-mode', 'baryon-mode', 'zetten-mode', 'six-paths-eyes', 'lightning-dash']) assert.equal(canCompanionHover(form), false);
+  for (const form of ['sage-mode', 'baryon-mode', 'six-paths-eyes', 'lightning-dash']) assert.equal(canCompanionHover(form), false);
+});
+
+test('form light animates only transform and opacity, pauses with the companion, and stills under reduced motion', () => {
+  const css = fs.readFileSync(path.join(__dirname, '../components/companion-form-aura.module.css'), 'utf8')
+    + fs.readFileSync(path.join(__dirname, '../components/companion-water-armor.module.css'), 'utf8');
+  const keyframes = [...css.matchAll(/@keyframes (\w+) \{/g)].map((match) => {
+    let depth = 1;
+    let end = match.index + match[0].length;
+    for (; depth > 0; end += 1) depth += css[end] === '{' ? 1 : css[end] === '}' ? -1 : 0;
+    return [match[1], css.slice(match.index + match[0].length, end - 1).replace(/[^{]*\{/g, '')];
+  });
+  assert.ok(keyframes.length >= 10);
+  for (const [name, body] of keyframes) {
+    const properties = [...body.matchAll(/([a-z-]+):/g)].map(([, property]) => property);
+    assert.ok(properties.length > 0, name);
+    for (const property of properties) assert.ok(['transform', 'opacity'].includes(property), `${name} animates ${property}`);
+  }
+  assert.match(css, /:global\(:is\(\[data-motion='paused'\], \[data-paused='true'\], \[data-open='true'\]\)\) :is\(\.back, \.front\) \* \{ animation-play-state: paused; \}/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\n  \.back, \.back \*, \.front \* \{ animation: none !important; \}/);
+  const companion = fs.readFileSync(path.join(__dirname, '../components/portfolio-companion.module.css'), 'utf8');
+  const reduced = companion.slice(companion.lastIndexOf('@media (prefers-reduced-motion: reduce)'));
+  assert.match(reduced, /\.companion\[data-persona\] \.frames \{ animation: none; \}/);
 });

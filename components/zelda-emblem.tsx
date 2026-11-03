@@ -182,12 +182,12 @@ export function useZeldaSwitch(soundSrc: string | null): ZeldaSwitch {
         { duration: SWITCH_MS },
       );
 
-      // The fanfare belongs to switching on. On the way out, a plain switch.
+      // The fanfare belongs to switching on. On the way out, the menu's back.
       if (next) {
         setStrikes((n) => n + 1);
         unsheathe();
       } else {
-        play('switch');
+        play('back');
       }
     },
     [unsheathe],
@@ -220,7 +220,7 @@ export function ZeldaCornerEmblem({
       type="button"
       onClick={onToggle}
       // `.zelda-emblem` keeps the global click-sound handler from firing a
-      // generic tap on top of the blade. See SILENT in sound-effects.tsx.
+      // generic select on top of the blade. See SELF_VOICED in sound-effects.tsx.
       className="zelda-emblem zelda-corner toggle-arm press"
       aria-pressed={active}
       aria-label="Turn on the Legend of Zelda 40th anniversary theme"

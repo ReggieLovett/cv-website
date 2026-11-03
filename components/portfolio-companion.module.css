@@ -122,47 +122,34 @@
   display: block;
   width: 48px;
   height: 84px;
-  background-image: url('/sprites/dungeon-tileset.png');
-  background-size: 1536px 1536px;
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
-}
-
-.spriteIdle {
-  background-position: -384px -300px;
-  animation: knightIdle 1400ms steps(4) infinite;
-}
-
-.companion[data-persona='zelda'] .spriteIdle {
-  background-position: -384px -108px;
-  animation-name: elfIdle;
-}
-
-@keyframes knightIdle {
-  to { background-position: -576px -300px; }
-}
-
-@keyframes elfIdle {
-  to { background-position: -576px -108px; }
+  overflow: hidden;
 }
 
 .spriteWalk {
   display: none;
-  background-position: -576px -300px;
-  animation: spriteWalk var(--walk-cycle, 560ms) steps(4) infinite;
 }
 
-.companion[data-persona='zelda'] .spriteWalk {
-  background-position: -576px -108px;
-  animation-name: elfWalk;
+/* The strip holds a whole four-frame sequence (4 × 48px) and steps through
+   it under its window with a composited transform: its pixels, masks and
+   blends are rasterized once and the compositor moves them, so a standing
+   or walking companion costs no main-thread frames. */
+.frames {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 192px;
+  height: 84px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  animation: spriteFrames 1400ms steps(4) infinite;
 }
 
-@keyframes spriteWalk {
-  to { background-position: -768px -300px; }
+.spriteWalk .frames {
+  animation-duration: var(--walk-cycle, 560ms);
 }
 
-@keyframes elfWalk {
-  to { background-position: -768px -108px; }
+@keyframes spriteFrames {
+  to { transform: translateX(-192px); }
 }
 
 .companion[data-direction='left'] .character {
@@ -192,10 +179,19 @@
   transform: rotate(225deg);
 }
 
+/* The label's offset changes with every move. Registered as non-inheriting,
+   so writing it on the root restyles only this label, not the whole actor. */
+@property --attack-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: -58px;
+}
+
 .companion::after {
+  --attack-x: inherit;
   position: absolute;
   top: -38px;
-  left: var(--attack-x, -58px);
+  left: var(--attack-x);
   width: 180px;
   color: rgb(var(--signal));
   font-family: var(--font-geist-mono), monospace;
@@ -511,285 +507,14 @@
   100% { opacity: 0; transform: translate3d(var(--mote-x), var(--mote-y), 0) rotate(65deg) scale(0.7); }
 }
 
-/* Completed powers change the character's equipment. These are static layers,
-   independent of the one-shot charge effects and the native idle/walk frames. */
-.formCape,
-.formCrown,
-.formMark,
-.formOrbs {
-  position: absolute;
-  pointer-events: none;
-  opacity: 0;
-}
-
-.formCape {
-  z-index: -1;
-  top: 42px;
-  left: 12px;
-  width: 39px;
-  height: 37px;
-  background: rgb(var(--form-cloth));
-  clip-path: polygon(18% 0, 82% 0, 82% 12%, 91% 12%, 91% 55%, 100% 55%, 100% 90%, 78% 90%, 78% 100%, 55% 100%, 55% 90%, 25% 90%, 25% 100%, 0 100%, 0 55%, 9% 55%, 9% 12%, 18% 12%);
-}
-
-.formCape::before {
-  position: absolute;
-  inset: 3px 7px 0;
-  border-right: 3px solid rgb(var(--form-trim));
-  border-left: 3px solid rgb(var(--form-trim));
-  opacity: 0.7;
-  content: '';
-}
-
-.formCrown {
-  z-index: 2;
-  top: 28px;
-  left: 18px;
-  width: 31px;
-  height: 6px;
-  background: rgb(var(--form-trim));
-}
-
-.formCrown::before {
-  position: absolute;
-  top: 0;
-  left: 10px;
-  width: 11px;
-  height: 6px;
-  background: rgb(227 224 194);
-  box-shadow: inset 0 -2px 0 rgb(68 72 63);
-  content: '';
-}
-
-.formMark {
-  z-index: 3;
-  top: 48px;
-  left: 30px;
-  width: 6px;
-  height: 10px;
-  background: rgb(var(--form-trim));
-}
-
-.formOrbs {
-  z-index: -2;
-  inset: 0;
-}
-
-.formOrbs i {
-  position: absolute;
-  width: 3px;
-  height: 3px;
-  background: rgb(var(--form-trim));
-}
-
-.formOrbs i:nth-child(1) { top: 43px; left: 9px; }
-.formOrbs i:nth-child(2) { top: 55px; left: 53px; }
-.formOrbs i:nth-child(3) { top: 72px; left: 8px; }
-
-.companion:is([data-form='sage-mode'], [data-form='chakra-mode'], [data-form='lightning-dash'], [data-form='fire-mode'], [data-form='ice-mode'], [data-form='shadow-mode']) .formCape,
-.companion:is([data-form='sage-mode'], [data-form='chakra-mode'], [data-form='lightning-dash'], [data-form='fire-mode'], [data-form='ice-mode'], [data-form='shadow-mode']) .formCrown,
-.companion:is([data-form='chakra-mode'], [data-form='lightning-dash'], [data-form='fire-mode'], [data-form='ice-mode'], [data-form='shadow-mode']) .formMark {
-  opacity: 1;
-}
-
-.companion[data-form='sage-mode'] {
-  --form-cloth: 159 57 35;
-  --form-trim: 235 153 64;
-}
-
-.companion[data-form='sage-mode'] :is(.spriteIdle, .spriteWalk) {
-  filter: sepia(0.18) saturate(1.3) contrast(1.04);
-}
-
-.companion[data-form='sage-mode'] .sageEyes {
-  opacity: 1;
-  animation: none;
-}
-
-.companion[data-form='sage-mode'] .formCape {
-  top: 40px;
-  height: 42px;
-}
-
-.companion[data-form='chakra-mode'] {
-  --form-cloth: 246 174 42;
-  --form-trim: 255 222 119;
-}
-
-.companion[data-form='chakra-mode'] :is(.spriteIdle, .spriteWalk) {
-  filter: sepia(0.95) saturate(2.8) hue-rotate(351deg) brightness(1.15);
-}
-
-.companion[data-form='chakra-mode'] .formCape {
-  left: 10px;
-  top: 38px;
-  width: 45px;
-  height: 45px;
-  clip-path: polygon(18% 0, 82% 0, 82% 15%, 90% 15%, 90% 48%, 100% 48%, 100% 67%, 87% 67%, 87% 100%, 67% 100%, 67% 80%, 52% 80%, 52% 100%, 30% 100%, 30% 82%, 8% 82%, 8% 67%, 0 67%, 0 35%, 10% 35%, 10% 15%, 18% 15%);
-}
-
-.companion[data-form='chakra-mode'] .formCape::before {
-  border-color: rgb(124 73 21);
-  opacity: 0.6;
-}
-
-.companion[data-form='chakra-mode'] .formCape::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 14px;
-  height: 20px;
-  background: rgb(255 222 119);
-  clip-path: polygon(0 0, 35% 0, 35% 35%, 70% 35%, 70% 65%, 100% 65%, 100% 100%, 50% 100%, 50% 80%, 15% 80%, 15% 40%, 0 40%);
-  content: '';
-}
-
-.companion[data-form='chakra-mode'] .formMark {
-  width: 8px;
-  height: 8px;
-  border: 2px solid rgb(103 63 23);
-  border-radius: 50%;
-  background: transparent;
-  box-shadow: 0 10px 0 -2px rgb(103 63 23);
-}
-
 .companion[data-form='sword-draw'] .weapon {
   opacity: 1;
   transform: translate3d(-4px, 2px, 0) rotate(0deg) scale(1);
 }
 
-.companion[data-form='lightning-dash'] {
-  --form-cloth: 35 91 130;
-  --form-trim: 147 230 255;
-}
-
-.companion[data-form='lightning-dash'] :is(.spriteIdle, .spriteWalk) {
-  filter: sepia(0.45) saturate(2.3) hue-rotate(145deg) brightness(1.18);
-}
-
-.companion[data-form='lightning-dash'] .formCape {
-  top: 44px;
-  height: 29px;
-}
-
-.companion[data-form='lightning-dash'] .formCrown::before {
-  background: rgb(232 250 255);
-  box-shadow: none;
-}
-
-.companion[data-form='lightning-dash'] .formMark {
-  top: 44px;
-  left: 30px;
-  width: 10px;
-  height: 17px;
-  clip-path: polygon(50% 0, 100% 0, 60% 42%, 100% 42%, 15% 100%, 35% 56%, 0 56%);
-}
-
-.companion:is([data-form='lightning-dash'], [data-form='fire-mode']) .formOrbs {
-  opacity: 0.75;
-}
-
-.companion[data-form='fire-mode'] {
-  --form-cloth: 169 43 44;
-  --form-trim: 255 172 77;
-}
-
-.companion[data-form='fire-mode'] :is(.spriteIdle, .spriteWalk) {
-  filter: sepia(0.75) saturate(2.8) hue-rotate(331deg) brightness(1.12);
-}
-
-.companion[data-form='fire-mode'] .formCape {
-  left: 10px;
-  width: 44px;
-  height: 40px;
-  clip-path: polygon(20% 0, 80% 0, 80% 15%, 90% 15%, 90% 60%, 100% 60%, 100% 100%, 75% 80%, 65% 100%, 45% 80%, 25% 100%, 15% 80%, 0 100%, 0 60%, 10% 60%, 10% 15%, 20% 15%);
-}
-
-.companion[data-form='fire-mode'] .formMark {
-  top: 45px;
-  left: 31px;
-  width: 7px;
-  height: 14px;
-  clip-path: polygon(50% 0, 100% 55%, 65% 100%, 0 75%, 15% 35%);
-}
-
-.companion[data-form='ice-mode'] {
-  --form-cloth: 93 165 186;
-  --form-trim: 211 250 255;
-}
-
-.companion[data-form='ice-mode'] :is(.spriteIdle, .spriteWalk) {
-  filter: sepia(1) saturate(1.35) hue-rotate(145deg) brightness(1.25);
-}
-
-.companion[data-form='ice-mode'] .formCape {
-  left: 12px;
-  top: 43px;
-  width: 39px;
-  height: 34px;
-}
-
-.companion[data-form='ice-mode'] .formCrown {
-  top: 15px;
-  left: 18px;
-  width: 31px;
-  height: 17px;
-  clip-path: polygon(0 20%, 26% 55%, 50% 0, 74% 55%, 100% 20%, 89% 100%, 11% 100%);
-}
-
-.companion[data-form='ice-mode'] .formCrown::before {
-  top: 8px;
-  background: rgb(115 201 228);
-  box-shadow: none;
-}
-
-.companion[data-form='ice-mode'] .formMark {
-  width: 8px;
-  height: 13px;
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-}
-
-.companion[data-form='shadow-mode'] {
-  --form-cloth: 77 49 116;
-  --form-trim: 193 151 234;
-}
-
-.companion[data-form='shadow-mode'] :is(.spriteIdle, .spriteWalk) {
-  filter: sepia(0.5) saturate(2) hue-rotate(210deg) brightness(0.82) contrast(1.1);
-}
-
-.companion[data-form='shadow-mode'] .formMark {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: transparent;
-  box-shadow: inset 3px -1px 0 rgb(var(--form-trim));
-}
-
-.companion[data-form='shadow-mode'] .formOrbs {
-  opacity: 1;
-}
-
-.companion[data-form='shadow-mode'] .formOrbs i {
-  top: 0;
-  left: 8px;
-  width: 48px;
-  height: 84px;
-  background: url('/sprites/dungeon-tileset.png') -384px -300px / 1536px 1536px no-repeat;
-  image-rendering: pixelated;
-  filter: sepia(0.7) saturate(2.5) hue-rotate(210deg) brightness(0.8);
-  opacity: 0.3;
-}
-
-.companion[data-form='shadow-mode'][data-persona='zelda'] .formOrbs i { background-position: -384px -108px; }
-.companion[data-form='shadow-mode'][data-phase='walking'] .formOrbs i { background-position: -576px -300px; }
-.companion[data-form='shadow-mode'][data-phase='walking'][data-persona='zelda'] .formOrbs i { background-position: -576px -108px; }
-.companion[data-form='shadow-mode'] .formOrbs i:nth-child(1) { transform: translateX(-12px) scale(0.94); }
-.companion[data-form='shadow-mode'] .formOrbs i:nth-child(2) { transform: translateX(12px) scale(0.94); }
-.companion[data-form='shadow-mode'] .formOrbs i:nth-child(3) { display: none; }
-
 /* New charges use bounded, one-shot geometry around the original sprite.
-   After each charge, only the completed equipment above remains visible. */
+   After each charge, the completed form's light (companion-form-aura and the
+   sprite's own tint and rim) is what remains. */
 .fireBurst,
 .iceBurst,
 .shadowBurst {
@@ -876,230 +601,6 @@
   100% { opacity: 0; transform: translate3d(var(--shadow-x), var(--shadow-y), 0) scale(0.94); }
 }
 
-/* Four more completed forms, with small pieces of equipment rather than
-   continuous spectacle. All gear shares the native character's facing. */
-.formWings,
-.formHorns,
-.formStars {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-}
-
-.formWings { z-index: -2; }
-.formHorns { z-index: 2; }
-.formStars { z-index: 3; }
-
-.formWings i,
-.formHorns i,
-.formStars i {
-  position: absolute;
-  display: block;
-}
-
-.companion:is([data-form='zetten-mode'], [data-form='devil-union'], [data-form='spirit-dive']) :is(.formCape, .formMark),
-.companion:is([data-form='zetten-mode'], [data-form='spirit-dive']) .formCrown {
-  opacity: 1;
-}
-
-.companion[data-form='zetten-mode'] {
-  --form-cloth: 45 34 46;
-  --form-trim: 185 64 73;
-}
-
-.companion[data-form='zetten-mode'] :is(.spriteIdle, .spriteWalk) {
-  filter: saturate(0.5) brightness(0.86) contrast(1.13);
-}
-
-.companion[data-form='zetten-mode'] .formCape {
-  left: 15px;
-  width: 34px;
-  height: 33px;
-}
-
-.companion[data-form='zetten-mode'] .formCrown {
-  height: 4px;
-  background: rgb(44 31 43);
-}
-
-.companion[data-form='zetten-mode'] .formCrown::before {
-  left: 12px;
-  width: 9px;
-  height: 4px;
-  background: rgb(185 64 73);
-  box-shadow: none;
-}
-
-.companion[data-form='zetten-mode'] .formMark {
-  top: 43px;
-  left: 40px;
-  width: 10px;
-  height: 21px;
-  background: rgb(36 27 38);
-  clip-path: polygon(20% 0, 80% 0, 100% 35%, 80% 100%, 10% 100%, 0 50%);
-}
-
-.companion[data-form='zetten-mode'] .formMark::before {
-  position: absolute;
-  top: 3px;
-  left: 4px;
-  width: 2px;
-  height: 14px;
-  background: rgb(220 76 84);
-  transform: rotate(18deg);
-  content: '';
-}
-
-.companion[data-form='zetten-mode'] .weapon {
-  top: -3px;
-  left: 43px;
-  width: 12px;
-  height: 58px;
-  background-position: -586px -132px;
-  filter: brightness(0.4) sepia(0.8) saturate(2.5) hue-rotate(310deg);
-  opacity: 1;
-  transform: translate3d(-4px, 2px, 0) rotate(0deg) scale(1);
-}
-
-.companion[data-form='devil-union'] {
-  --form-cloth: 35 24 34;
-  --form-trim: 201 63 77;
-}
-
-.companion[data-form='devil-union'] :is(.spriteIdle, .spriteWalk) {
-  filter: sepia(1) saturate(1.7) hue-rotate(310deg) brightness(0.68) contrast(1.15);
-}
-
-.companion[data-form='devil-union'] .formCape {
-  left: 10px;
-  top: 40px;
-  width: 44px;
-  height: 40px;
-}
-
-.companion[data-form='devil-union'] .formMark {
-  top: 45px;
-  width: 8px;
-  height: 14px;
-  clip-path: polygon(35% 0, 65% 0, 65% 30%, 100% 30%, 100% 55%, 65% 55%, 65% 100%, 35% 100%, 35% 55%, 0 55%, 0 30%, 35% 30%);
-}
-
-.companion[data-form='devil-union'] :is(.formHorns, .formWings) {
-  opacity: 1;
-}
-
-.companion[data-form='devil-union'] .formHorns i {
-  top: 12px;
-  left: 14px;
-  width: 10px;
-  height: 19px;
-  background: rgb(43 24 35);
-  clip-path: polygon(0 0, 40% 10%, 50% 42%, 100% 72%, 100% 100%, 45% 100%, 25% 66%, 15% 30%);
-}
-
-.companion[data-form='devil-union'] .formHorns i::after {
-  position: absolute;
-  right: 0;
-  bottom: 2px;
-  width: 4px;
-  height: 6px;
-  background: rgb(201 63 77);
-  content: '';
-}
-
-.companion[data-form='devil-union'] .formHorns i:nth-child(2) {
-  left: 40px;
-  transform: scaleX(-1);
-}
-
-.companion[data-form='devil-union'] .formWings i {
-  top: 36px;
-  left: -7px;
-  width: 25px;
-  height: 32px;
-  background: rgb(59 29 47);
-  clip-path: polygon(100% 20%, 50% 0, 10% 0, 0 15%, 10% 80%, 35% 58%, 45% 100%, 68% 70%, 100% 100%);
-}
-
-.companion[data-form='devil-union'] .formWings i::after {
-  position: absolute;
-  top: 8px;
-  right: 2px;
-  width: 17px;
-  height: 3px;
-  background: rgb(169 52 70);
-  transform: rotate(29deg);
-  content: '';
-}
-
-.companion[data-form='devil-union'] .formWings i:nth-child(2) {
-  left: 46px;
-  transform: scaleX(-1);
-}
-
-.companion[data-form='spirit-dive'] {
-  --form-cloth: 39 116 87;
-  --form-trim: 173 242 203;
-}
-
-.companion[data-form='spirit-dive'] :is(.spriteIdle, .spriteWalk) {
-  filter: sepia(1) saturate(1.9) hue-rotate(85deg) brightness(1.03);
-}
-
-.companion[data-form='spirit-dive'] .formCape {
-  left: 14px;
-  top: 43px;
-  width: 36px;
-  height: 31px;
-}
-
-.companion[data-form='spirit-dive'] .formCrown {
-  top: 19px;
-  left: 19px;
-  width: 30px;
-  height: 12px;
-  background: rgb(209 255 229);
-  clip-path: polygon(0 55%, 25% 65%, 35% 25%, 50% 60%, 65% 0, 75% 65%, 100% 40%, 90% 100%, 10% 100%);
-}
-
-.companion[data-form='spirit-dive'] .formCrown::before { display: none; }
-.companion[data-form='spirit-dive'] .formMark {
-  width: 7px;
-  height: 12px;
-  clip-path: polygon(50% 0, 100% 65%, 75% 100%, 25% 100%, 0 65%);
-}
-
-.companion[data-form='spirit-dive'] .formWings { opacity: 1; }
-.companion[data-form='spirit-dive'] .formWings i {
-  top: 30px;
-  left: -7px;
-  width: 33px;
-  height: 43px;
-  background: rgb(135 227 183 / 0.7);
-  clip-path: polygon(0 0, 45% 12%, 85% 45%, 100% 100%, 40% 80%, 9% 48%);
-}
-
-.companion[data-form='spirit-dive'] .formWings i::after {
-  position: absolute;
-  top: 4px;
-  left: 14px;
-  width: 2px;
-  height: 37px;
-  background: rgb(211 255 231 / 0.6);
-  transform: rotate(-32deg);
-  content: '';
-}
-
-.companion[data-form='spirit-dive'] .formWings i:nth-child(2) {
-  top: 38px;
-  left: 45px;
-  width: 18px;
-  height: 28px;
-  opacity: 0.7;
-  transform: scaleX(-1);
-}
-
 .zettenBurst,
 .devilBurst,
 .starBurst,
@@ -1131,12 +632,14 @@
 .zettenBurst i:nth-child(1) { top: 25px; --cut-angle: -32deg; }
 .zettenBurst i:nth-child(2) { top: 45px; --cut-angle: 10deg; background: rgb(196 60 72); }
 .zettenBurst i:nth-child(3) { top: 63px; --cut-angle: 37deg; width: 72px; }
-.companion[data-effect='zetten'] .zettenBurst i { animation: zettenCharge var(--moment-duration) var(--ease-out) both; }
+/* Devil Union's charge ends in Zetten: the cut lines land with the pose's
+   forward step at 52%, after the anti-magic has gathered. */
+.companion[data-effect='devil'] .zettenBurst i { animation: zettenUnionCut var(--moment-duration) var(--ease-out) both; }
 
-@keyframes zettenCharge {
-  0%, 22% { opacity: 0; transform: translateX(-5px) rotate(var(--cut-angle)) scaleX(0.8); }
-  43%, 66% { opacity: 0.95; transform: translateX(0) rotate(var(--cut-angle)) scaleX(1); }
-  100% { opacity: 0; transform: translateX(5px) rotate(var(--cut-angle)) scaleX(0.95); }
+@keyframes zettenUnionCut {
+  0%, 46% { opacity: 0; transform: translateX(-6px) rotate(var(--cut-angle)) scaleX(0.6); }
+  53%, 64% { opacity: 0.95; transform: translateX(0) rotate(var(--cut-angle)) scaleX(1); }
+  100% { opacity: 0; transform: translateX(6px) rotate(var(--cut-angle)) scaleX(0.95); }
 }
 
 .devilBurst i {
@@ -1299,39 +802,6 @@
   100% { opacity: 0; transform: translate3d(var(--spark-x), var(--spark-y), 0) scale(1.2) rotate(45deg); }
 }
 
-/* Fox-cloak and paired-eye forms remain equipment after the charge ends. */
-.foxTails,
-.powerEyes { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
-.foxTails { z-index: -2; }
-.powerEyes { z-index: 4; }
-.foxTails i,
-.powerEyes i { position: absolute; display: block; }
-.companion:is([data-form='baryon-mode'], [data-form='six-paths-eyes']) :is(.formCape, .formCrown, .formMark, .powerEyes) { opacity: 1; }
-.companion[data-form='baryon-mode'] { --form-cloth: 194 64 31; --form-trim: 255 164 64; }
-.companion[data-form='baryon-mode'] :is(.spriteIdle, .spriteWalk) { filter: sepia(1) saturate(3) hue-rotate(330deg) brightness(1.08); }
-.companion[data-form='baryon-mode'] .formCape { left: 10px; width: 44px; top: 39px; height: 42px; }
-.companion[data-form='baryon-mode'] .formCrown { top: 17px; left: 18px; width: 31px; height: 16px; clip-path: polygon(0 0, 32% 45%, 68% 45%, 100% 0, 90% 100%, 10% 100%); }
-.companion[data-form='baryon-mode'] .formCrown::before { display: none; }
-.companion[data-form='baryon-mode'] .formMark { width: 8px; height: 13px; background: rgb(76 33 26); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
-.companion[data-form='baryon-mode'] .foxTails { opacity: 1; }
-.foxTails i { top: 42px; width: 11px; height: 35px; background: rgb(236 111 40); transform-origin: 50% 100%; clip-path: polygon(50% 0, 100% 30%, 85% 85%, 50% 100%, 15% 85%, 0 30%); }
-.foxTails i::after { position: absolute; inset: 9px 4px 4px; background: rgb(255 186 74); content: ''; }
-.foxTails i:nth-child(1) { left: 12px; transform: rotate(-35deg); }
-.foxTails i:nth-child(2) { left: 22px; transform: rotate(-12deg); }
-.foxTails i:nth-child(3) { left: 32px; transform: rotate(15deg); }
-.foxTails i:nth-child(4) { left: 40px; transform: rotate(35deg); }
-.powerEyes i { top: 35px; left: 26px; width: 4px; height: 3px; background: rgb(255 171 69); box-shadow: inset 1px 0 0 rgb(66 25 32); }
-.powerEyes i:nth-child(2) { left: 38px; }
-.companion[data-form='six-paths-eyes'] { --form-cloth: 36 29 48; --form-trim: 145 111 187; }
-.companion[data-form='six-paths-eyes'] :is(.spriteIdle, .spriteWalk) { filter: sepia(0.55) saturate(1.8) hue-rotate(210deg) brightness(0.85); }
-.companion[data-form='six-paths-eyes'] .formCape { left: 10px; width: 44px; top: 40px; height: 42px; overflow: visible; }
-.companion[data-form='six-paths-eyes'] .formCape::after { position: absolute; left: 7px; top: 0; width: 30px; height: 11px; background: rgb(69 48 84); clip-path: polygon(0 0, 35% 35%, 65% 35%, 100% 0, 85% 100%, 15% 100%); content: ''; }
-.companion[data-form='six-paths-eyes'] .formCrown { height: 4px; background: rgb(53 35 61); }
-.companion[data-form='six-paths-eyes'] .formCrown::before { height: 4px; background: rgb(121 91 151); box-shadow: none; }
-.companion[data-form='six-paths-eyes'] .formMark { border: 2px solid rgb(181 137 223); border-radius: 50%; background: transparent; width: 9px; height: 9px; }
-.companion[data-form='six-paths-eyes'] .powerEyes i:first-child { background: rgb(191 143 255); }
-.companion[data-form='six-paths-eyes'] .powerEyes i:nth-child(2) { background: rgb(255 72 98); }
-
 .baryonBurst,
 .sixPathsBurst,
 .battleOrb,
@@ -1450,7 +920,7 @@
 
 /* Anti-magic: a compressed draw, a traveling crescent, a charged thrust,
    a vertical cut, an extended native blade, and a rotating slash ring. */
-.companion:is([data-battle='anti-magic-zetten'], [data-battle='black-slash'], [data-battle='infinite-slash-equinox'], [data-battle='black-hurricane']) .battleSlash i {
+.companion:is([data-battle='anti-magic-zetten'], [data-battle='infinite-slash-equinox'], [data-battle='black-hurricane']) .battleSlash i {
   border-top-color: rgb(38 21 35);
   border-right-color: rgb(220 66 85);
   border-top-width: 8px;
@@ -1469,13 +939,6 @@
   44% { opacity: 1; }
   70% { opacity: 1; transform: translateX(7px) rotate(85deg) scale(1.1); }
   100% { opacity: 0; transform: translateX(9px) rotate(95deg) scale(1.1); }
-}
-.companion[data-battle='black-slash'] .battleSlash i { left: 28px; top: 17px; width: 56px; height: 54px; transform-origin: center; animation: blackCrescent var(--battle-duration) var(--ease-out) both; }
-@keyframes blackCrescent {
-  0%, 12% { opacity: 0; transform: translateX(12px) rotate(-65deg) scale(0.9); }
-  30% { opacity: 1; }
-  83% { opacity: 0.95; transform: translateX(57px) rotate(25deg) scale(0.95); }
-  100% { opacity: 0; transform: translateX(61px) rotate(35deg) scale(0.9); }
 }
 .companion[data-battle='black-meteorite'] .battleLightning i {
   top: 35px; height: 27px; background: rgb(42 22 38); border-bottom: 3px solid rgb(225 66 88);
@@ -1706,9 +1169,11 @@
 }
 .battleSusanoo i:first-child { left: 26px; top: 23px; width: 80px; height: 25px; border: 4px solid rgb(183 126 224); border-radius: 8px; background: rgb(113 66 151 / 0.55); transform-origin: 0 50%; }
 .battleSusanoo i:first-child::after { position: absolute; left: 19px; top: 0; width: 4px; height: 17px; background: rgb(212 166 241); box-shadow: 18px 0 0 rgb(212 166 241), 36px 0 0 rgb(212 166 241); content: ''; }
-.battleSusanoo i:nth-child(2) { left: 91px; top: -28px; width: 9px; height: 99px; background: rgb(202 163 235); border-left: 3px solid rgb(131 79 170); transform-origin: 50% 80%; clip-path: polygon(50% 0, 100% 13%, 80% 100%, 0 100%, 15% 13%); }
+.battleSusanoo i:nth-child(2) { left: 91px; top: -28px; width: 9px; height: 99px; background: linear-gradient(90deg, rgb(150 100 220 / 0.7), rgb(246 236 255 / 0.95) 50%, rgb(186 146 240 / 0.7)); border-left: 3px solid rgb(131 79 170); transform-origin: 50% 80%; clip-path: polygon(50% 0, 100% 13%, 80% 100%, 0 100%, 15% 13%); filter: drop-shadow(0 0 3px rgb(190 140 255 / 0.9)); }
 .battleSusanoo i:nth-child(3) { left: 32px; top: -12px; width: 95px; height: 84px; border-top: 4px solid rgb(195 146 231); border-right: 2px solid rgb(141 88 181); border-radius: 50%; }
 .companion[data-battle='susanoo-slash'] .battleSusanoo i { animation: spectralSlash var(--battle-duration) var(--ease-out) both; }
+/* Six Paths Sasuke's full Susano'o brings its own arm; the bare arm bar stays for any other user. */
+.companion[data-form='six-paths-eyes'][data-battle='susanoo-slash'] .battleSusanoo i:first-child { display: none; }
 @keyframes spectralSlash {
   0%, 12% { opacity: 0; transform: rotate(-24deg) scale(0.9); }
   33% { opacity: 0.95; transform: rotate(-25deg) scale(1); }
@@ -1732,46 +1197,193 @@
 @keyframes cloneAppear { 0%, 10% { opacity: 0; transform: translateX(0) scale(0.97); } 34%, 77% { opacity: 0.7; transform: translateX(var(--strike-x)) scale(1); } 100% { opacity: 0; transform: translateX(var(--strike-x)) scale(0.97); } }
 .companion[data-battle-move='shadow-feint'] .battleAfterimages i { filter: sepia(0.8) saturate(2.5) hue-rotate(210deg) brightness(0.8); }
 
-/* Every power keeps the original persona's body. Equipment is layered on top. */
-.companion[data-persona] :is(.spriteIdle, .spriteWalk) { width: 48px; height: 84px; left: 8px; background-image: var(--sprite-image); background-size: var(--sprite-size); }
-.companion[data-persona] .spriteIdle { background-position: var(--sprite-idle-x) var(--sprite-y); animation: companionIdle 1400ms steps(4) infinite; }
-.companion[data-persona] .spriteWalk { background-position: var(--sprite-walk-x) var(--sprite-y); animation: companionWalk var(--walk-cycle, 560ms) steps(4) infinite; }
-@keyframes companionIdle { to { background-position: var(--sprite-idle-end) var(--sprite-y); } }
-@keyframes companionWalk { to { background-position: var(--sprite-walk-end) var(--sprite-y); } }
-.companion :is(.afterimages i, .shadowBurst i, .battleShadow i, .battleAfterimages i),
-.companion[data-form='shadow-mode'] .formOrbs i {
+/* Every power keeps the original persona's body, and its light is drawn from
+   that body. The strip's mask-position matches its background (the strip has
+   no mask image, so nothing is clipped), and the tint, marks, eye and rim
+   layers inherit it: each is drawn once across all four frames, on their exact
+   pixels, and steps with the strip. The drop-shadow glow sits on the window,
+   so the compositor re-applies it to whichever frame is showing. */
+/* Eye masks are built from the same source frames as each atlas
+   (scripts/build-companion-sprites.cjs): the knight's two forward visor slits
+   and the elf's irises. --eye-split divides the two eyes for mismatched colors. */
+.companion {
+  --rim-x: 3px; --rim-y: 3px; --belt-bottom: 15px;
+  --eye-mask: url('/sprites/companion-eyes-knight.svg'); --eye-ring-mask: url('/sprites/companion-eye-rings-knight.svg'); --eye-split: 32px;
+  --eye-top: 48px; --eye-1-left: 33px; --eye-2-left: 39px;
+}
+.companion[data-persona='zelda'] { --eye-mask: url('/sprites/companion-eyes-elf.svg'); --eye-ring-mask: url('/sprites/companion-eye-rings-elf.svg'); --eye-split: 28px; --belt-bottom: 12px; }
+.companion[data-persona] :is(.spriteIdle, .spriteWalk) { filter: var(--form-glow, none); }
+.companion[data-persona] .frames { background-image: var(--sprite-image); background-size: var(--sprite-size); }
+.companion[data-persona] .spriteIdle .frames {
+  background-position: var(--sprite-idle-x) var(--sprite-y);
+  mask-position: var(--sprite-idle-x) var(--sprite-y);
+}
+.companion[data-persona] .spriteWalk .frames {
+  background-position: var(--sprite-walk-x) var(--sprite-y);
+  mask-position: var(--sprite-walk-x) var(--sprite-y);
+}
+.companion[data-persona] .frames::before,
+.companion[data-persona] .frames::after,
+.companion[data-persona] .frames > i {
+  position: absolute;
+  inset: 0;
+  mask-image: var(--sprite-image);
+  mask-size: var(--sprite-size);
+  mask-repeat: no-repeat;
+  mask-position: inherit;
+  opacity: 0;
+  pointer-events: none;
+  content: '';
+}
+/* Tint: a form's colors pass through the sprite's own shading. Marks then
+   darken (markings, hems), light glows from within, the eye pixels take the
+   form's eye color and the skin around them its markings, each on the same
+   frame-synced mask, under the rim. */
+.companion[data-persona] .frames::after {
+  background: var(--form-tint, none);
+  mix-blend-mode: var(--form-tint-blend, normal);
+  opacity: var(--form-tint-opacity, 0);
+}
+.companion[data-persona] .frames > i { display: block; z-index: 1; opacity: var(--form-tint-opacity, 0); }
+.companion[data-persona] .frames > i:first-child { background: var(--form-marks, none); mix-blend-mode: multiply; }
+.companion[data-persona] .frames > i:nth-child(2) { z-index: 2; background: var(--form-light, none); mix-blend-mode: plus-lighter; }
+.companion[data-persona] .frames > i:nth-child(3) {
+  z-index: 2;
+  mask-image: var(--eye-mask);
+  background: linear-gradient(90deg, rgb(var(--eye-rgb)) 0 var(--eye-split), rgb(var(--eye-2-rgb, var(--eye-rgb))) var(--eye-split));
+}
+/* The face around the eyes: Sage pigment, or the dark rims of Kurama's and
+   the devils' power, multiplied into the skin or visor beneath. */
+.companion[data-persona] .frames > i:nth-child(4) {
+  z-index: 2;
+  mask-image: var(--eye-ring-mask);
+  background: rgb(var(--eye-ring-rgb));
+  mix-blend-mode: multiply;
+}
+/* Inside rim: the silhouette minus itself nudged by --rim-x/y, so only the
+   edge pixels facing the light catch it. A two-layer mask needs two
+   positions, so it states its own rather than inheriting the strip's. */
+.companion[data-persona] .frames::before {
+  z-index: 3;
+  mask-image: var(--sprite-image), var(--sprite-image);
+  mask-composite: subtract;
+  background: rgb(var(--rim-rgb, 255 255 255));
+  mix-blend-mode: plus-lighter;
+  opacity: var(--rim-opacity, 0);
+}
+.companion[data-persona] .spriteIdle .frames::before {
+  mask-position: var(--sprite-idle-x) var(--sprite-y), calc(var(--sprite-idle-x) + var(--rim-x)) calc(var(--sprite-y) + var(--rim-y));
+}
+.companion[data-persona] .spriteWalk .frames::before {
+  mask-position: var(--sprite-walk-x) var(--sprite-y), calc(var(--sprite-walk-x) + var(--rim-x)) calc(var(--sprite-y) + var(--rim-y));
+}
+
+/* Form palettes. --aura-* and --eye-rgb also feed companion-form-aura, so a
+   form's glow, outline energy, constructs and inner light share one source. */
+.companion:not([data-form='none']) { --form-tint-opacity: 1; --rim-opacity: 0.8; }
+.companion[data-form='sage-mode'] {
+  --aura-rgb: 190 210 104; --aura-hot-rgb: 255 222 140; --rim-rgb: 255 186 92; --eye-rgb: 255 214 60; --eye-ring-rgb: 255 140 50;
+  --form-glow: drop-shadow(0 0 3px rgb(222 188 92 / 0.4));
+  --form-tint:
+    repeating-linear-gradient(90deg, rgb(34 20 18) 0 3px, transparent 3px 6px) 0 calc(100% - 9px) / 100% 3px no-repeat,
+    linear-gradient(to top, transparent 0 6px, rgb(34 20 18) 6px 9px, rgb(196 58 36) 9px 22px, rgb(255 196 120 / 0.35) 22px 40px, transparent 40px);
+  --form-tint-blend: hard-light;
+  --rim-opacity: 0.5;
+}
+.companion[data-form='chakra-mode'] {
+  --aura-rgb: 255 178 48; --aura-hot-rgb: 255 246 186; --rim-rgb: 255 240 160; --eye-rgb: 255 150 30; --eye-ring-rgb: 120 70 30;
+  --form-glow: drop-shadow(0 0 2px rgb(255 214 96 / 0.9)) drop-shadow(0 0 7px rgb(255 150 40 / 0.45));
+  --form-tint: linear-gradient(rgb(255 226 110), rgb(255 170 44));
+  --form-tint-blend: color;
+  /* Magatama ring at the collar and the seal swirl at the belly. */
+  --form-marks:
+    radial-gradient(circle at 12px calc(100% - var(--belt-bottom) - 4.5px), rgb(40 24 10) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 21px calc(100% - var(--belt-bottom) - 4.5px), rgb(40 24 10) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 30px calc(100% - var(--belt-bottom) - 4.5px), rgb(40 24 10) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 24px calc(100% - var(--belt-bottom) + 3px), transparent 0 1.5px, rgb(40 24 10) 1.5px 3px, transparent 3.5px),
+    linear-gradient(rgb(40 24 10), rgb(40 24 10)) 12px calc(100% - var(--belt-bottom) - 1px) / 2px 10px no-repeat,
+    linear-gradient(rgb(40 24 10), rgb(40 24 10)) 34px calc(100% - var(--belt-bottom) - 1px) / 2px 10px no-repeat;
+  --form-light: radial-gradient(60% 45% at 50% 55%, rgb(255 236 150 / 0.2), transparent);
+}
+.companion[data-form='baryon-mode'] {
+  --aura-rgb: 255 92 40; --aura-hot-rgb: 255 222 150; --rim-rgb: 255 170 96; --eye-rgb: 255 60 40; --eye-ring-rgb: 36 14 16;
+  --form-glow: drop-shadow(0 0 2px rgb(255 120 60 / 0.9)) drop-shadow(0 0 8px rgb(220 40 30 / 0.5));
+  --form-tint: linear-gradient(rgb(255 150 70), rgb(236 70 36) 70%, rgb(150 30 30));
+  --form-tint-blend: color;
+  /* Deepen the burn; the black around Baryon's eyes is the eye-ring layer. */
+  --form-marks: linear-gradient(rgb(255 170 120), rgb(230 110 80));
+  --form-light: radial-gradient(50% 40% at 50% 60%, rgb(255 210 140 / 0.3), transparent);
+}
+.companion[data-form='six-paths-eyes'] {
+  --aura-rgb: 140 96 222; --aura-hot-rgb: 214 190 255; --rim-rgb: 190 160 255; --eye-rgb: 186 140 255; --eye-2-rgb: 255 56 76;
+  --form-glow: drop-shadow(0 0 4px rgb(120 80 210 / 0.45));
+  --form-tint:
+    linear-gradient(to top, transparent 0 var(--belt-bottom), rgb(120 82 170) var(--belt-bottom) calc(var(--belt-bottom) + 3px), transparent calc(var(--belt-bottom) + 3px)),
+    linear-gradient(rgb(150 152 170), rgb(150 152 170));
+  --form-tint-blend: color;
+}
+.companion[data-form='devil-union'] {
+  --aura-rgb: 22 16 26; --aura-hot-rgb: 232 58 74; --rim-rgb: 240 64 84; --eye-rgb: 255 50 66; --eye-ring-rgb: 20 12 18;
+  --form-glow: brightness(0.5) drop-shadow(0 0 5px rgb(150 16 36 / 0.55));
+  --form-tint: linear-gradient(rgb(70 58 76), rgb(40 34 46));
+  --form-tint-blend: color;
+  /* Anti-magic swallows the body; a red line runs down the chest. Zetten
+     adds no costume here: it is the katana's light edge and the ki ripple. */
+  --form-marks:
+    linear-gradient(rgb(200 40 56), rgb(200 40 56)) 24px calc(100% - var(--belt-bottom) - 12px) / 3px 12px no-repeat,
+    linear-gradient(rgb(150 140 156), rgb(110 100 116));
+  --rim-opacity: 1;
+}
+.companion[data-form='spirit-dive'] {
+  --aura-rgb: 140 232 180; --aura-hot-rgb: 236 255 242; --rim-rgb: 214 255 228; --eye-rgb: 190 255 214;
+  --form-glow: drop-shadow(0 0 3px rgb(160 240 196 / 0.7)) drop-shadow(0 0 8px rgb(90 200 150 / 0.35));
+  --form-tint: linear-gradient(rgb(214 250 220), rgb(110 200 150));
+  --form-tint-blend: color;
+}
+.companion[data-form='lightning-dash'] {
+  --aura-rgb: 110 200 255; --aura-hot-rgb: 236 252 255; --rim-rgb: 200 244 255; --eye-rgb: 200 244 255;
+  --form-glow: drop-shadow(0 0 2px rgb(150 222 255 / 0.85)) drop-shadow(0 0 7px rgb(70 150 255 / 0.4));
+  --form-tint: linear-gradient(rgb(200 236 255), rgb(90 150 210));
+  --form-tint-blend: color;
+}
+.companion[data-form='fire-mode'] {
+  --aura-rgb: 255 116 36; --aura-hot-rgb: 255 238 168; --rim-rgb: 255 226 140; --eye-rgb: 255 246 196;
+  --form-glow: drop-shadow(0 0 2px rgb(255 170 70 / 0.95)) drop-shadow(0 0 8px rgb(255 90 30 / 0.5));
+  --form-tint: linear-gradient(to top, rgb(220 60 28), rgb(255 150 50) 55%, rgb(255 226 140));
+  --form-tint-blend: color;
+}
+.companion[data-form='water-mode'] {
+  --aura-rgb: 100 196 240; --aura-hot-rgb: 226 250 255; --rim-rgb: 214 246 255; --eye-rgb: 200 244 255;
+  --form-glow: drop-shadow(0 0 3px rgb(120 210 245 / 0.6));
+  --form-tint: linear-gradient(rgb(214 236 246), rgb(120 170 205));
+  --form-tint-blend: color;
+}
+.companion[data-form='deku-overdrive'] {
+  --aura-rgb: 96 236 150; --aura-hot-rgb: 226 255 234; --rim-rgb: 170 255 204; --eye-rgb: 150 255 190;
+  --form-glow: drop-shadow(0 0 2px rgb(120 240 170 / 0.75)) drop-shadow(0 0 6px rgb(40 190 110 / 0.35));
+  --form-tint:
+    linear-gradient(to top, transparent 0 var(--belt-bottom), rgb(190 60 64) var(--belt-bottom) calc(var(--belt-bottom) + 3px), transparent calc(var(--belt-bottom) + 3px)),
+    linear-gradient(rgb(70 150 120), rgb(40 100 86));
+  --form-tint-blend: color;
+}
+.companion[data-form='hyper-sonic'] {
+  --aura-rgb: 234 244 255; --aura-hot-rgb: 255 255 255; --rim-rgb: 255 255 255; --eye-rgb: 210 250 255;
+  --form-glow: brightness(1.1) drop-shadow(0 0 3px rgb(240 248 255 / 0.85));
+  --form-tint: linear-gradient(rgb(236 242 248), rgb(196 210 228));
+  --form-tint-blend: color;
+  --form-tint-opacity: 0.85;
+}
+.companion[data-form='sword-draw'] {
+  --aura-rgb: 180 214 236; --aura-hot-rgb: 240 250 255; --rim-rgb: 230 244 255;
+  --form-glow: drop-shadow(0 0 2px rgb(190 220 240 / 0.45));
+  --form-tint: none;
+  --rim-opacity: 0.6;
+}
+.companion :is(.afterimages i, .shadowBurst i, .battleShadow i, .battleAfterimages i) {
   left: 8px; width: 48px; height: 84px;
   background-image: var(--sprite-image); background-size: var(--sprite-size);
   background-position: var(--sprite-idle-x) var(--sprite-y); background-repeat: no-repeat;
 }
-.companion[data-form='hyper-sonic'] { --form-cloth: 217 227 234; --form-trim: 185 225 228; }
-.companion[data-form='hyper-sonic'] :is(.spriteIdle, .spriteWalk) { filter: saturate(0.15) brightness(1.35); }
-.companion[data-form='hyper-sonic'] .formCrown { opacity: 1; top: 13px; left: 15px; width: 36px; height: 22px; background: rgb(236 240 239); clip-path: polygon(0 28%, 27% 48%, 21% 0, 50% 30%, 58% 0, 75% 40%, 100% 20%, 93% 100%, 12% 100%); }
-.companion[data-form='hyper-sonic'] .formCrown::before { display: none; }
-.truthOrbs,
-.hyperAura { position: absolute; z-index: -3; inset: 0; pointer-events: none; opacity: 0; }
-.truthOrbs i { position: absolute; width: 5px; height: 5px; border: 1px solid rgb(186 165 93 / 0.7); border-radius: 50%; background: rgb(10 11 15); }
-.truthOrbs i:nth-child(1) { top: 12px; left: -6px; }
-.truthOrbs i:nth-child(2) { top: 2px; left: 13px; }
-.truthOrbs i:nth-child(3) { top: -1px; left: 37px; }
-.truthOrbs i:nth-child(4) { top: 10px; left: 61px; }
-.truthOrbs i:nth-child(5) { top: 28px; left: 73px; }
-.truthOrbs i:nth-child(6) { top: 49px; left: 72px; }
-.truthOrbs i:nth-child(7) { top: 68px; left: 58px; }
-.truthOrbs i:nth-child(8) { top: 74px; left: 30px; }
-.truthOrbs i:nth-child(9) { top: 61px; left: 2px; }
-.companion[data-form='chakra-mode'] .truthOrbs { opacity: 1; }
-.hyperAura { top: 6px; left: -5px; right: -5px; border: 1px solid rgb(224 240 248 / 0.32); border-radius: 50%; background: radial-gradient(ellipse, rgb(227 238 247 / 0.13), transparent 72%); }
-.hyperAura i { position: absolute; inset: -3px; border-radius: 50%; opacity: 0.12; background: radial-gradient(ellipse, rgb(121 218 237 / 0.4), transparent 70%); animation-duration: 7200ms; animation-timing-function: linear; animation-iteration-count: infinite; }
-.hyperAura i:nth-child(2) { inset: 1px -5px; background: radial-gradient(ellipse, rgb(220 165 236 / 0.4), transparent 70%); animation-delay: -2400ms; }
-.hyperAura i:nth-child(3) { inset: -5px 1px; background: radial-gradient(ellipse, rgb(225 230 151 / 0.4), transparent 70%); animation-delay: -4800ms; }
-.companion[data-form='hyper-sonic'] .hyperAura { opacity: 1; }
-.companion[data-form='hyper-sonic'] .hyperAura i { animation-name: hyperSpectrum; }
-@keyframes hyperSpectrum {
-  0%, 100% { opacity: 0.12; transform: scale(0.97); }
-  50% { opacity: 0.6; transform: scale(1.03); }
-}
-
 /* Final-war Overdrive gathers green electricity and Blackwhip locally. */
 .dekuWhip,
 .superEmeralds,
@@ -1883,176 +1495,17 @@
 .companion[data-phase='battling']:is([data-battle='baryon-breakthrough'], [data-battle='black-meteorite'], [data-battle='chidori'], [data-battle='gearshift-overdrive'], [data-battle='hyper-boost']) .spriteWalk { display: block; }
 .companion:is([data-battle='black-meteorite'], [data-battle='chidori']) .battleAfterimages i { animation: battleDashEcho var(--battle-duration) var(--ease-out) both; }
 
-/* Researched costumes dress the existing sprite; the helmet, face, native
-   animation frames, and proportions remain the active persona's own. */
-.formCloth, .formCollar, .formCuffs, .formScroll, .formScarf, .formSeals, .formBook, .spiritHalo { position: absolute; pointer-events: none; opacity: 0; }
-.formCloth { z-index: 1; top: 61px; left: 22px; width: 25px; height: 17px; background: rgb(var(--form-cloth)); clip-path: polygon(0 0, 100% 0, 100% 76%, 84% 76%, 84% 100%, 0 100%); }
-.formCloth::after { position: absolute; inset: 2px 5px; border-left: 2px solid rgb(var(--form-trim)); content: ''; }
-.formCollar { z-index: 2; left: 18px; top: 48px; width: 32px; height: 12px; background: rgb(var(--form-cloth)); clip-path: polygon(0 0, 33% 45%, 66% 45%, 100% 0, 94% 100%, 6% 100%); }
-.formCuffs { z-index: 3; inset: 0; }
-.formCuffs i { position: absolute; top: 65px; left: 15px; width: 6px; height: 9px; background: rgb(var(--form-trim)); }
-.formCuffs i:nth-child(2) { left: 46px; top: 61px; }
-.formSeals { z-index: 3; inset: 0; }
-.formSeals i { position: absolute; top: 51px; left: 23px; width: 3px; height: 4px; background: rgb(32 26 25); border-radius: 0 60% 60% 60%; }
-.formSeals i:nth-child(2) { left: 29px; top: 54px; }
-.formSeals i:nth-child(3) { left: 35px; top: 54px; }
-.formSeals i:nth-child(4) { left: 41px; }
-.formSeals i:nth-child(5) { left: 29px; top: 65px; }
-.formSeals i:nth-child(6) { left: 35px; top: 65px; }
-.formBook { z-index: 2; inset: 0; }
-.formBook i { position: absolute; top: 52px; left: -5px; width: 12px; height: 17px; border: 2px solid rgb(182 148 74); background: rgb(42 72 83); transform: rotate(-12deg); }
-.formBook i::after { position: absolute; width: 4px; height: 4px; top: 4px; left: 2px; background: rgb(230 206 130); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); content: ''; }
-.formBook i:nth-child(2) { left: 58px; top: 44px; background: rgb(31 42 64); transform: rotate(15deg); }
-.companion:not([data-form='none']) .formCloth { opacity: 0.86; }
-
-/* Sage: red haori, scroll, orange eye paint. Six Paths uses cross pupils and
-   seals without the ordinary Sage eye rings. */
-.companion[data-form='sage-mode'] .formScroll { opacity: 1; z-index: -2; left: 4px; top: 49px; width: 51px; height: 13px; background: rgb(215 198 156); border: 3px solid rgb(79 60 46); box-shadow: inset 0 3px rgb(169 84 61); }
-.companion[data-form='sage-mode'] .formCuffs { opacity: 1; }
-.companion[data-form='sage-mode'] .formCloth { background: rgb(195 106 45); }
-.companion[data-form='chakra-mode'] :is(.formSeals, .formCuffs, .powerEyes) { opacity: 1; }
-.companion[data-form='chakra-mode'] .powerEyes i { background: rgb(255 220 97); box-shadow: inset 1px 0 rgb(45 34 21); }
-.companion[data-form='chakra-mode'] .powerEyes i::after { position: absolute; left: 1px; top: -1px; height: 5px; width: 1px; background: rgb(45 34 21); content: ''; }
-.companion[data-form='chakra-mode'] .formCloth::after { border-color: rgb(41 33 25); }
-
-/* Baryon's fox cloak and nine tails sit around the same armored character. */
-.companion[data-form='baryon-mode'] .formCollar { opacity: 1; background: rgb(202 72 35); }
-.companion[data-form='baryon-mode'] .formCloth { background: rgb(43 31 29); }
-.companion[data-form='baryon-mode'] .formCloth::after { border-color: rgb(235 100 39); border-width: 4px; }
-.foxTails i:nth-child(5) { left: 5px; top: 39px; transform: rotate(-56deg); }
-.foxTails i:nth-child(6) { left: 48px; top: 39px; transform: rotate(56deg); }
-.foxTails i:nth-child(7) { left: 0; top: 51px; height: 29px; transform: rotate(-72deg); }
-.foxTails i:nth-child(8) { left: 54px; top: 51px; height: 29px; transform: rotate(72deg); }
-.foxTails i:nth-child(9) { left: 28px; top: 36px; height: 45px; transform: rotate(0deg); }
-.companion[data-form='baryon-mode'] .powerEyes i::after { position: absolute; left: -2px; top: 4px; width: 7px; height: 3px; background: rgb(52 28 30); transform: rotate(25deg); content: ''; }
-.companion[data-form='baryon-mode'] .powerEyes i:nth-child(2)::after { transform: rotate(-25deg); }
-
-/* Fourth-War Sasuke: gray high collar, purple waist rope, mismatched eyes. */
-.companion[data-form='six-paths-eyes'] :is(.formCollar, .weapon) { opacity: 1; }
-.companion[data-form='six-paths-eyes'] .formCollar, .companion[data-form='six-paths-eyes'] .formCloth { background: rgb(156 158 168); }
-.companion[data-form='six-paths-eyes'] .formCloth::after { inset: 10px -3px 3px; border: 0; background: rgb(127 91 158); box-shadow: 0 3px rgb(93 65 122); }
-.companion[data-form='six-paths-eyes'] .formCape { opacity: 0; }
-
-/* Final War Overdrive is equipment on this sprite: the verified yellow scarf,
-   neck guard, white reinforced gloves, red belt, and green energy accents. */
-.companion[data-form='deku-overdrive'] { --form-cloth: 43 99 88; --form-trim: 220 222 203; }
-.companion[data-form='deku-overdrive'] :is(.formCollar, .formScarf, .formCuffs, .powerEyes) { opacity: 1; }
-.companion[data-form='deku-overdrive'] .formCollar { background: rgb(29 40 40); }
-.companion[data-form='deku-overdrive'] .formScarf { z-index: 3; left: 9px; top: 49px; width: 44px; height: 13px; background: rgb(187 157 76); clip-path: polygon(0 0, 30% 35%, 100% 15%, 95% 80%, 32% 74%, 0 100%, 15% 48%); }
-.companion[data-form='deku-overdrive'] .formCloth::after { inset: 11px 0 3px; border: 0; background: rgb(162 63 66); }
-.companion[data-form='deku-overdrive'] .powerEyes i { background: rgb(139 237 192); box-shadow: 0 0 3px rgb(83 210 151); }
-.companion[data-form='deku-overdrive'] .formCuffs i { height: 12px; width: 8px; border-bottom: 3px solid rgb(134 159 147); }
-.companion[data-form='deku-overdrive'] .lightning i { opacity: 0.45; animation: none; background: rgb(141 232 188); left: 10px; top: 22px; width: 8px; height: 22px; }
-.companion[data-form='deku-overdrive'] .lightning i:nth-child(2) { left: 47px; top: 15px; width: 9px; height: 25px; }
-.companion[data-form='deku-overdrive'] .lightning i:nth-child(3) { left: 47px; top: 58px; width: 14px; height: 18px; transform: none; }
-
-/* Zetten training: light kimono, dark obi/hakama, Bulls headband, black right
-   forearm. Zetten itself does not create horns, wings, or a demonic body. */
-.companion[data-form='zetten-mode'] { --form-cloth: 219 217 203; --form-trim: 42 43 49; }
-.companion[data-form='zetten-mode'] :is(.formCollar, .formCuffs) { opacity: 1; }
-.companion[data-form='zetten-mode'] .formCape { opacity: 0; }
-.companion[data-form='zetten-mode'] .formCollar { background: rgb(221 219 208); }
-.companion[data-form='zetten-mode'] .formCloth::after { inset: 9px -3px 4px; border: 0; background: rgb(42 43 49); }
-.companion[data-form='zetten-mode'] .formCrown::before { background: rgb(193 166 95); }
-.companion[data-form='zetten-mode'] .formCuffs i { background: rgb(221 219 208); height: 6px; }
-.companion[data-form='zetten-mode'] .formCuffs i:nth-child(2) { background: rgb(30 31 38); height: 12px; }
-.companion[data-form='zetten-mode'] .formMark { display: none; }
-
-/* Full Devil Union: dark crown, four curled horns, red diamond, cheek streaks,
-   armor, claws and wings. The helmet underneath remains the original sprite. */
-.companion[data-form='devil-union'] :is(.formCrown, .formCollar, .formCuffs, .powerEyes) { opacity: 1; }
-.companion[data-form='devil-union'] .formCrown { top: 24px; height: 13px; background: rgb(24 26 34); clip-path: polygon(0 0, 17% 30%, 32% 0, 50% 25%, 68% 0, 84% 30%, 100% 0, 100% 100%, 0 100%); }
-.companion[data-form='devil-union'] .formCrown::before { top: 5px; left: 3px; width: 25px; height: 4px; background: rgb(193 49 66); box-shadow: none; }
-.companion[data-form='devil-union'] .formHorns i { left: 10px; top: 17px; width: 10px; height: 18px; background: rgb(24 26 34); }
-.companion[data-form='devil-union'] .formHorns i:nth-child(2) { left: 43px; }
-.companion[data-form='devil-union'] .formHorns i:nth-child(3) { left: 22px; top: 10px; width: 6px; height: 18px; }
-.companion[data-form='devil-union'] .formHorns i:nth-child(4) { left: 35px; top: 10px; width: 6px; height: 18px; transform: scaleX(-1); }
-.companion[data-form='devil-union'] .formCollar { background: rgb(26 27 35); height: 17px; }
-.companion[data-form='devil-union'] .formCuffs i { background: rgb(28 28 37); border-bottom: 3px solid rgb(158 51 66); }
-.companion[data-form='devil-union'] .powerEyes i { background: rgb(208 61 72); box-shadow: none; }
-.companion[data-form='devil-union'] .powerEyes i::after { position: absolute; left: 0; top: 4px; width: 3px; height: 9px; background: rgb(24 26 34); transform: rotate(-25deg); content: ''; }
-.companion[data-form='devil-union'] .formCloth::after { border-color: rgb(172 48 62); }
-
-/* Star Magic dresses the royal mage in navy/gold; it does not add the wind
-   spirit crown. Complete Spirit Dive has the full crown, TWO wings and halo. */
-.companion[data-form='spirit-dive'] { --form-cloth: 58 126 91; --form-trim: 211 235 178; }
-.companion[data-form='spirit-dive'] :is(.formCollar, .formCuffs, .spiritHalo) { opacity: 1; }
-.companion[data-form='spirit-dive'] .formCape { left: 9px; top: 48px; width: 46px; height: 34px; background: rgb(173 211 169); clip-path: polygon(10% 0, 90% 0, 100% 100%, 70% 85%, 50% 100%, 30% 85%, 0 100%); }
-.companion[data-form='spirit-dive'] .formCrown { top: 14px; left: 12px; width: 40px; height: 17px; background: rgb(211 235 178); clip-path: polygon(0 25%, 15% 45%, 15% 0, 30% 0, 30% 45%, 43% 45%, 43% 0, 57% 0, 57% 45%, 70% 45%, 70% 0, 85% 0, 85% 45%, 100% 25%, 94% 100%, 6% 100%); }
-.companion[data-form='spirit-dive'] .formWings i { left: -15px; top: 28px; width: 39px; height: 48px; background: rgb(150 224 181 / 0.75); }
-.companion[data-form='spirit-dive'] .formWings i:nth-child(2) { left: 40px; top: 28px; width: 39px; height: 48px; opacity: 1; transform: scaleX(-1); }
-.spiritHalo { z-index: -3; left: -7px; top: 16px; width: 78px; height: 61px; border: 1px solid rgb(194 232 171 / 0.65); border-radius: 50%; }
-.spiritHalo i { position: absolute; left: 9px; top: 4px; width: 9px; height: 3px; background: rgb(211 235 178); }
-.spiritHalo i::after { position: absolute; top: -3px; left: 3px; width: 3px; height: 9px; background: inherit; content: ''; }
-.spiritHalo i:nth-child(2) { left: 34px; top: -1px; }
-.spiritHalo i:nth-child(3) { left: 58px; top: 7px; }
-.spiritHalo i:nth-child(4) { left: 71px; top: 28px; }
-.spiritHalo i:nth-child(5) { left: 58px; top: 49px; }
-.spiritHalo i:nth-child(6) { left: 34px; top: 57px; }
-.spiritHalo i:nth-child(7) { left: 9px; top: 49px; }
-.spiritHalo i:nth-child(8) { left: -4px; top: 28px; }
-.companion[data-form='spirit-dive'] .formMark { background: rgb(228 242 195); }
-.companion[data-form='spirit-dive'] .formCollar { background: rgb(221 237 203); }
-
-/* Hyper's cuffs and footwear accents remain accessories on the knight.
-   The remaining original fantasy kits retain their weapon, frost or clone. */
-.companion[data-form='hyper-sonic'] .formCuffs { opacity: 1; }
-.companion[data-form='hyper-sonic'] .formCuffs i { background: rgb(237 239 228); border-bottom: 2px solid rgb(164 213 224); }
-.companion[data-form='hyper-sonic'] .formCloth { background: rgb(205 222 231); }
-.companion[data-form='hyper-sonic'] .formCloth::after { inset: 12px -3px 0; border: 0; background: rgb(185 59 68); }
-.companion[data-form='sword-draw'] { --form-cloth: 67 83 99; --form-trim: 187 197 193; }
-.companion[data-form='sword-draw'] .formCuffs { opacity: 1; }
-.companion[data-form='lightning-dash'] .formCloth::after { clip-path: polygon(50% 0, 100% 0, 60% 45%, 100% 45%, 0 100%, 35% 55%, 0 55%); background: rgb(151 226 243); border: 0; }
-.companion[data-form='fire-mode'] .formCloth::after { border-color: rgb(236 155 67); }
-.companion[data-form='ice-mode'] .formCuffs { opacity: 1; }
-.companion[data-form='shadow-mode'] .formCollar { opacity: 1; background: rgb(58 42 83); }
-
-/* Additional gear follows the same three-pixel rhythm as the source art.
-   These small pieces never substitute the knight's helmet or native frames. */
-.energyCrest, .formGreaves, .formArmor, .formSigil, .saintBlade { position: absolute; pointer-events: none; opacity: 0; }
-.formGreaves, .formArmor, .saintBlade { inset: 0; }
-.formGreaves i { position: absolute; left: 24px; top: 75px; width: 9px; height: 6px; background: rgb(var(--form-trim)); }
-.formGreaves i:nth-child(2) { left: 39px; }
-.formArmor { z-index: 3; }
-.formArmor i { position: absolute; top: 51px; left: 15px; width: 12px; height: 12px; background: rgb(var(--form-cloth)); border-top: 3px solid rgb(var(--form-trim)); clip-path: polygon(25% 0, 100% 0, 100% 75%, 50% 100%, 0 75%, 0 25%); }
-.formArmor i:nth-child(2) { left: 42px; transform: scaleX(-1); }
-
-/* OFA Overdrive: the helmet gains an energy crest, not a replacement face.
-   Gran Torino's ragged scarf, neck guard, gloves and red soles stay equipped. */
-.companion[data-form='deku-overdrive'] :is(.energyCrest, .formGreaves) { opacity: 1; }
-.companion[data-form='deku-overdrive'] .energyCrest { z-index: 1; left: 16px; top: 12px; width: 33px; height: 19px; background: rgb(120 231 178); clip-path: polygon(0 55%, 9% 15%, 24% 40%, 36% 0, 48% 30%, 66% 0, 69% 36%, 93% 12%, 85% 55%, 100% 48%, 90% 100%, 3% 100%); box-shadow: inset 0 -6px rgb(34 104 77); }
-.companion[data-form='deku-overdrive'] .formCape { opacity: 0; }
-.companion[data-form='deku-overdrive'] .formScarf { left: -3px; top: 47px; width: 54px; height: 15px; background: rgb(207 175 81); clip-path: polygon(0 6%, 26% 26%, 38% 6%, 60% 36%, 100% 21%, 97% 73%, 57% 73%, 36% 60%, 30% 100%, 20% 73%, 9% 93%, 12% 53%); }
-.companion[data-form='deku-overdrive'] .formCollar { left: 22px; top: 45px; width: 27px; height: 13px; box-shadow: inset 0 -3px rgb(102 121 113); }
-.companion[data-form='deku-overdrive'] .formCuffs i { left: 15px; top: 61px; width: 9px; height: 14px; background: rgb(223 228 207); box-shadow: inset 3px 0 rgb(156 177 164); }
-.companion[data-form='deku-overdrive'] .formCuffs i:nth-child(2) { left: 45px; top: 58px; }
-.companion[data-form='deku-overdrive'] .formGreaves i { background: rgb(170 62 66); box-shadow: inset 0 3px rgb(224 225 204); }
-
-/* Zetten is controlled concentration: crossed kimono lapels, a wide dark
-   obi/hakama and anti-magic forearm. Devil Union adds armor to that body. */
-.companion[data-form='zetten-mode'] .formCollar { left: 21px; top: 48px; width: 27px; height: 18px; clip-path: polygon(0 0, 24% 0, 55% 68%, 82% 0, 100% 0, 63% 100%, 42% 100%); box-shadow: inset 3px 0 rgb(122 122 120); }
-.companion[data-form='zetten-mode'] .formCloth { top: 65px; height: 15px; background: rgb(40 41 48); clip-path: polygon(0 0, 100% 0, 100% 100%, 57% 100%, 50% 52%, 43% 100%, 0 100%); }
-.companion[data-form='zetten-mode'] .formCloth::after { inset: 0 0 9px; border: 0; background: rgb(29 30 37); }
-.companion[data-form='zetten-mode'] .formCuffs i:nth-child(2) { width: 9px; box-shadow: inset -3px 0 rgb(74 45 56); }
-.companion[data-form='devil-union'] :is(.formArmor, .formGreaves, .formSigil) { opacity: 1; }
-.companion[data-form='devil-union'] .formArmor i { background: rgb(29 27 37); border-color: rgb(168 46 63); }
-.companion[data-form='devil-union'] .formSigil { z-index: 4; top: 56px; left: 30px; width: 9px; height: 12px; background: rgb(186 48 70); clip-path: polygon(50% 0, 100% 30%, 85% 75%, 50% 100%, 15% 75%, 0 30%, 33% 35%, 50% 68%, 67% 35%); }
-.companion[data-form='devil-union'] .formCrown::after { position: absolute; left: 12px; top: 2px; width: 9px; height: 9px; background: rgb(228 68 83); clip-path: polygon(50% 0, 68% 35%, 100% 50%, 68% 65%, 50% 100%, 32% 65%, 0 50%, 32% 35%); content: ''; }
-.companion[data-form='devil-union'] .formWings i { top: 30px; left: -12px; width: 33px; height: 43px; background: rgb(38 27 42); }
-.companion[data-form='devil-union'] .formWings i:nth-child(2) { left: 43px; }
-.companion[data-form='devil-union'] .formGreaves i { background: rgb(32 27 38); border-bottom: 3px solid rgb(159 44 61); }
-
-/* Saint Stage accents the completed Spirit Dive. Two wings and cross crown
-   remain; Zephyr gains a luminous core and its enlarged fan-shaped guard. */
-.companion[data-form='spirit-dive'] :is(.saintBlade, .formArmor) { opacity: 1; }
-.companion[data-form='spirit-dive'] .formArmor i { background: rgb(189 230 181); border-color: rgb(232 247 198); }
-.companion[data-form='spirit-dive'] .formCuffs i { height: 15px; background: rgb(207 243 188); box-shadow: inset 3px 0 rgb(131 203 153); }
-.companion[data-form='spirit-dive'] .formWings i { clip-path: polygon(0 0, 30% 6%, 65% 25%, 100% 68%, 85% 100%, 48% 87%, 15% 54%, 0 25%, 42% 48%, 28% 20%); }
-.saintBlade { z-index: 4; }
+/* Held weapons stay equipment; form light comes from companion-form-aura. */
+.saintBlade { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+/* Saint Stage keeps Zephyr in hand; Spirit Dive light lives in the aura layer. */
+.companion[data-form='spirit-dive'] .saintBlade { opacity: 1; }
+/* Zephyr is wind given an edge: a bright core fading to translucent sides,
+   the same light the body's rim and glow carry. Only the grip is solid. */
+.saintBlade { z-index: 4; filter: drop-shadow(0 0 3px rgb(150 240 190 / 0.75)); }
 .saintBlade i { position: absolute; }
-.saintBlade i:first-child { top: 9px; left: 57px; width: 9px; height: 48px; background: rgb(227 255 202); clip-path: polygon(50% 0, 100% 19%, 100% 100%, 0 100%, 0 19%); box-shadow: inset 3px 0 rgb(139 222 167); }
-.saintBlade i:nth-child(2) { top: 46px; left: 43px; width: 36px; height: 15px; background: rgb(182 241 167); clip-path: polygon(0 0, 27% 20%, 50% 72%, 73% 20%, 100% 0, 90% 65%, 64% 100%, 36% 100%, 10% 65%); }
-.saintBlade i:nth-child(3) { top: 58px; left: 59px; width: 6px; height: 15px; background: rgb(90 174 126); box-shadow: 0 3px rgb(220 249 185); }
+.saintBlade i:first-child { top: 9px; left: 57px; width: 9px; height: 48px; background: linear-gradient(90deg, rgb(150 232 186 / 0.45), rgb(244 255 240 / 0.95) 45%, rgb(196 250 214 / 0.6)); clip-path: polygon(50% 0, 100% 19%, 100% 100%, 0 100%, 0 19%); }
+.saintBlade i:nth-child(2) { top: 46px; left: 43px; width: 36px; height: 15px; background: linear-gradient(rgb(226 255 220 / 0.85), rgb(120 214 160 / 0.35)); clip-path: polygon(0 0, 27% 20%, 50% 72%, 73% 20%, 100% 0, 90% 65%, 64% 100%, 36% 100%, 10% 65%); }
+.saintBlade i:nth-child(3) { top: 58px; left: 59px; width: 6px; height: 15px; background: linear-gradient(90deg, rgb(52 120 86), rgb(90 174 126) 50%, rgb(52 120 86)); box-shadow: 0 3px rgb(220 249 185); }
 .companion[data-battle='spirit-of-zephyr'] .saintBlade { opacity: 0; }
 .companion[data-battle='spirit-of-zephyr'] .battleWind i:first-child { background: transparent; width: 12px; height: 81px; left: 55px; top: -6px; filter: none; box-shadow: none; clip-path: none; }
 .companion[data-battle='spirit-of-zephyr'] .battleWind i:first-child::before { position: absolute; inset: 0; background: rgb(221 255 203); box-shadow: inset 3px 0 rgb(125 222 159); clip-path: polygon(50% 0, 100% 13%, 100% 78%, 76% 78%, 76% 100%, 24% 100%, 24% 78%, 0 78%, 0 13%); content: ''; }
@@ -2063,69 +1516,6 @@
   0%, 35% { opacity: 0; transform: scale(0.9); }
   51% { opacity: 0.9; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.15); }
-}
-
-/* Luck's True Lightning kit equips the knight's own limbs. The five Mana
-   Method arrays belong at his boots; Battle Fiend's horns/tail are separate
-   Ultimate Magic, so they are deliberately absent from this Ceranos kit. */
-.luckArmor, .manaRunes, .hellfireMantle { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
-.luckArmor { z-index: 3; }
-.luckArmor i { position: absolute; background: rgb(177 235 255); box-shadow: inset 3px -3px rgb(70 165 212); }
-.luckArmor i:nth-child(1), .luckArmor i:nth-child(2) { left: 11px; top: 56px; width: 15px; height: 21px; clip-path: polygon(20% 0, 80% 0, 100% 35%, 85% 68%, 100% 100%, 60% 80%, 40% 100%, 20% 75%, 0 90%, 10% 45%); }
-.luckArmor i:nth-child(2) { left: 44px; top: 53px; transform: scaleX(-1); }
-.luckArmor i:nth-child(3), .luckArmor i:nth-child(4) { left: 21px; top: 69px; width: 12px; height: 15px; clip-path: polygon(0 0, 100% 0, 85% 55%, 100% 75%, 100% 100%, 0 100%, 20% 65%); }
-.luckArmor i:nth-child(4) { left: 37px; transform: scaleX(-1); }
-.luckArmor i:nth-child(5), .luckArmor i:nth-child(6) { left: 12px; top: 46px; width: 15px; height: 13px; clip-path: polygon(0 0, 60% 20%, 100% 100%, 30% 80%); }
-.luckArmor i:nth-child(6) { left: 43px; transform: scaleX(-1); }
-.manaRunes { z-index: -1; }
-.manaRunes i { position: absolute; left: 13px; top: 55px; width: 40px; height: 10px; border: 1px solid rgb(157 226 255 / 0.8); border-radius: 50%; }
-.manaRunes i::before { position: absolute; inset: -3px 4px; border-inline: 2px dashed rgb(206 247 255); content: ''; }
-.manaRunes i:nth-child(2) { top: 61px; left: 10px; width: 46px; }
-.manaRunes i:nth-child(3) { top: 67px; left: 7px; width: 52px; }
-.manaRunes i:nth-child(4) { top: 73px; left: 4px; width: 58px; }
-.manaRunes i:nth-child(5) { top: 79px; left: 1px; width: 64px; }
-.companion[data-form='lightning-dash'] { --form-cloth: 48 82 104; --form-trim: 167 232 255; }
-.companion[data-form='lightning-dash'] :is(.spriteIdle, .spriteWalk) { filter: saturate(0.8) brightness(1.12); }
-.companion[data-form='lightning-dash'] :is(.formCape, .formCrown, .formMark, .formOrbs) { opacity: 0; }
-.companion[data-form='lightning-dash'] .formCape { opacity: 0.85; left: 13px; top: 46px; width: 35px; height: 29px; background: rgb(32 42 51); }
-.companion[data-form='lightning-dash'] .formCape::before { border-color: rgb(178 151 88); }
-.companion[data-form='lightning-dash'] .luckArmor { opacity: 1; }
-.companion[data-form='lightning-dash'] .manaRunes { opacity: 0.45; }
-.companion[data-effect='lightning'] .manaRunes { opacity: 1; }
-.companion[data-effect='lightning'] .manaRunes i { animation: runeEngage var(--moment-duration) var(--ease-out) both; }
-.companion[data-form='lightning-dash'] .formCloth { background: rgb(45 69 81); }
-.companion[data-form='lightning-dash'] .formCloth::after { background: rgb(111 196 232); }
-@keyframes runeEngage {
-  0%, 8% { opacity: 0; transform: translateY(3px) scale(0.95); }
-  27%, 71% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0.45; transform: translateY(0) scale(1); }
-}
-
-/* Hellfire Incarnate is a living flame envelope around the same knight.
-   Its mane, fists and burning limbs replace the old phoenix costume cues. */
-.hellfireMantle { z-index: -1; }
-.hellfireMantle i { position: absolute; left: -6px; top: 18px; width: 28px; height: 63px; background: rgb(232 104 34 / 0.82); clip-path: polygon(40% 0, 52% 27%, 80% 8%, 74% 44%, 100% 67%, 78% 100%, 20% 100%, 0 76%, 16% 39%, 20% 8%, 34% 35%); transform-origin: center bottom; }
-.hellfireMantle i::after { position: absolute; inset: 12px 6px 3px; background: rgb(255 211 94); clip-path: inherit; content: ''; }
-.hellfireMantle i:nth-child(2) { left: 45px; top: 14px; height: 67px; --flame-flip: -1; transform: scaleX(-1); }
-.hellfireMantle i:nth-child(3) { left: 12px; top: 4px; width: 43px; height: 36px; clip-path: polygon(0 100%, 7% 40%, 21% 67%, 29% 0, 44% 40%, 56% 5%, 65% 48%, 91% 13%, 86% 67%, 100% 100%); }
-.hellfireMantle i:nth-child(4) { left: 11px; top: 48px; width: 15px; height: 32px; background: rgb(255 184 57); }
-.hellfireMantle i:nth-child(5) { left: 44px; top: 45px; width: 15px; height: 34px; background: rgb(255 184 57); }
-.hellfireMantle i:nth-child(6) { left: 22px; top: 65px; width: 13px; height: 19px; }
-.hellfireMantle i:nth-child(7) { left: 36px; top: 65px; width: 13px; height: 19px; }
-.companion[data-form='fire-mode'] { --form-cloth: 115 50 38; --form-trim: 255 210 114; }
-.companion[data-form='fire-mode'] :is(.formCape, .formCrown, .formMark, .formOrbs) { opacity: 0; }
-.companion[data-form='fire-mode'] :is(.hellfireMantle, .formCuffs, .formGreaves, .powerEyes) { opacity: 1; }
-.companion[data-form='fire-mode'] :is(.spriteIdle, .spriteWalk) { filter: sepia(0.6) saturate(1.6) brightness(1.12); }
-.companion[data-form='fire-mode'] .formCuffs i { width: 9px; height: 14px; background: rgb(255 213 102); border-bottom: 3px solid rgb(225 113 37); box-shadow: inset 3px 0 rgb(255 240 171); }
-.companion[data-form='fire-mode'] .formGreaves i { background: rgb(244 155 52); box-shadow: inset 0 3px rgb(255 227 143); }
-.companion[data-form='fire-mode'] .powerEyes i { background: rgb(255 242 176); box-shadow: none; }
-.companion[data-form='fire-mode'] .formCloth { background: rgb(143 75 41); }
-.companion[data-form='fire-mode'] .formCloth::after { border-color: rgb(255 213 120); }
-.companion[data-form='fire-mode'] .hellfireMantle i { animation: hellfireBreathe 3200ms var(--ease-in-out) infinite; }
-.companion[data-form='fire-mode'] .hellfireMantle i:nth-child(even) { animation-direction: reverse; }
-@keyframes hellfireBreathe {
-  0%, 100% { opacity: 0.68; transform: translateY(0) scaleX(var(--flame-flip, 1)); }
-  50% { opacity: 0.95; transform: translateY(-2px) scaleX(var(--flame-flip, 1)); }
 }
 
 /* Ceranos is the body-as-lightning rush; the other two moves retain Luck's
@@ -2195,36 +1585,15 @@
   100% { opacity: 0; transform: translateX(29px) scale(1.05); }
 }
 
-/* Noelle's Leviathan Dragon Form adds water armor to the active knight or
-   adventurer. The dedicated layer supplies ear fins, plumes and spiral lance. */
-.companion[data-form='water-mode'] { --form-cloth: 70 125 155; --form-trim: 201 235 244; }
-.companion[data-form='water-mode'] :is(.formCape, .formCrown, .formMark, .formOrbs) { opacity: 0; }
-.companion[data-form='water-mode'] .formCollar { opacity: 1; background: rgb(197 229 237); }
-.companion[data-form='water-mode'] .formCloth { background: rgb(76 139 165); }
-.companion[data-form='water-mode'] :is(.spriteIdle, .spriteWalk) { filter: saturate(0.75) brightness(1.1); }
-
-/* Every transient descendant, including beam pseudo-elements, shares pause. */
-/* Spirit Dive keeps its complete crown, wings and armor while Star Magic
-   adds four separate anchors and Yuno's Clover/Spade grimoires. */
-.companion[data-form='spirit-dive'] :is(.formStars, .formBook) { opacity: 1; }
-.companion[data-form='spirit-dive'] .formStars i { width: 8px; height: 8px; background: rgb(255 225 145); box-shadow: 0 0 5px rgb(255 220 130 / 0.45); }
-.companion[data-form='spirit-dive'] .formStars i:nth-child(1) { left: -20px; top: 6px; }
-.companion[data-form='spirit-dive'] .formStars i:nth-child(2) { left: 77px; top: 7px; }
-.companion[data-form='spirit-dive'] .formStars i:nth-child(3) { left: -25px; top: 61px; }
-.companion[data-form='spirit-dive'] .formStars i:nth-child(4) { left: 81px; top: 60px; }
-.companion[data-form='spirit-dive'] .formBook { z-index: 5; }
-.companion[data-form='spirit-dive'] .formBook i:first-child { left: -14px; top: 43px; border-color: rgb(199 163 89); background: rgb(45 99 76); }
-.companion[data-form='spirit-dive'] .formBook i:first-child::after { background: rgb(232 219 152); clip-path: polygon(30% 0, 50% 25%, 70% 0, 100% 30%, 75% 50%, 100% 70%, 70% 100%, 50% 75%, 30% 100%, 0 70%, 25% 50%, 0 30%); }
-.companion[data-form='spirit-dive'] .formBook i:nth-child(2) { left: 68px; top: 42px; border-color: rgb(199 163 89); background: rgb(33 47 72); }
-.companion[data-form='spirit-dive'] .formBook i:nth-child(2)::after { width: 6px; height: 6px; left: 1px; top: 3px; clip-path: polygon(50% 0, 100% 52%, 69% 78%, 58% 74%, 65% 100%, 35% 100%, 42% 74%, 31% 78%, 0 52%); }
 /* Idle equipment matches the character's arsenal. During a technique the
-   dedicated renderer owns its exact sword/bow/halberd, avoiding duplicate blades. */
-.companion[data-form='zetten-mode'] .weapon { top: 11px; left: 48px; width: 5px; height: 57px; border-left: 2px solid rgb(157 151 154); border-radius: 70% 0 0; background: rgb(35 31 40); filter: none; }
-.companion[data-form='zetten-mode'] .weapon::after { position: absolute; top: 42px; left: -5px; width: 13px; height: 3px; background: rgb(101 71 77); content: ''; }
-.companion[data-form='devil-union'] .weapon { opacity: 1; top: 7px; left: 49px; width: 16px; height: 67px; background: rgb(29 27 34); border-left: 3px solid rgb(115 96 108); filter: none; clip-path: polygon(28% 0, 100% 8%, 100% 81%, 65% 81%, 65% 100%, 35% 100%, 35% 81%, 0 81%, 0 12%); }
-.companion[data-form='six-paths-eyes'] .weapon { top: 14px; left: 49px; width: 5px; height: 58px; background: rgb(217 228 235); border-left: 2px solid rgb(116 141 170); filter: none; }
+   dedicated renderer owns its exact sword/bow/halberd, avoiding duplicate blades.
+   Devil Union holds the Demon-Slasher katana that Zetten cuts with; its
+   honed edge is the one light line on an anti-magic body. */
+.companion[data-form='devil-union'] .weapon { top: 11px; left: 48px; width: 5px; height: 57px; border-left: 2px solid rgb(238 234 242); border-radius: 70% 0 0; background: linear-gradient(90deg, rgb(70 60 74), rgb(24 20 28) 60%); filter: drop-shadow(0 0 1px rgb(244 240 248 / 0.7)) drop-shadow(0 0 3px rgb(200 36 56 / 0.6)); opacity: 1; transform: translate3d(-4px, 2px, 0); }
+.companion[data-form='devil-union'] .weapon::after { position: absolute; top: 42px; left: -5px; width: 13px; height: 3px; background: rgb(120 46 60); content: ''; }
+.companion[data-form='six-paths-eyes'] .weapon { top: 14px; left: 49px; width: 5px; height: 58px; background: linear-gradient(90deg, rgb(150 166 188), rgb(240 246 250) 55%, rgb(176 188 206)); border-left: 2px solid rgb(116 141 170); filter: drop-shadow(0 0 2px rgb(150 110 230 / 0.6)); opacity: 1; }
 .companion[data-form='six-paths-eyes'] .weapon::after { position: absolute; top: 43px; left: -3px; width: 9px; height: 3px; background: rgb(55 47 72); content: ''; }
-.companion[data-battle]:not([data-battle='none']):is([data-form='zetten-mode'], [data-form='devil-union'], [data-form='six-paths-eyes']) .weapon,
+.companion[data-battle]:not([data-battle='none']):is([data-form='devil-union'], [data-form='six-paths-eyes']) .weapon,
 .companion[data-battle]:not([data-battle='none'])[data-form='spirit-dive'] .saintBlade { opacity: 0; }
 .companion[data-battle='black-divider'] .battleSlash i:first-child,
 .companion[data-battle='spirit-of-zephyr'] .battleWind i:first-child { display: none; }
@@ -2246,7 +1615,7 @@
 .companion:is([data-motion='paused'], [data-paused='true'], [data-open='true']) .floatBody > span:not(.pose) *::after { animation-play-state: paused; }
 
 .companion:is([data-motion='paused'], [data-paused='true'], [data-open='true']) :is(
-  .spriteIdle, .spriteWalk, .ring, .dust i, .sparks i,
+  .frames, .ring, .dust i, .sparks i,
   .sageAura, .sageAura i, .sageEyes, .chakraAura, .chakraAura i,
   .chakraCloak, .weapon, .slash i, .afterimages i, .lightning i,
   .powerMotes i, .fireBurst i, .iceBurst i, .shadowBurst i,
@@ -2255,8 +1624,7 @@
   .battleSlash i, .battleLightning i, .battleStars i, .battleWind i,
   .battleIce i, .battleShadow i, .battleImpact i, .battleAfterimages i,
   .battleConstellation i, .battleConstellation b, .battleArms i,
-  .battleTails i, .battleDarkFlame i, .battleSusanoo i, .hyperAura i, .floatBody,
-  .hellfireMantle i, .manaRunes i
+  .battleTails i, .battleDarkFlame i, .battleSusanoo i, .floatBody
 ) {
   animation-play-state: paused;
 }
@@ -2274,8 +1642,7 @@
     transform: none !important;
   }
 
-  .spriteIdle,
-  .spriteWalk {
+  .frames {
     animation: none;
   }
 
@@ -2327,14 +1694,12 @@
   .companion[data-effect] :is(.sageEyes, .weapon) { animation: none; }
 
   .floatBody > span:not(.pose) { display: none; }
-  .companion[data-persona] :is(.spriteIdle, .spriteWalk) { animation: none; }
-  .companion[data-persona] .spriteIdle { display: block !important; background-position: var(--sprite-idle-x) var(--sprite-y); }
+  .companion[data-persona] .frames { animation: none; }
+  .companion[data-persona] .spriteIdle { display: block !important; }
   .companion[data-persona] .spriteWalk { display: none !important; }
   .companion .pose { transform: none !important; }
   .companion .flight { transform: none !important; transition: none; }
   .companion .floatBody { animation: none !important; transform: none !important; }
   .companion .character::after { opacity: 1; transform: none; }
-  .companion[data-form='hyper-sonic'] .hyperAura i { animation: none; opacity: 0.12; transform: none; }
-  .companion :is(.hellfireMantle i, .manaRunes i) { animation: none !important; }
 
 }

@@ -67,7 +67,7 @@ export function CertificateModal({
   }, [onClose]);
 
   const close = useCallback(() => {
-    play('close');
+    play('back');
     onCloseRef.current();
   }, []);
 
@@ -75,7 +75,8 @@ export function CertificateModal({
     if (!open) return;
 
     returnFocus.current = document.activeElement as HTMLElement | null;
-    play('open');
+    // Opening a record is confirming it: the menu's select, as everywhere.
+    play('select');
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -186,7 +187,7 @@ export function CertificateModal({
                     ref={closeRef}
                     type="button"
                     onClick={close}
-                    data-sound="close"
+                    data-sound="silent"
                     aria-label="Close certificate"
                     className="cert-modal__close"
                   >

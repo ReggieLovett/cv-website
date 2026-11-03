@@ -175,6 +175,7 @@ function createEngine(options = {}) {
         getPropertyValue(name) { return this[name] ?? ''; },
         removeProperty(name) { delete this[name]; },
       },
+      querySelector() { return null; },
       animate(keyframes, animationOptions) {
         const animation = new FakeAnimation(clock, this, keyframes, animationOptions, roamer.dataset.action, roamer.dataset.battle, roamer.dataset.battleMove);
         animations.push(animation);
@@ -188,6 +189,7 @@ function createEngine(options = {}) {
   let props = {
     roamerRef: { current: roamer },
     poseRef: { current: pose },
+    speechRef: { current: element() },
     persona: 'portfolio', open: false, paused: false, reducedMotion: false,
     onMoment: () => { moments += 1; },
     ...options,
@@ -523,7 +525,7 @@ test('resize preserves the live walking point and clamps both coordinates to the
   assertPoint(pointFromTransform(engine.roamer.style.transform), engine.travel.clampPoint(before, { width: 100, height: 140 }));
 });
 
-for (const action of ['zetten-mode', 'devil-union', 'spirit-dive', 'deku-overdrive', 'hyper-sonic']) {
+for (const action of ['devil-union', 'spirit-dive', 'deku-overdrive', 'hyper-sonic']) {
   test(`${action} completes into a persistent form and reset also cancels its unfinished charge`, (t) => {
     const engine = engineFor(t);
     const { duration, effect } = engine.catalogue.SPRITE_ACTIONS[action];
@@ -815,7 +817,7 @@ test('roaming, pause, chat, reset, and resize keep the actor anchored to the bot
 
 test('reduced motion applies forms instantly and does not start battles', (t) => {
   const forms = engineFor(t).catalogue.POWER_UPS.map(({ action }) => action);
-  assert.equal(forms.length, 13);
+  assert.equal(forms.length, 12);
   for (const form of forms) {
     const engine = engineFor(t, { reducedMotion: true });
     engine.act((controls) => controls.showTrick(form));

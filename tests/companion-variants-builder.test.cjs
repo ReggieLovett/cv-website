@@ -5,7 +5,7 @@ const path = require('node:path');
 const test = require('node:test');
 const {
   ATLASES, COLUMNS, FRAME_WIDTH, FRAME_HEIGHT,
-  SOURCE_COLORS, PALETTES, readSourcePng, sourceFrame, makeFrame, buildAtlas,
+  SOURCE_COLORS, PALETTES, readSourcePng, sourceFrame, makeFrame, buildAtlas, buildEyeMask,
 } = require('../scripts/build-companion-sprites.cjs');
 
 const forms = ['zelda'];
@@ -69,7 +69,7 @@ test('the Zelda costume leaves the original elf skin, blond hair, eyes, and prof
 
 test('power forms have no alternate body rows in the Zelda-only builder', () => {
   assert.deepEqual(Object.keys(PALETTES), ['zelda']);
-  for (const form of ['deku-overdrive', 'zetten-mode', 'devil-union']) {
+  for (const form of ['deku-overdrive', 'devil-union']) {
     assert.throws(() => makeFrame(form, 0), /Unknown variant/);
   }
 });
@@ -92,4 +92,51 @@ test('the shipped SVG is deterministic and contains only bounded native pixel re
       assert.equal(Number(height), 1);
     }
   }
+});
+
+test('shipped eye masks match each atlas grid and light only the two eyes of every frame', () => {
+  const masks = {
+    knight: { size: 512, columns: [[128, 100], [144, 100], [160, 100], [176, 100], [192, 100], [208, 100], [224, 100], [240, 100]] },
+    elf: { size: 128, columns: Array.from({ length: 8 }, (_, pose) => [pose * 16, 0]) },
+  };
+  for (const [persona, { columns }] of Object.entries(masks)) {
+    const source = fs.readFileSync(path.join(__dirname, `../public/sprites/companion-eyes-${persona}.svg`), 'utf8');
+    assert.equal(source, buildEyeMask(persona));
+    assert.doesNotMatch(source, /<(?:image|foreignObject|script|filter)\b|(?:href|src)=|data:/i);
+    const pixels = [...source.matchAll(/<rect x="(\d+)" y="(\d+)" width="1" height="1"\/>/g)].map(([, x, y]) => [Number(x), Number(y)]);
+    for (const [x0, y0] of columns) {
+      const frame = pixels.filter(([x, y]) => x >= x0 && x < x0 + 16 && y >= y0 && y < y0 + 28);
+      assert.equal(frame.length, 6, `${persona} frame at ${x0} lost an eye pixel`);
+      assert.equal(new Set(frame.map(([x]) => x)).size, persona === 'knight' ? 2 : 3, `${persona} frame at ${x0} has the wrong eye columns`);
+    }
+    assert.equal(pixels.length, 48);
+  }
+  for (let pose = 0; pose < 8; pose += 1) {
+    const grid = makeFrame('zelda', pose);
+    const lit = [...buildEyeMask('elf').matchAll(/<rect x="(\d+)" y="(\d+)"/g)]
+      .map(([, x, y]) => [Number(x) - pose * 16, Number(y)]).filter(([x]) => x >= 0 && x < 16);
+    for (const [x, y] of lit) assert.equal(grid[y][x], SOURCE_COLORS.eyes, `elf mask leaves the iris in pose ${pose}`);
+  }
+});
+
+test('eye-ring masks paint only the face pixels touching each eye, never the eyes themselves', () => {
+  for (const persona of ['knight', 'elf']) {
+    const source = fs.readFileSync(path.join(__dirname, `../public/sprites/companion-eye-rings-${persona}.svg`), 'utf8');
+    assert.equal(source, buildEyeMask(persona, 'rings'));
+    const pixels = (svg) => new Set([...svg.matchAll(/<rect x="(\d+)" y="(\d+)"/g)].map(([, x, y]) => `${x},${y}`));
+    const rings = pixels(source);
+    const eyes = pixels(buildEyeMask(persona));
+    assert.ok(rings.size >= 8 * 6, `${persona} rings are too sparse`);
+    for (const pixel of rings) {
+      assert.equal(eyes.has(pixel), false, `${persona} ring covers an eye at ${pixel}`);
+      const [x, y] = pixel.split(',').map(Number);
+      const touches = [-1, 0, 1].some((dy) => [-1, 0, 1].some((dx) => eyes.has(`${x + dx},${y + dy}`)));
+      assert.ok(touches, `${persona} ring pixel ${pixel} is not beside an eye`);
+    }
+  }
+  const elf = makeFrame('zelda', 0);
+  for (const [, x, y] of buildEyeMask('elf', 'rings').matchAll(/<rect x="(\d+)" y="(\d+)"/g)) {
+    if (Number(x) < 16) assert.ok([SOURCE_COLORS.skin, SOURCE_COLORS.skinShade].includes(elf[Number(y)][Number(x)]));
+  }
+  assert.throws(() => buildEyeMask('elf', 'brows'), /Unknown eye mask part/);
 });

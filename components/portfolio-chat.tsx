@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent, ReactNode } from 'react';
 import { ArrowUp, ArrowUpRight, RotateCcw, Square, Trash2, X } from 'lucide-react';
 import { CHAT_PERSONAS, type ChatPersona } from '@/lib/chat-persona';
+import { play } from '@/lib/sounds';
 import styles from './portfolio-chat.module.css';
 
 type Message = {
@@ -112,6 +113,14 @@ export default function PortfolioChat({ open, onClose, persona = 'portfolio' }: 
   useEffect(() => {
     if (open && !pending) inputRef.current?.focus({ preventScroll: true });
   }, [open, pending]);
+
+  // The launcher's press voices the opening; every way out — the close
+  // button, Escape, the backdrop — backs out with the menu's back voice.
+  const wasOpen = useRef(open);
+  useEffect(() => {
+    if (wasOpen.current && !open) play('back');
+    wasOpen.current = open;
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -251,7 +260,7 @@ export default function PortfolioChat({ open, onClose, persona = 'portfolio' }: 
             >
               <Trash2 size={17} strokeWidth={1.5} aria-hidden="true" />
             </button>
-            <button className={styles.iconButton} type="button" aria-label="Close chat" onClick={close}>
+            <button className={styles.iconButton} type="button" aria-label="Close chat" data-sound="silent" onClick={close}>
               <X size={19} strokeWidth={1.5} aria-hidden="true" />
             </button>
           </div>

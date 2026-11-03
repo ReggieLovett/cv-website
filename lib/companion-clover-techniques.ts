@@ -5,19 +5,10 @@ import { makeTechnique } from './companion-technique';
 export const CLOVER_TECHNIQUES = {
   'zetten-counter-cut': makeTechnique('Anti-Magic Zetten: Counter Cut', 'zetten-counter-cut', 'advance', 'draw', 940),
   'asta-causality-break': makeTechnique('Demon-Destroyer: Fate Release', 'asta-causality-break', 'hover', 'brace', 1080),
-  'asta-bull-thrust': makeTechnique('Bull Thrust', 'asta-bull-thrust', 'dash', 'rush', 820),
   'zetten-slasher-draw': makeTechnique('Demon-Slasher: Zetten Draw', 'zetten-slasher-draw', 'advance', 'draw', 920),
-  'zetten-slayer-rebound': makeTechnique('Demon-Slayer: Spell Rebound', 'zetten-slayer-rebound', 'hover', 'brace', 1060),
-  'zetten-dweller-return': makeTechnique('Demon-Dweller: Magic Return', 'zetten-dweller-return', 'hover', 'cast', 1140),
-  'zetten-destroyer-pulse': makeTechnique('Demon-Destroyer: Fate Release Pulse', 'zetten-destroyer-pulse', 'hover', 'brace', 1100),
 
   'devil-black-slash-barrage': makeTechnique('Demon-Dweller: Black Slash Barrage', 'devil-black-slash-barrage', 'hover', 'draw', 1160),
-  'devil-causality-guard': makeTechnique('Demon-Destroyer: Anti-Magic Guard', 'devil-causality-guard', 'hover', 'brace', 1080),
   'devil-cross-slash': makeTechnique('Demon-Slasher: Cross Cut', 'devil-cross-slash', 'advance', 'spin', 980),
-  'devil-divider-cleave': makeTechnique('Demon-Slayer: Black Divider Cleave', 'devil-divider-cleave', 'advance', 'draw', 1100),
-  'devil-slasher-draw': makeTechnique('Demon-Slasher: Selective Draw', 'devil-slasher-draw', 'dash', 'draw', 900),
-  'devil-dweller-return': makeTechnique('Demon-Dweller: Spell Return', 'devil-dweller-return', 'hover', 'cast', 1160),
-  'devil-destroyer-release': makeTechnique('Demon-Destroyer: Fate Release Wave', 'devil-destroyer-release', 'hover', 'brace', 1180),
 
   'quartile-flagellum': makeTechnique('Star Magic: Quartile Flagellum', 'quartile-flagellum', 'advance', 'cast', 1060),
   'never-never-land': makeTechnique('Star × Wind Spirit Magic: Never-Never Land', 'never-never-land', 'hover', 'brace', 1200),
@@ -58,15 +49,12 @@ export type CloverTechnique = keyof typeof CLOVER_TECHNIQUES;
 /** Complete pools include the existing main-catalogue moves. Adding a technique
  * expands the repertoire; it does not lengthen the scheduler's 1–3 move combos. */
 export const CLOVER_REPERTOIRES = {
-  'zetten-mode': [
-    'anti-magic-zetten', 'black-slash', 'black-meteorite',
-    'zetten-counter-cut', 'asta-causality-break', 'asta-bull-thrust',
-    'zetten-slasher-draw', 'zetten-slayer-rebound', 'zetten-dweller-return', 'zetten-destroyer-pulse',
-  ],
+  // Zetten is the technique Asta brings into his complete Devil Union, not a
+  // separate transformation: five Zetten-pool cuts beside five Devil Union ones.
   'devil-union': [
-    'infinite-slash-equinox', 'black-divider', 'black-hurricane',
-    'devil-black-slash-barrage', 'devil-causality-guard', 'devil-cross-slash',
-    'devil-divider-cleave', 'devil-slasher-draw', 'devil-dweller-return', 'devil-destroyer-release',
+    'anti-magic-zetten', 'black-divider', 'zetten-slasher-draw',
+    'infinite-slash-equinox', 'zetten-counter-cut', 'black-hurricane',
+    'devil-black-slash-barrage', 'black-meteorite', 'devil-cross-slash', 'asta-causality-break',
   ],
   'spirit-dive': [
     'spirit-storm', 'spirit-of-zephyr', 'spirit-of-euros',

@@ -125,6 +125,7 @@ function Plate({
       <button
         type="button"
         onClick={onOpen}
+        aria-haspopup="dialog"
         className="card__media"
         aria-label={`View ${entry.title} — ${entry.discipline} for ${entry.client}`}
       >
@@ -184,7 +185,7 @@ function Plate({
               </span>
             </a>
           ) : (
-            <button type="button" onClick={onOpen} className="action readout">
+            <button type="button" onClick={onOpen} aria-haspopup="dialog" className="action readout">
               View full size
               <span className="action__well" aria-hidden="true">
                 <Maximize2 className="h-3.5 w-3.5" strokeWidth={1.5} />

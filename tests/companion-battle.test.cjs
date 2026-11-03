@@ -14,12 +14,12 @@ require.extensions['.ts'] = (module, filename) => {
 };
 const { POWER_UPS, SPRITE_ACTIONS } = require('../lib/companion-motion.ts');
 const { canCompanionHover } = require('../lib/companion-appearance.ts');
-const { BATTLE_MOVES, FORM_BATTLES, pickBattleSequence, nextBattleDelay } = require('../lib/companion-battle.ts');
+const { BATTLE_MOVES, FORM_BATTLES, FORM_EFFECT_SETS, pickBattleSequence, nextBattleDelay } = require('../lib/companion-battle.ts');
 if (previousLoader) require.extensions['.ts'] = previousLoader;
 else delete require.extensions['.ts'];
 
 test('every selectable form has a complete, nonduplicated move set and meaningful screen speed', () => {
-  assert.equal(POWER_UPS.length, 13);
+  assert.equal(POWER_UPS.length, 12);
   assert.deepEqual(Object.keys(FORM_BATTLES).sort(), POWER_UPS.map(({ action }) => action).sort());
   const usedMoves = new Set();
   for (const profile of Object.values(FORM_BATTLES)) {
@@ -155,12 +155,23 @@ test('kits retain their signature techniques, intentional shared Rasenshuriken, 
   for (const [form, signatures] of Object.entries(retainedSignatures)) {
     for (const signature of signatures) assert.ok(FORM_BATTLES[form].moves.includes(signature), `${form} lost ${signature}`);
   }
-  for (const form of ['sage-mode', 'chakra-mode', 'baryon-mode', 'six-paths-eyes', 'zetten-mode', 'devil-union', 'spirit-dive', 'lightning-dash', 'fire-mode', 'water-mode', 'deku-overdrive', 'hyper-sonic']) {
+  for (const form of ['sage-mode', 'chakra-mode', 'baryon-mode', 'six-paths-eyes', 'devil-union', 'spirit-dive', 'lightning-dash', 'fire-mode', 'water-mode', 'deku-overdrive', 'hyper-sonic']) {
     assert.equal(new Set(FORM_BATTLES[form].moves.map((move) => BATTLE_MOVES[move].effect)).size, FORM_BATTLES[form].moves.length, `${form} merely renames the same effect`);
   }
   for (const form of ['lightning-dash', 'fire-mode', 'deku-overdrive', 'hyper-sonic']) {
     for (const move of FORM_BATTLES[form].moves) assert.equal(BATTLE_MOVES[move].effect, move);
   }
+});
+
+test('complete Devil Union carries five Zetten-pool cuts beside five Devil Union techniques', () => {
+  assert.equal(FORM_BATTLES['zetten-mode'], undefined, 'Zetten is a technique inside Devil Union, not its own form');
+  const combined = FORM_BATTLES['devil-union'].moves;
+  const zetten = ['anti-magic-zetten', 'zetten-slasher-draw', 'zetten-counter-cut', 'black-meteorite', 'asta-causality-break'];
+  const union = ['black-divider', 'infinite-slash-equinox', 'black-hurricane', 'devil-black-slash-barrage', 'devil-cross-slash'];
+  assert.equal(combined.filter((move) => zetten.includes(move)).length, 5);
+  assert.equal(combined.filter((move) => union.includes(move)).length, 5);
+  assert.equal(combined[0], 'anti-magic-zetten', 'Zetten leads the combined kit');
+  for (const move of combined.filter((candidate) => candidate.includes('zetten'))) assert.match(BATTLE_MOVES[move].label, /Zetten/);
 });
 
 test('the single Yuno form combines five spirit techniques and five star techniques without losing either arsenal', () => {
@@ -257,5 +268,22 @@ test('Deku defensive techniques evade horizontally, briefly conceal the body, th
     assert.ok(config.keyframes.some((frame) => frame.offset > 0 && frame.offset < 1 && frame.opacity <= 0.5));
     assert.equal(config.keyframes.at(-1).opacity, 1);
     assert.equal(config.keyframes.at(-1).transform, config.keyframes[0].transform);
+  }
+});
+
+test('each held form mounts exactly the effect sets whose stylesheets draw its techniques', () => {
+  const battlesIn = (file) => new Set(
+    [...fs.readFileSync(path.join(__dirname, '../components', file), 'utf8').matchAll(/data-battle='([a-z0-9-]+)'/g)].map(([, effect]) => effect),
+  );
+  const sets = Object.fromEntries(['naruto', 'clover', 'hyper', 'extra', 'field', 'avatar'].map((set) => [set, battlesIn(`companion-${set}-effects.module.css`)]));
+  const shared = battlesIn('portfolio-companion.module.css');
+  assert.deepEqual(Object.keys(FORM_EFFECT_SETS).sort(), Object.keys(FORM_BATTLES).sort());
+  for (const [form, profile] of Object.entries(FORM_BATTLES)) {
+    const effects = new Set(profile.moves.map((move) => BATTLE_MOVES[move].effect));
+    const needed = Object.keys(sets).filter((set) => [...effects].some((effect) => sets[set].has(effect))).sort();
+    assert.deepEqual([...FORM_EFFECT_SETS[form]].sort(), needed, `${form} mounts the wrong effect sets`);
+    for (const effect of effects) {
+      assert.ok(shared.has(effect) || needed.some((set) => sets[set].has(effect)), `${form}: ${effect} has no renderer`);
+    }
   }
 });

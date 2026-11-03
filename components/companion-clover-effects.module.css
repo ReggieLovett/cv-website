@@ -19,9 +19,7 @@
 
 :global([data-battle='zetten-counter-cut']) .counterCut,
 :global([data-battle='asta-causality-break']) .fateRelease,
-:global([data-battle='asta-bull-thrust']) .bullThrust,
 :global([data-battle='devil-black-slash-barrage']) .blackBarrage,
-:global([data-battle='devil-causality-guard']) .causalityGuard,
 :global([data-battle='devil-cross-slash']) .crossCut,
 :global([data-battle='quartile-flagellum']) .starWhip,
 :global([data-battle='conjunction']) .starCounter,
@@ -58,13 +56,6 @@
 :global([data-battle='asta-causality-break']) .fateRelease i { animation: releaseInward var(--battle-duration) var(--ease-in-out) both; }
 :global([data-battle='asta-causality-break']) .fateRelease b { animation: holdReveal var(--battle-duration) var(--ease-out) both; }
 
-.bullThrust i { left: 28px; top: 29px; width: 94px; height: 12px; background: rgb(32 28 36); border-bottom: 3px solid rgb(164 65 78); clip-path: polygon(0 8%, 78% 8%, 100% 50%, 78% 100%, 0 100%); }
-.bullThrust i:nth-child(2) { top: 49px; width: 84px; }
-.bullThrust b { left: -24px; top: 26px; width: 65px; height: 5px; background: rgb(177 75 88 / 0.8); }
-.bullThrust b:nth-of-type(2) { top: 61px; width: 81px; left: -40px; }
-:global([data-battle='asta-bull-thrust']) .bullThrust i { animation: spearRush var(--battle-duration) var(--ease-out) both; }
-:global([data-battle='asta-bull-thrust']) .bullThrust b { animation: speedWake var(--battle-duration) linear both; }
-
 /* The Devil Union applications use repeated crescents, a canceling guard,
    and intersecting sword lines instead of reusing the Zetten counter. */
 .blackBarrage i { left: 37px; top: -1px; width: 59px; height: 73px; border-right: 9px solid rgb(29 22 33); border-bottom: 2px solid rgb(189 57 78); border-radius: 50%; }
@@ -73,13 +64,6 @@
 :global([data-battle='devil-black-slash-barrage']) .blackBarrage i { animation: crescentVolley calc(var(--battle-duration) * 0.8) var(--ease-out) both; }
 :global([data-battle='devil-black-slash-barrage']) .blackBarrage i:nth-child(2) { animation-delay: 90ms; }
 :global([data-battle='devil-black-slash-barrage']) .blackBarrage i:nth-child(3) { animation-delay: 180ms; }
-
-.causalityGuard i { left: 37px; top: 5px; width: 41px; height: 70px; border: 4px solid rgb(64 36 57); border-right-color: rgb(216 81 111); border-radius: 0 60% 60% 0; background: rgb(29 23 34 / 0.4); }
-.causalityGuard i:nth-child(2) { left: 43px; top: 16px; width: 22px; height: 49px; border-width: 2px; background: transparent; }
-.causalityGuard b { left: 103px; top: 20px; width: 29px; height: 6px; background: rgb(205 200 182); }
-.causalityGuard b:nth-of-type(2) { top: 57px; left: 110px; width: 22px; }
-:global([data-battle='devil-causality-guard']) .causalityGuard i { animation: shieldHold var(--battle-duration) var(--ease-out) both; }
-:global([data-battle='devil-causality-guard']) .causalityGuard b { animation: nullifyBolt var(--battle-duration) var(--ease-out) both; }
 
 .crossCut i { left: 35px; top: 39px; width: 106px; height: 11px; background: rgb(25 19 31); border-bottom: 2px solid rgb(219 81 102); transform-origin: 40% center; }
 .crossCut i:nth-child(2) { height: 7px; border-color: rgb(167 103 150); }
@@ -294,13 +278,6 @@
 /* Additional applications use the same researched arsenal, with separate
    contact, projectile, rebound, and area choreography. */
 :global([data-battle='zetten-slasher-draw']) .slasherDraw,
-:global([data-battle='zetten-slayer-rebound']) .slayerRebound,
-:global([data-battle='zetten-dweller-return']) .dwellerReturn,
-:global([data-battle='zetten-destroyer-pulse']) .destroyerPulse,
-:global([data-battle='devil-divider-cleave']) .dividerCleave,
-:global([data-battle='devil-slasher-draw']) .selectiveDraw,
-:global([data-battle='devil-dweller-return']) .devilReturn,
-:global([data-battle='devil-destroyer-release']) .releaseWave,
 :global([data-battle='luck-thunder-god-palm']) .lightningPalm,
 :global([data-battle='luck-ceranos-return']) .ceranosReturn,
 :global([data-battle='luck-thunderbolt-scatter']) .scatterBolts,
@@ -316,29 +293,6 @@
 .slasherDraw i { left: 25px; top: 39px; width: 108px; height: 5px; background: rgb(236 173 170); clip-path: polygon(0 42%, 100% 0, 94% 100%, 0 64%); animation: drawnLine var(--battle-duration) var(--ease-out) both; }
 .slasherDraw b { left: 92px; top: 24px; width: 28px; height: 32px; border-right: 3px solid rgb(53 30 42); border-radius: 50%; animation: impactRing var(--battle-duration) var(--ease-out) both; }
 .slasherDraw em { left: 1px; top: 48px; width: 43px; height: 3px; background: rgb(112 76 88); animation: speedWake var(--battle-duration) linear both; }
-.slayerRebound i { left: 97px; top: 24px; width: 26px; height: 15px; background: rgb(184 213 223); clip-path: polygon(0 48%, 78% 0, 100% 48%, 78% 100%); animation: reflectedSpell var(--battle-duration) var(--ease-in-out) both; }
-.slayerRebound b { left: 43px; top: 17px; width: 41px; height: 54px; border-left: 4px solid rgb(180 75 86); border-radius: 50%; animation: shieldHold var(--battle-duration) var(--ease-out) both; }
-.slayerRebound em { left: 66px; top: 25px; width: 25px; height: 25px; background: rgb(231 194 172); clip-path: polygon(50% 0, 59% 37%, 100% 50%, 59% 63%, 50% 100%, 40% 63%, 0 50%, 40% 37%); animation: impactRing var(--battle-duration) var(--ease-out) both; }
-.dwellerReturn i { left: 25px; top: 16px; width: 40px; height: 47px; border: 3px solid rgb(118 187 209); border-radius: 50%; animation: releaseInward var(--battle-duration) var(--ease-in-out) both; }
-.dwellerReturn b { left: 50px; top: 25px; width: 29px; height: 31px; border-right: 7px solid rgb(139 216 235); border-radius: 50%; animation: returnedCrescent var(--battle-duration) var(--ease-out) both; }
-.dwellerReturn em { left: 39px; top: 43px; width: 41px; height: 3px; background: rgb(139 200 219); animation: castLine var(--battle-duration) var(--ease-out) both; }
-.destroyerPulse i { left: -24px; top: 2px; width: 112px; height: 76px; border: 3px dashed rgb(140 67 100); border-radius: 50%; animation: severingPulse var(--battle-duration) var(--ease-out) both; }
-.destroyerPulse i:nth-child(2) { left: 0; top: 15px; width: 64px; height: 49px; border-style: solid; }
-.destroyerPulse b { left: 73px; top: 20px; width: 47px; height: 3px; background: rgb(175 178 201); animation: nullifyBolt var(--battle-duration) var(--ease-out) both; }
-.destroyerPulse em { left: -30px; top: 62px; width: 126px; height: 12px; border: 2px solid rgb(113 61 85); border-radius: 50%; animation: floorHeat var(--battle-duration) var(--ease-out) both; }
-.dividerCleave i { left: 32px; top: -8px; width: 90px; height: 89px; border-right: 13px solid rgb(31 23 35); border-bottom: 3px solid rgb(192 64 88); border-radius: 50%; animation: dividerArc var(--battle-duration) var(--ease-in-out) both; }
-.dividerCleave b { left: 48px; top: 66px; width: 88px; height: 11px; background: rgb(155 57 77); clip-path: polygon(0 50%, 39% 19%, 100% 43%, 43% 100%); animation: drawnLine var(--battle-duration) var(--ease-out) both; }
-.dividerCleave em { left: 83px; top: 49px; width: 24px; height: 24px; border: 2px solid rgb(201 120 120); border-radius: 50%; animation: impactRing var(--battle-duration) var(--ease-out) both; }
-.selectiveDraw i { left: 46px; top: 35px; width: 91px; height: 3px; background: rgb(238 206 194); animation: selectiveLine var(--battle-duration) var(--ease-out) both; }
-.selectiveDraw b { left: 77px; top: 12px; width: 38px; height: 60px; border-right: 3px solid rgb(184 80 105); border-radius: 50%; animation: counterArrival var(--battle-duration) var(--ease-out) both; }
-.selectiveDraw em { left: 1px; top: 15px; width: 18px; height: 55px; border: 2px dashed rgb(171 146 174); border-radius: 50%; animation: danceEcho var(--battle-duration) var(--ease-out) both; }
-.devilReturn i { left: 30px; top: 16px; width: 22px; height: 39px; border-right: 6px solid rgb(32 22 38); border-bottom: 2px solid rgb(193 74 109); border-radius: 50%; animation: returnHigh calc(var(--battle-duration) * 0.86) var(--ease-out) both; }
-.devilReturn i:nth-child(2) { left: 40px; top: 40px; width: 19px; height: 31px; animation-delay: 95ms; }
-.devilReturn b { left: 21px; top: 25px; width: 40px; height: 38px; border: 2px solid rgb(176 115 160); border-radius: 50%; animation: releaseInward var(--battle-duration) var(--ease-in-out) both; }
-.devilReturn em { left: 1px; top: 71px; width: 73px; height: 3px; background: rgb(132 68 103); animation: castLine var(--battle-duration) var(--ease-out) both; }
-.releaseWave i { left: -18px; top: -1px; width: 100px; height: 80px; border: 3px dashed rgb(193 91 134); border-radius: 50%; animation: severingPulse var(--battle-duration) var(--ease-out) both; }
-.releaseWave i:nth-child(2) { left: 15px; top: 15px; width: 60px; height: 53px; border-color: rgb(103 62 103); border-style: solid; }
-.releaseWave b { left: 52px; top: 14px; width: 40px; height: 60px; border-right: 4px solid rgb(214 146 177); border-radius: 50%; animation: releaseProjectile var(--battle-duration) var(--ease-out) both; }
 
 .lightningPalm i { left: 44px; top: 25px; width: 31px; height: 39px; background: rgb(192 235 251); clip-path: polygon(0 40%, 25% 30%, 29% 0, 40% 0, 46% 25%, 56% 0, 66% 8%, 66% 30%, 86% 10%, 96% 25%, 82% 48%, 100% 41%, 100% 65%, 60% 100%, 0 85%); animation: palmStrike var(--battle-duration) var(--ease-out) both; }
 .lightningPalm b { left: 81px; top: 23px; width: 39px; height: 39px; border: 3px dashed rgb(157 227 251); border-radius: 50%; animation: impactRing var(--battle-duration) var(--ease-out) both; }
@@ -390,24 +344,13 @@
 :global([data-battle='black-meteorite']) .slayerSword,
 :global([data-battle='black-divider']) .slayerSword,
 :global([data-battle='black-hurricane']) .slayerSword,
-:global([data-battle='asta-bull-thrust']) .slayerSword,
-:global([data-battle='zetten-slayer-rebound']) .slayerSword,
-:global([data-battle='devil-divider-cleave']) .slayerSword,
-:global([data-battle='black-slash']) .dwellerSword,
 :global([data-battle='devil-black-slash-barrage']) .dwellerSword,
-:global([data-battle='asta-bull-thrust']) .dwellerSword,
-:global([data-battle='zetten-dweller-return']) .dwellerSword,
-:global([data-battle='devil-dweller-return']) .dwellerSword,
 :global([data-battle='asta-causality-break']) .destroyerSword,
-:global([data-battle='devil-causality-guard']) .destroyerSword,
-:global([data-battle='zetten-destroyer-pulse']) .destroyerSword,
-:global([data-battle='devil-destroyer-release']) .destroyerSword,
 :global([data-battle='anti-magic-zetten']) .slasherSword,
 :global([data-battle='zetten-counter-cut']) .slasherSword,
 :global([data-battle='zetten-slasher-draw']) .slasherSword,
 :global([data-battle='infinite-slash-equinox']) .slasherSword,
 :global([data-battle='devil-cross-slash']) .slasherSword,
-:global([data-battle='devil-slasher-draw']) .slasherSword,
 :global([data-battle='spirit-of-zephyr']) .zephyrSword { display: block; }
 .slayerSword, .dwellerSword, .destroyerSword, .slasherSword, .zephyrSword { z-index: 9; }
 .slayerSword i { left: 42px; top: -2px; width: 19px; height: 61px; background: rgb(34 31 39); border: 2px solid rgb(111 102 113); clip-path: polygon(20% 0, 82% 0, 100% 13%, 100% 100%, 0 100%, 0 13%); transform-origin: 8px 60px; }
@@ -426,18 +369,8 @@
 .zephyrSword b { left: 33px; top: 53px; width: 34px; height: 9px; background: rgb(140 201 159); clip-path: polygon(0 0, 50% 36%, 100% 0, 79% 100%, 50% 66%, 21% 100%); transform-origin: 17px 5px; }
 .zephyrSword em { left: 48px; top: 61px; width: 5px; height: 17px; background: rgb(205 236 180); transform-origin: 2px -3px; }
 .slayerSword *, .dwellerSword *, .destroyerSword *, .slasherSword *, .zephyrSword * { animation: weaponSwing var(--battle-duration) var(--ease-in-out) both; }
-:global([data-battle='asta-bull-thrust']) .dwellerSword i { left: 29px; transform-origin: 5px 60px; }
-:global([data-battle='asta-bull-thrust']) .dwellerSword b { left: 20px; }
-:global([data-battle='asta-bull-thrust']) .dwellerSword em { left: 32px; }
 
 @keyframes drawnLine { 0%, 25% { opacity: 0; transform: translate3d(-8px, 0, 0) scaleX(0.4); } 45% { opacity: 1; transform: translate3d(5px, 0, 0) scaleX(1); } 88%, 100% { opacity: 0; transform: translate3d(16px, 0, 0) scaleX(1); } }
-@keyframes reflectedSpell { 0%, 10% { opacity: 0; transform: translate3d(20px, 0, 0); } 24% { opacity: 1; transform: translate3d(0, 0, 0); } 43% { opacity: 1; transform: translate3d(-45px, 0, 0); } 83%, 100% { opacity: 0; transform: translate3d(20px, -7px, 0); } }
-@keyframes returnedCrescent { 0%, 38% { opacity: 0; transform: translate3d(-9px, 0, 0); } 50% { opacity: 1; transform: translate3d(4px, 0, 0); } 91%, 100% { opacity: 0; transform: translate3d(70px, 0, 0); } }
-@keyframes severingPulse { 0%, 14% { opacity: 0; transform: scale(0.55); } 36% { opacity: 0.85; transform: scale(0.9); } 83%, 100% { opacity: 0; transform: scale(1.12); } }
-@keyframes dividerArc { 0%, 17% { opacity: 0; transform: rotate(-22deg); } 44% { opacity: 1; transform: rotate(-8deg); } 86%, 100% { opacity: 0; transform: rotate(20deg); } }
-@keyframes selectiveLine { 0%, 34% { opacity: 0; transform: translate3d(-14px, 0, 0) scaleX(0.3); } 49%, 58% { opacity: 1; transform: translate3d(0, 0, 0) scaleX(1); } 83%, 100% { opacity: 0; transform: translate3d(8px, 0, 0) scaleX(1); } }
-@keyframes returnHigh { 0%, 28% { opacity: 0; transform: translate3d(0, 0, 0); } 45% { opacity: 1; transform: translate3d(15px, 0, 0); } 93%, 100% { opacity: 0; transform: translate3d(90px, -4px, 0); } }
-@keyframes releaseProjectile { 0%, 30% { opacity: 0; transform: translate3d(-8px, 0, 0); } 47% { opacity: 0.9; transform: translate3d(4px, 0, 0); } 90%, 100% { opacity: 0; transform: translate3d(57px, 0, 0); } }
 @keyframes palmStrike { 0%, 18% { opacity: 0; transform: translate3d(-9px, 0, 0); } 44% { opacity: 1; transform: translate3d(17px, 0, 0); } 82%, 100% { opacity: 0; transform: translate3d(32px, 0, 0); } }
 @keyframes ceranosForward { 0%, 12% { opacity: 0; transform: translate3d(-19px, 0, 0); } 33% { opacity: 1; transform: translate3d(24px, 0, 0); } 52%, 100% { opacity: 0; transform: translate3d(24px, 0, 0); } }
 @keyframes ceranosBack { 0%, 47% { opacity: 0; transform: translate3d(53px, 0, 0) scaleX(-1); } 63% { opacity: 1; transform: translate3d(19px, 0, 0) scaleX(-1); } 91%, 100% { opacity: 0; transform: translate3d(-16px, 0, 0) scaleX(-1); } }
@@ -469,16 +402,10 @@
 
 /* Divider extends the Slayer; charging, spinning and dispelling keep their
    own weapon handling instead of all playing the same downward cut. */
-:global([data-battle='black-divider']) .slayerSword i,
-:global([data-battle='devil-divider-cleave']) .slayerSword i { top: -34px; width: 24px; height: 93px; transform-origin: 8px 92px; }
-:global([data-battle='black-meteorite']) .slayerSword *,
-:global([data-battle='asta-bull-thrust']) .slayerSword *,
-:global([data-battle='asta-bull-thrust']) .dwellerSword * { animation-name: swordForwardThrust; }
+:global([data-battle='black-divider']) .slayerSword i { top: -34px; width: 24px; height: 93px; transform-origin: 8px 92px; }
+:global([data-battle='black-meteorite']) .slayerSword * { animation-name: swordForwardThrust; }
 :global([data-battle='black-hurricane']) .slayerSword * { animation-name: swordHurricane; }
-:global([data-battle='asta-causality-break']) .destroyerSword *,
-:global([data-battle='devil-causality-guard']) .destroyerSword *,
-:global([data-battle='zetten-destroyer-pulse']) .destroyerSword *,
-:global([data-battle='devil-destroyer-release']) .destroyerSword * { animation-name: swordDispelHold; }
+:global([data-battle='asta-causality-break']) .destroyerSword * { animation-name: swordDispelHold; }
 @keyframes swordForwardThrust { 0%, 8% { opacity: 0; transform: translateX(-7px) rotate(45deg); } 26%, 72% { opacity: 1; transform: translateX(5px) rotate(82deg); } 100% { opacity: 0; transform: translateX(9px) rotate(82deg); } }
 @keyframes swordHurricane { 0% { opacity: 0; transform: rotate(-50deg); } 22% { opacity: 1; transform: rotate(80deg); } 77% { opacity: 1; transform: rotate(590deg); } 100% { opacity: 0; transform: rotate(680deg); } }
 @keyframes swordDispelHold { 0% { opacity: 0; transform: rotate(-10deg); } 21%, 76% { opacity: 1; transform: rotate(0deg); } 100% { opacity: 0; transform: rotate(3deg); } }

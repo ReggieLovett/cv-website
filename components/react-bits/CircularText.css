@@ -8,6 +8,7 @@
 
 .circular-text__tilt,
 .circular-text__plane,
+.circular-text__spin,
 .circular-text__ring {
   position: absolute;
   inset: 0;

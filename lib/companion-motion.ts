@@ -7,7 +7,6 @@ export type PowerUpAction =
   | 'lightning-dash'
   | 'fire-mode'
   | 'water-mode'
-  | 'zetten-mode'
   | 'devil-union'
   | 'spirit-dive'
   | 'baryon-mode'
@@ -23,7 +22,7 @@ export type SpriteActionConfig = {
   effect:
     | 'none' | 'dust' | 'spark' | 'ring'
     | 'sage' | 'chakra' | 'sword' | 'lightning' | 'fire' | 'water'
-    | 'zetten' | 'devil' | 'star' | 'spirit' | 'baryon' | 'six-paths' | 'deku' | 'hyper';
+    | 'devil' | 'star' | 'spirit' | 'baryon' | 'six-paths' | 'deku' | 'hyper';
   label: string;
 };
 
@@ -217,35 +216,21 @@ export const SPRITE_ACTIONS: Record<SpriteAction, SpriteActionConfig> = {
     effect: 'water',
     label: 'Leviathan’s dragon armor awakens',
   },
-  'zetten-mode': {
-    keyframes: [
-      frame(0),
-      frame(0.12, 'translate3d(0, 0, 0) rotate(-3deg) scale(1.08, 0.88)', EASE_IN_OUT),
-      frame(0.3, 'translate3d(-4px, 0, 0) rotate(-7deg) scale(0.97, 1.04)', EASE_IN_OUT),
-      frame(0.44, 'translate3d(-6px, 0, 0) rotate(-12deg) scale(0.98, 1.03)'),
-      frame(0.5, 'translate3d(18px, 0, 0) rotate(16deg) scale(1.1, 0.94)'),
-      frame(0.66, 'translate3d(12px, 0, 0) rotate(9deg) scale(1.04)', EASE_IN_OUT),
-      frame(0.84, 'translate3d(2px, 0, 0) rotate(-3deg) scale(1)'),
-      frame(1),
-    ],
-    duration: 2400,
-    effect: 'zetten',
-    label: 'One focused burst of power',
-  },
   'devil-union': {
     keyframes: [
       frame(0),
       frame(0.14, 'translate3d(0, 0, 0) rotate(0deg) scale(1.12, 0.9)', EASE_IN_OUT),
       frame(0.3, 'translate3d(0, 0, 0) rotate(-3deg) scale(1.06)', EASE_IN_OUT),
-      frame(0.42, 'translate3d(-2px, 0, 0) rotate(-5deg) scale(1.1)'),
-      frame(0.58, 'translate3d(0, 0, 0) rotate(0deg) scale(1.12)', EASE_IN_OUT),
-      frame(0.76, 'translate3d(0, 0, 0) rotate(3deg) scale(1.1)', EASE_IN_OUT),
-      frame(0.9, 'translate3d(0, 0, 0) rotate(-1deg) scale(1.04)'),
+      // Anti-magic settles, then Zetten: stillness, a step back, one cut.
+      frame(0.44, 'translate3d(-5px, 0, 0) rotate(-9deg) scale(1.1, 1.04)', EASE_IN_OUT),
+      frame(0.52, 'translate3d(16px, 0, 0) rotate(13deg) scale(1.12, 0.94)'),
+      frame(0.68, 'translate3d(10px, 0, 0) rotate(6deg) scale(1.08)', EASE_IN_OUT),
+      frame(0.86, 'translate3d(2px, 0, 0) rotate(-2deg) scale(1.03)'),
       frame(1),
     ],
     duration: 2600,
     effect: 'devil',
-    label: 'Wings of a darker resolve',
+    label: 'Devil Union, then one Zetten cut',
   },
   'spirit-dive': {
     keyframes: [
@@ -358,14 +343,9 @@ export const POWER_UPS: readonly { action: PowerUpAction; label: string; descrip
     description: 'Noelle’s Leviathan-powered Valkyrie Armor: silver water armor, dragon fins, a spiral lance, and Sea Dragon magic.',
   },
   {
-    action: 'zetten-mode',
-    label: 'Zetten',
-    description: 'An Asta-inspired effect: compress energy into a precise burst, step, and decisive slash.',
-  },
-  {
     action: 'devil-union',
-    label: 'Devil Union',
-    description: 'An Asta-inspired effect: release dark wings and brace in a united battle form.',
+    label: 'Devil Union + Zetten',
+    description: 'Asta’s complete Devil Union with Liebe: anti-magic body, five horns, torn wings and greatswords, with the Demon-Slasher katana for Zetten’s single focused cut.',
   },
   {
     action: 'spirit-dive',

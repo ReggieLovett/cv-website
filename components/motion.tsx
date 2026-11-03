@@ -24,9 +24,16 @@ import { MotionConfig, type Transition, type Variants } from 'framer-motion';
  * used everywhere.
  *
  * ---- The properties ----
- * `opacity` and `y` only. Both composite: opacity is a layer property and `y`
- * compiles to `translate3d`, so neither triggers layout or paint. Nothing here
- * animates width, height, top, filter, or clip-path.
+ * `opacity` and a `transform` string only. Motion hands both to the Web
+ * Animations API, so the compositor runs them: a section revealing while the
+ * page scrolls costs no main-thread frames. (Motion's independent `y` is
+ * driven from JavaScript every frame and repainted the page under the reveal.)
+ * Nothing here animates width, height, top, filter, or clip-path.
+ *
+ * MotionConfig's reduced-motion switch drops `y` but not a `transform` string,
+ * so the rise carries its own instant transform for those readers: content
+ * still fades in, nothing travels. `transitionEnd` clears the transform once
+ * it lands, so a revealed block leaves no stacking context behind.
  */
 
 /** The house curve. Fast out of the gate, long tail — settles rather than stops. */
@@ -56,17 +63,27 @@ export const staggerSlow: Variants = {
   },
 };
 
+/** Read once on the client; the server renders the hidden state either way. */
+const REDUCED =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function rise(distance: number, duration: number): Variants {
+  return {
+    hidden: { opacity: 0, transform: `translateY(${distance}px)` },
+    show: {
+      opacity: 1,
+      transform: 'translateY(0px)',
+      transitionEnd: { transform: 'none' },
+      transition: REDUCED ? { duration, ease: EASE, transform: { duration: 0 } } : { duration, ease: EASE },
+    },
+  };
+}
+
 /** The default child: rises a short distance and fades in. */
-export const riseIn: Variants = {
-  hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0, transition },
-};
+export const riseIn: Variants = rise(18, transition.duration as number);
 
 /** A shorter rise, for dense rows where 18px of travel reads as noise. */
-export const riseInTight: Variants = {
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.36, ease: EASE } },
-};
+export const riseInTight: Variants = rise(10, 0.36);
 
 /** Opacity only — for anything already in position, like a rule or a caption. */
 export const fadeIn: Variants = {
