@@ -666,6 +666,32 @@ export const techStack: TechCategory[] = [
       { name: 'Postgres', icon: 'postgres', kind: 'Relational DB' },
     ],
   },
+  {
+    label: 'DEV TOOLS',
+    caption: 'Version control, packages, and the editor it all happens in.',
+    items: [
+      { name: 'Git', icon: 'git', kind: 'Version control' },
+      { name: 'Homebrew', icon: 'homebrew', kind: 'Package manager' },
+      { name: 'VS Code', icon: 'vscode', kind: 'Code editor' },
+    ],
+  },
+  {
+    label: 'AI TOOLS',
+    caption: 'Tools I work alongside to draft, debug, and move faster — the judgement stays mine.',
+    items: [
+      { name: 'Claude', icon: 'claude', kind: 'AI assistant' },
+      { name: 'ChatGPT', icon: 'openai', kind: 'AI assistant' },
+      { name: 'Codex', icon: 'codex', kind: 'AI coding agent' },
+    ],
+  },
+  {
+    label: 'DESIGN',
+    caption: 'Editing, layout, and visuals for screen and print.',
+    items: [
+      { name: 'Affinity', icon: 'affinity', kind: 'Photo & design editor' },
+      { name: 'Canva', icon: 'canva', kind: 'Visual design' },
+    ],
+  },
 ];
 
 
@@ -711,7 +737,7 @@ export const capabilities: Capability[] = [
     no: '04',
     title: 'Graphic Design',
     body: 'Layout, typography, and print. Posters, decks, and campaign assets that hold their structure at any size.',
-    tools: ['Layout', 'Typography', 'Print production'],
+    tools: ['Affinity', 'Canva', 'Layout', 'Typography', 'Print production'],
     span: 4,
   },
   {
