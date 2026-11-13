@@ -1,0 +1,635 @@
+/* One Pokémon on its patch of ground. Everything here is decoration driven by
+   data attributes from components/use-pokemon-team.ts:
+     data-stage   idle | walk | attack | recall | throw | release | mega-charge | mega-reveal
+     data-move    the attack's kind (lib/pokemon-team.ts MoveKind) or none
+     --type       the move's type colour, or the Pokémon's first type
+   Stage lengths mirror DURATIONS in lib/pokemon-team.ts (tests compare them).
+   Attacks travel left, toward the page; facing right mirrors the whole actor. */
+
+.actor {
+  --attack-ms: 1200ms;
+  --boost-ms: 1000ms;
+  --recall-ms: 480ms;
+  --throw-ms: 620ms;
+  --release-ms: 520ms;
+  --mega-charge-ms: 1500ms;
+  --mega-reveal-ms: 700ms;
+  --ball-red: 227 53 13;
+  --ball-ink: 27 27 29;
+  --ball-white: 244 244 244;
+  position: relative;
+  display: block;
+  width: var(--actor-w, 136px);
+  height: var(--actor-h, 100px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.ground {
+  position: absolute;
+  right: 22%;
+  bottom: 0;
+  left: 22%;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(var(--bone) / 0.18), rgb(var(--bone) / 0));
+}
+
+.actor[data-mega='true'] .ground {
+  background:
+    radial-gradient(closest-side, rgb(var(--bone) / 0.2), rgb(var(--bone) / 0)),
+    conic-gradient(from 90deg, rgb(255 95 109 / 0.35), rgb(249 248 113 / 0.35), rgb(110 231 183 / 0.35), rgb(96 165 250 / 0.35), rgb(167 139 250 / 0.35), rgb(255 95 109 / 0.35));
+}
+
+.body {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  display: block;
+  line-height: 0;
+  transform: translateX(-50%);
+}
+
+.actor[data-facing='right'] .body { transform: translateX(-50%) scaleX(-1); }
+.actor[data-facing='right'] .effects { transform: scaleX(-1); }
+
+.sprite {
+  display: block;
+  width: auto;
+  max-width: none;
+  height: auto;
+  image-rendering: pixelated;
+  transform-origin: 50% 100%;
+  -webkit-user-drag: none;
+}
+
+/* Sprites without a Gen 5 animation breathe instead of standing frozen. */
+.actor[data-still='true'][data-paused='false'][data-stage='idle'] .sprite {
+  animation: stillBreath 1800ms var(--ease-in-out) infinite;
+}
+
+@keyframes stillBreath {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  50% { transform: translateY(-3px) scale(1.01, 0.99); }
+}
+
+.actor[data-stage='walk'] .sprite {
+  animation: walkHop 380ms var(--ease-in-out) infinite;
+}
+
+@keyframes walkHop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* ------------------------------------------------------------- attacks */
+
+.effects,
+.flash,
+.megaSphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.effects > i,
+.megaSphere > i {
+  position: absolute;
+  display: block;
+  opacity: 0;
+}
+
+/* Physical moves lunge at the target; special moves brace and release. */
+.actor[data-move='slash'] .sprite,
+.actor[data-move='claw'] .sprite,
+.actor[data-move='burst'] .sprite { animation: lunge var(--attack-ms) var(--ease-out) both; }
+.actor[data-move='dash'] .sprite { animation: dashLunge var(--attack-ms) var(--ease-out) both; }
+.actor[data-move='beam'] .sprite,
+.actor[data-move='wave'] .sprite,
+.actor[data-move='orb'] .sprite,
+.actor[data-move='arrow'] .sprite { animation: cast var(--attack-ms) var(--ease-out) both; }
+.actor[data-move='quake'] .sprite { animation: stomp var(--attack-ms) var(--ease-out) both; }
+.actor[data-move='boost'] .sprite { animation: boostGlow var(--boost-ms) var(--ease-in-out) both; }
+
+@keyframes lunge {
+  0%, 100% { transform: none; }
+  16% { transform: translateX(6px) scale(0.98, 1.02); }
+  32%, 50% { transform: translateX(-24px); }
+  78% { transform: none; }
+}
+
+@keyframes dashLunge {
+  0%, 100% { transform: none; opacity: 1; }
+  14% { transform: translateX(8px); }
+  30%, 52% { transform: translateX(-60px) skewX(10deg); opacity: 0.85; }
+  82% { transform: none; opacity: 1; }
+}
+
+@keyframes cast {
+  0%, 100% { transform: none; }
+  18% { transform: translateY(-5px) scale(1.04); }
+  36%, 70% { transform: translateX(5px); }
+}
+
+@keyframes stomp {
+  0%, 100% { transform: none; }
+  20% { transform: translateY(-18px); }
+  32% { transform: scale(1.07, 0.93); }
+  38%, 50%, 62% { transform: translateX(-3px); }
+  44%, 56% { transform: translateX(3px); }
+  70% { transform: none; }
+}
+
+@keyframes boostGlow {
+  0%, 100% { filter: none; }
+  25%, 65% { filter: brightness(1.45) drop-shadow(0 0 6px rgb(var(--type))); }
+  45% { filter: brightness(1.15) drop-shadow(0 0 3px rgb(var(--type))); }
+}
+
+/* Beam: a charge at the mouth, then a long ray toward the page. */
+.actor[data-move='beam'] .effects > i:nth-child(1) {
+  top: 40%;
+  left: calc(50% - 24px);
+  width: 20px;
+  height: 20px;
+  margin: -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 30%, rgb(var(--type)) 60%, rgb(var(--type) / 0) 72%);
+  animation: beamCharge var(--attack-ms) var(--ease-out) both;
+}
+
+.actor[data-move='beam'] .effects > i:nth-child(2),
+.actor[data-move='beam'] .effects > i:nth-child(3) {
+  top: 40%;
+  right: calc(50% + 20px);
+  width: min(40vw, 320px);
+  height: 14px;
+  margin-top: -7px;
+  border-radius: 7px;
+  background: linear-gradient(to left, rgb(var(--type)), rgb(var(--type) / 0.15));
+  box-shadow: 0 0 14px rgb(var(--type) / 0.7);
+  transform-origin: right center;
+  animation: beamFire var(--attack-ms) var(--ease-out) both;
+}
+
+.actor[data-move='beam'] .effects > i:nth-child(3) {
+  height: 4px;
+  margin-top: -2px;
+  background: linear-gradient(to left, #fff, rgb(255 255 255 / 0));
+  box-shadow: none;
+}
+
+@keyframes beamCharge {
+  0% { opacity: 0; transform: scale(0.2); }
+  24% { opacity: 1; transform: scale(1); }
+  36% { transform: scale(1.4); }
+  76% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(0.5); }
+}
+
+@keyframes beamFire {
+  0%, 28% { opacity: 0; transform: scaleX(0); }
+  40% { opacity: 1; transform: scaleX(1); }
+  76% { opacity: 1; transform: scaleX(1) scaleY(0.85); }
+  100% { opacity: 0; transform: scaleX(1) scaleY(0.1); }
+}
+
+/* Wave: rings spreading out from the Pokémon. */
+.actor[data-move='wave'] .effects > i:nth-child(-n+3) {
+  top: 45%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  margin: -30px;
+  border: 3px solid rgb(var(--type));
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgb(var(--type) / 0.6), inset 0 0 8px rgb(var(--type) / 0.4);
+  animation: waveRing calc(var(--attack-ms) * 0.7) var(--ease-out) both;
+}
+
+.actor[data-move='wave'] .effects > i:nth-child(2) { animation-delay: calc(var(--attack-ms) * 0.12); }
+.actor[data-move='wave'] .effects > i:nth-child(3) { animation-delay: calc(var(--attack-ms) * 0.24); }
+
+@keyframes waveRing {
+  0% { opacity: 0; transform: scale(0.3); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: scale(3.4); }
+}
+
+/* Orb: a sphere gathers, flies at the page, and bursts. */
+.actor[data-move='orb'] .effects > i:nth-child(1) {
+  top: 42%;
+  left: calc(50% - 22px);
+  width: 24px;
+  height: 24px;
+  margin: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 38%, #fff 0 22%, rgb(var(--type)) 58%, rgb(var(--type) / 0.4) 74%, rgb(var(--type) / 0) 76%);
+  box-shadow: 0 0 14px rgb(var(--type) / 0.8);
+  animation: orbFly var(--attack-ms) var(--ease-in-out) both;
+}
+
+.actor[data-move='orb'] .effects > i:nth-child(2) {
+  top: 42%;
+  left: calc(50% - 22px - min(26vw, 200px));
+  width: 48px;
+  height: 48px;
+  margin: -24px;
+  border: 3px solid rgb(var(--type));
+  border-radius: 50%;
+  animation: impactRing var(--attack-ms) var(--ease-out) both;
+}
+
+@keyframes orbFly {
+  0% { opacity: 0; transform: scale(0.2); }
+  22% { opacity: 1; transform: scale(1); }
+  30% { transform: scale(1.15); }
+  72% { opacity: 1; transform: translateX(calc(-1 * min(26vw, 200px))) scale(1.1); }
+  82%, 100% { opacity: 0; transform: translateX(calc(-1 * min(26vw, 200px))) scale(2); }
+}
+
+@keyframes impactRing {
+  0%, 70% { opacity: 0; transform: scale(0.3); }
+  76% { opacity: 1; }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+
+/* Arrow: a fast projectile (arrow, shuriken) with a trailing echo. */
+.actor[data-move='arrow'] .effects > i:nth-child(-n+2) {
+  top: 44%;
+  left: calc(50% - 40px);
+  width: 46px;
+  height: 8px;
+  margin-top: -4px;
+  background: linear-gradient(to right, #fff, rgb(var(--type)) 40%, rgb(var(--type) / 0));
+  clip-path: polygon(0 50%, 22% 0, 22% 30%, 100% 30%, 100% 70%, 22% 70%, 22% 100%);
+  filter: drop-shadow(0 0 4px rgb(var(--type)));
+  animation: arrowFly var(--attack-ms) cubic-bezier(0.5, 0, 0.75, 0) both;
+}
+
+.actor[data-move='arrow'] .effects > i:nth-child(2) {
+  opacity: 0.5;
+  animation-delay: 60ms;
+  filter: blur(2px);
+}
+
+@keyframes arrowFly {
+  0%, 24% { opacity: 0; transform: translateX(10px); }
+  30% { opacity: 1; transform: translateX(0); }
+  64% { opacity: 1; transform: translateX(calc(-1 * min(34vw, 280px))); }
+  70%, 100% { opacity: 0; transform: translateX(calc(-1 * min(36vw, 300px))); }
+}
+
+/* Slash and claw: bright streaks across the space in front. */
+.actor[data-move='slash'] .effects > i:nth-child(-n+2),
+.actor[data-move='claw'] .effects > i:nth-child(-n+3) {
+  top: 42%;
+  left: calc(50% - 64px);
+  width: 86px;
+  height: 4px;
+  margin: -2px 0 0 -43px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgb(255 255 255 / 0), #fff 40%, rgb(var(--type)) 70%, rgb(var(--type) / 0));
+  box-shadow: 0 0 8px rgb(var(--type) / 0.8);
+  rotate: -36deg;
+  animation: swipe var(--attack-ms) var(--ease-out) both;
+}
+
+.actor[data-move='slash'] .effects > i:nth-child(2) { rotate: 36deg; animation-delay: 110ms; }
+
+.actor[data-move='claw'] .effects > i { rotate: -58deg; width: 64px; margin-left: -32px; }
+.actor[data-move='claw'] .effects > i:nth-child(1) { left: calc(50% - 76px); }
+.actor[data-move='claw'] .effects > i:nth-child(2) { left: calc(50% - 62px); animation-delay: 50ms; }
+.actor[data-move='claw'] .effects > i:nth-child(3) { left: calc(50% - 48px); animation-delay: 100ms; }
+
+@keyframes swipe {
+  0%, 28% { opacity: 0; transform: scaleX(0); }
+  38% { opacity: 1; transform: scaleX(1); }
+  66% { opacity: 1; transform: scaleX(1.05); }
+  100% { opacity: 0; transform: scaleX(1.1) translateY(4px); }
+}
+
+/* Dash: speed lines streaming behind the lunge, and a hit at the end. */
+.actor[data-move='dash'] .effects > i:nth-child(-n+3) {
+  left: 52%;
+  width: 64px;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(to right, rgb(var(--type)), rgb(var(--type) / 0));
+  animation: speedLine var(--attack-ms) var(--ease-out) both;
+}
+
+.actor[data-move='dash'] .effects > i:nth-child(1) { top: 30%; }
+.actor[data-move='dash'] .effects > i:nth-child(2) { top: 48%; width: 84px; animation-delay: 40ms; }
+.actor[data-move='dash'] .effects > i:nth-child(3) { top: 64%; animation-delay: 80ms; }
+
+.actor[data-move='dash'] .effects > i:nth-child(4) {
+  top: 46%;
+  left: calc(50% - 92px);
+  width: 40px;
+  height: 40px;
+  margin: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 20%, rgb(var(--type)) 45%, rgb(var(--type) / 0) 70%);
+  animation: hitFlash var(--attack-ms) var(--ease-out) both;
+}
+
+@keyframes speedLine {
+  0%, 18% { opacity: 0; transform: translateX(0); }
+  30% { opacity: 1; transform: translateX(-52px); }
+  56% { opacity: 0.8; transform: translateX(-60px); }
+  70%, 100% { opacity: 0; transform: translateX(-60px); }
+}
+
+@keyframes hitFlash {
+  0%, 30% { opacity: 0; transform: scale(0.2); }
+  38% { opacity: 1; transform: scale(1.2); }
+  60%, 100% { opacity: 0; transform: scale(1.8); }
+}
+
+/* Quake: the stomp sends shock rings along the ground and throws up debris. */
+.actor[data-move='quake'] .effects > i:nth-child(-n+2) {
+  bottom: 0;
+  left: 50%;
+  width: 80px;
+  height: 16px;
+  margin-left: -40px;
+  border: 3px solid rgb(var(--type));
+  border-radius: 50%;
+  animation: shock var(--attack-ms) var(--ease-out) both;
+}
+
+.actor[data-move='quake'] .effects > i:nth-child(2) { animation-delay: 140ms; }
+
+.actor[data-move='quake'] .effects > i:nth-child(n+3) {
+  bottom: 6px;
+  width: 7px;
+  height: 7px;
+  background: rgb(var(--type));
+  box-shadow: 0 0 0 1px rgb(var(--space) / 0.4);
+  animation: debris var(--attack-ms) var(--ease-out) both;
+}
+
+.actor[data-move='quake'] .effects > i:nth-child(3) { left: 18%; --debris-x: -22px; }
+.actor[data-move='quake'] .effects > i:nth-child(4) { left: 74%; --debris-x: 20px; animation-delay: 60ms; }
+
+@keyframes shock {
+  0%, 30% { opacity: 0; transform: scale(0.4); }
+  36% { opacity: 1; }
+  100% { opacity: 0; transform: scale(3.4, 2.4); }
+}
+
+@keyframes debris {
+  0%, 32% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  36% { opacity: 1; }
+  58% { opacity: 1; transform: translate(calc(var(--debris-x) * 0.6), -34px) rotate(140deg); }
+  80%, 100% { opacity: 0; transform: translate(var(--debris-x), 0) rotate(260deg); }
+}
+
+/* Burst: a star of light where the blow lands. */
+.actor[data-move='burst'] .effects > i {
+  top: 45%;
+  left: calc(50% - 58px);
+  width: 5px;
+  height: 52px;
+  margin: -26px 0 0 -2.5px;
+  border-radius: 3px;
+  background: linear-gradient(rgb(var(--type) / 0), #fff 40%, rgb(var(--type)) 60%, rgb(var(--type) / 0));
+  box-shadow: 0 0 8px rgb(var(--type) / 0.7);
+  animation: spike var(--attack-ms) var(--ease-out) both;
+}
+
+.actor[data-move='burst'] .effects > i:nth-child(2) { rotate: 45deg; }
+.actor[data-move='burst'] .effects > i:nth-child(3) { rotate: 90deg; }
+.actor[data-move='burst'] .effects > i:nth-child(4) { rotate: 135deg; }
+
+@keyframes spike {
+  0%, 30% { opacity: 0; transform: scaleY(0); }
+  38% { opacity: 1; transform: scaleY(1.25); }
+  56% { opacity: 1; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(0.4); }
+}
+
+/* Boost: stat-raising chevrons rise around the Pokémon. */
+.actor[data-move='boost'] .effects > i {
+  bottom: 12px;
+  width: 12px;
+  height: 9px;
+  background: rgb(var(--type));
+  clip-path: polygon(50% 0, 100% 70%, 100% 100%, 50% 30%, 0 100%, 0 70%);
+  filter: drop-shadow(0 0 3px rgb(var(--type)));
+  animation: rise calc(var(--boost-ms) * 0.6) var(--ease-out) both;
+}
+
+.actor[data-move='boost'] .effects > i:nth-child(1) { left: 26%; }
+.actor[data-move='boost'] .effects > i:nth-child(2) { left: 64%; animation-delay: calc(var(--boost-ms) * 0.12); }
+.actor[data-move='boost'] .effects > i:nth-child(3) { left: 40%; animation-delay: calc(var(--boost-ms) * 0.24); }
+.actor[data-move='boost'] .effects > i:nth-child(4) { left: 54%; animation-delay: calc(var(--boost-ms) * 0.36); }
+
+@keyframes rise {
+  0% { opacity: 0; transform: translateY(0); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-64px); }
+}
+
+/* ------------------------------------------------------------ Poké Ball */
+
+.ball,
+.glyph {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgb(var(--ball-white)) 0 16%, rgb(var(--ball-ink)) 17% 28%, rgb(var(--ball-ink) / 0) 29%),
+    linear-gradient(rgb(var(--ball-red)) 0 44%, rgb(var(--ball-ink)) 44% 56%, rgb(var(--ball-white)) 56%);
+  box-shadow: 0 0 0 1.5px rgb(var(--ball-ink));
+}
+
+.ball {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  opacity: 0;
+}
+
+.glyph {
+  --ball-red: 227 53 13;
+  --ball-ink: 27 27 29;
+  --ball-white: 244 244 244;
+  display: inline-block;
+  flex: none;
+  width: 11px;
+  height: 11px;
+  vertical-align: -1px;
+  box-shadow: 0 0 0 1px rgb(var(--ball-ink));
+}
+
+/* Recall: a red flash pulls the Pokémon down into its ball, which returns. */
+.actor[data-stage='recall'] .sprite { animation: recall var(--recall-ms) var(--ease-in-out) both; }
+.actor[data-stage='recall'] .ball { animation: ballReturn var(--recall-ms) var(--ease-in-out) both; }
+
+@keyframes recall {
+  0% { transform: none; filter: none; opacity: 1; }
+  30% { transform: none; filter: brightness(0.75) sepia(1) saturate(9) hue-rotate(-40deg); opacity: 1; }
+  80%, 100% { transform: scale(0); filter: brightness(0.75) sepia(1) saturate(9) hue-rotate(-40deg); opacity: 0.6; }
+}
+
+@keyframes ballReturn {
+  0%, 60% { opacity: 0; transform: scale(0.4); }
+  72% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: translate(70px, -24px) rotate(300deg) scale(0.8); }
+}
+
+/* Throw: the next ball arcs in from the trainer's side and settles. */
+.actor[data-stage='throw'] .sprite { opacity: 0; }
+.actor[data-stage='throw'] .ball { animation: ballThrow var(--throw-ms) linear both; }
+
+@keyframes ballThrow {
+  0% { opacity: 0; transform: translate(84px, -6px) rotate(0deg); }
+  8% { opacity: 1; }
+  42% { transform: translate(38px, -58px) rotate(-320deg); animation-timing-function: ease-in; }
+  76% { transform: translate(0, 0) rotate(-620deg); }
+  84% { transform: translate(0, -7px) rotate(-660deg); }
+  92%, 100% { opacity: 1; transform: translate(0, 0) rotate(-720deg); }
+}
+
+/* Release: the ball bursts open and the Pokémon forms out of the light. */
+.actor[data-stage='release'] .ball { animation: ballOpen var(--release-ms) var(--ease-out) both; }
+.actor[data-stage='release'] .sprite { animation: release var(--release-ms) var(--ease-out) both; }
+.actor[data-stage='release'] .flash,
+.actor[data-stage='mega-reveal'] .flash { animation: flash var(--release-ms) var(--ease-out) both; }
+.actor[data-stage='mega-reveal'] .flash { animation-duration: var(--mega-reveal-ms); }
+
+@keyframes ballOpen {
+  0% { opacity: 1; transform: scale(1); }
+  30%, 100% { opacity: 0; transform: scale(1.8); }
+}
+
+@keyframes release {
+  0% { opacity: 0; transform: scale(0); filter: brightness(0) invert(1); }
+  20% { opacity: 1; }
+  55% { transform: scale(1.06); filter: brightness(0) invert(1); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
+.flash {
+  top: auto;
+  bottom: 10%;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  margin-left: -48px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 255 255 / 0.95) 0 22%, rgb(255 255 255 / 0.4) 46%, rgb(255 255 255 / 0) 68%);
+  opacity: 0;
+}
+
+@keyframes flash {
+  0% { opacity: 0; transform: scale(0.1); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.7); }
+}
+
+/* -------------------------------------------------------- Mega Evolution */
+
+.megaSphere {
+  top: auto;
+  bottom: 0;
+  left: 50%;
+  width: 124px;
+  height: 124px;
+  margin-left: -62px;
+  opacity: 0;
+}
+
+.megaSphere::before,
+.megaSphere::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  content: '';
+}
+
+/* A rainbow shell (the Key Stone's light), drawn as a masked ring. */
+.megaSphere::before {
+  background: conic-gradient(from 0deg, #ff5f6d, #ffc371, #f9f871, #6ee7b7, #60a5fa, #a78bfa, #ff5f6d);
+  -webkit-mask: radial-gradient(closest-side, transparent 84%, #000 86%, #000 96%, transparent 98%);
+  mask: radial-gradient(closest-side, transparent 84%, #000 86%, #000 96%, transparent 98%);
+}
+
+.megaSphere::after {
+  background: radial-gradient(closest-side, rgb(255 255 255 / 0.32), rgb(167 139 250 / 0.18) 70%, rgb(255 255 255 / 0) 100%);
+}
+
+/* Light streams converging on the Pokémon from the four quarters. */
+.megaSphere > i {
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 40px;
+  margin: -20px 0 0 -1.5px;
+  border-radius: 2px;
+  background: linear-gradient(rgb(255 255 255 / 0), #fff);
+}
+
+.megaSphere > i:nth-child(1) { rotate: 0deg; }
+.megaSphere > i:nth-child(2) { rotate: 90deg; }
+.megaSphere > i:nth-child(3) { rotate: 180deg; }
+.megaSphere > i:nth-child(4) { rotate: 270deg; }
+
+.actor[data-stage='mega-charge'] .megaSphere { animation: sphere var(--mega-charge-ms) var(--ease-in-out) both; }
+.actor[data-stage='mega-charge'] .megaSphere::before { animation: spin 900ms linear infinite; }
+.actor[data-stage='mega-charge'] .megaSphere > i { animation: stream calc(var(--mega-charge-ms) / 3) var(--ease-in-out) 3 both; }
+.actor[data-stage='mega-charge'] .sprite { animation: megaCharge var(--mega-charge-ms) var(--ease-in-out) both; }
+.actor[data-stage='mega-reveal'] .megaSphere { animation: sphereOut var(--mega-reveal-ms) var(--ease-out) both; }
+.actor[data-stage='mega-reveal'] .sprite { animation: megaReveal var(--mega-reveal-ms) var(--ease-out) both; }
+
+@keyframes sphere {
+  0% { opacity: 0; transform: scale(0.3); }
+  30% { opacity: 1; transform: scale(1); }
+  60% { transform: scale(0.94); }
+  100% { opacity: 1; transform: scale(1.04); }
+}
+
+@keyframes sphereOut {
+  0% { opacity: 1; transform: scale(1.04); }
+  60%, 100% { opacity: 0; transform: scale(1.7); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes stream {
+  0% { opacity: 0; transform: translateY(-58px) scaleY(0.6); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-14px) scaleY(1); }
+}
+
+@keyframes megaCharge {
+  0% { filter: none; transform: none; }
+  30% { filter: brightness(1.5) drop-shadow(0 0 6px #fff); }
+  70%, 100% { filter: brightness(0) invert(1) drop-shadow(0 0 8px #fff); transform: scale(0.94); }
+}
+
+@keyframes megaReveal {
+  0% { filter: brightness(0) invert(1) drop-shadow(0 0 10px #fff); transform: scale(1.18); }
+  45% { filter: brightness(0) invert(1); transform: scale(1); }
+  100% { filter: none; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actor *,
+  .actor *::before,
+  .actor *::after {
+    animation: none !important;
+  }
+
+  .effects,
+  .flash,
+  .ball,
+  .megaSphere {
+    display: none;
+  }
+}

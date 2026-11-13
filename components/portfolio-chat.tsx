@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
-import type { FormEvent, KeyboardEvent, ReactNode } from 'react';
+import type { CSSProperties, FormEvent, KeyboardEvent, ReactNode } from 'react';
 import { ArrowUp, ArrowUpRight, RotateCcw, Square, Trash2, X } from 'lucide-react';
 import { CHAT_PERSONAS, type ChatPersona } from '@/lib/chat-persona';
+import { TYPE_COLORS } from '@/lib/pokemon-team';
 import { play } from '@/lib/sounds';
+import { PokemonActor, PokeBallGlyph } from './pokemon-actor';
+import type { TeamState } from './use-pokemon-team';
 import styles from './portfolio-chat.module.css';
 
 type Message = {
@@ -81,7 +84,76 @@ function MessageContent({ content, onNavigate, reveal = false }: { content: stri
   return <div className={styles.messageContent}>{parts}</div>;
 }
 
-export default function PortfolioChat({ open, onClose, persona = 'portfolio' }: { open: boolean; onClose: () => void; persona?: ChatPersona }) {
+/**
+ * The header's battle scene: the active Pokémon on its platform, its nameplate
+ * and types, the party's six Poké Balls, and Mega Evolution when it can.
+ */
+function BattleScene({ team, still }: { team: TeamState; still: boolean }) {
+  const { pokemon, party, stage, text } = team;
+  const busy = stage.kind !== 'idle' && stage.kind !== 'walk';
+  return (
+    <div className={styles.scene} style={{ '--type': TYPE_COLORS[pokemon.types[0]] } as CSSProperties}>
+      <div className={styles.status}>
+        <p className={styles.nameplate}>
+          <span className={styles.pokemonName}>{pokemon.name}</span>
+          {pokemon.shiny ? <span className={styles.shiny} title="Shiny">★<span className="sr-only"> shiny</span></span> : null}
+          {pokemon.mega ? <span className={styles.megaTag}>Mega</span> : null}
+          {pokemon.canMega ? (
+            <button type="button" className={styles.megaButton} disabled={busy} onClick={team.megaEvolve} aria-label={`Mega Evolve ${pokemon.name}`}>
+              <span className={styles.keyStone} aria-hidden="true" />
+              Mega<span className={styles.megaVerb}> Evolve</span>
+            </button>
+          ) : null}
+        </p>
+        <p className={styles.types}>
+          {pokemon.types.map((type) => (
+            <span key={type} className={styles.type} style={{ '--type': TYPE_COLORS[type] } as CSSProperties}>{type}</span>
+          ))}
+        </p>
+        <span className={styles.hp} aria-hidden="true"><span>HP</span><i /></span>
+      </div>
+
+      <div className={styles.field} aria-hidden="true">
+        <PokemonActor pokemon={pokemon} stage={stage.kind === 'walk' ? { kind: 'idle' } : stage} still={still} className={styles.fieldActor} />
+      </div>
+      {text ? <p className={styles.battleText} aria-hidden="true">{text}</p> : null}
+
+      <div className={styles.partyRow}>
+        <div className={styles.party} role="group" aria-label="Pokémon party">
+          {party.map((member) => {
+            const active = member.slot === pokemon.slot;
+            return (
+              <button
+                key={member.slot}
+                type="button"
+                className={styles.partySlot}
+                aria-pressed={active}
+                aria-label={active ? `${member.name} is out` : `Send out ${member.name}`}
+                title={member.name}
+                disabled={busy}
+                onClick={() => team.switchTo(member.slot)}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- native-size pixel icon */}
+                <img src={member.still} alt="" width={48} height={48} draggable={false} />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type ChatProps = {
+  open: boolean;
+  onClose: () => void;
+  persona?: ChatPersona;
+  team: TeamState;
+  /** Paused or reduced motion: show still sprites. */
+  still: boolean;
+};
+
+export default function PortfolioChat({ open, onClose, persona = 'portfolio', team, still }: ChatProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -243,7 +315,7 @@ export default function PortfolioChat({ open, onClose, persona = 'portfolio' }: 
       <div className={styles.panel}>
         <header className={styles.header}>
           <div className={styles.identity}>
-            <span className={styles.avatar} aria-hidden="true" />
+            <PokeBallGlyph className={styles.avatar} />
             <div className={styles.heading}>
               <h2 id={`${id}-title`}>{copy.name}</h2>
               <p>{copy.role}{persona === 'zelda' ? ' · AI guide' : ''}</p>
@@ -266,6 +338,8 @@ export default function PortfolioChat({ open, onClose, persona = 'portfolio' }: 
           </div>
         </header>
 
+        <BattleScene team={team} still={still} />
+
         <div ref={logRef} className={styles.conversation} role="log" aria-live="polite" aria-relevant="additions text" aria-label="Conversation">
           {!hasConversation ? (
             <div className={styles.welcome}>
@@ -284,7 +358,10 @@ export default function PortfolioChat({ open, onClose, persona = 'portfolio' }: 
             <ol className={styles.messages}>
               {displayedMessages.map((message) => (
                 <li key={message.id} className={styles.message} data-role={message.role}>
-                  <span className={styles.speaker}>{message.role === 'user' ? 'You' : CHAT_PERSONAS[message.persona].speaker}</span>
+                  <span className={styles.speaker}>
+                    {message.role === 'assistant' ? <PokeBallGlyph /> : null}
+                    {message.role === 'user' ? 'You' : CHAT_PERSONAS[message.persona].speaker}
+                  </span>
                   <MessageContent content={message.content} onNavigate={close} reveal={message.role === 'assistant'} />
                 </li>
               ))}
@@ -345,6 +422,7 @@ export default function PortfolioChat({ open, onClose, persona = 'portfolio' }: 
           </form>
           {draft.length >= 1_800 ? <p id={`${id}-limit`} className={styles.limit}>{draft.length.toLocaleString()} / 2,000 characters</p> : null}
           <p className={styles.disclosure}>AI can make mistakes. Messages are sent to Groq.</p>
+          <p className={styles.disclosure}>Pokémon fan tribute. Not affiliated with or endorsed by Nintendo or The Pokémon Company.</p>
         </div>
       </div>
     </dialog>

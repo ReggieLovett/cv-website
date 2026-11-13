@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "sprites:pokemon": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/fetch-pokemon-sprites.mjs"
   },
   "dependencies": {
     "@netlify/plugin-nextjs": "^5.15.1",

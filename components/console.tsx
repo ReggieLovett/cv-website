@@ -187,6 +187,7 @@ function IndexRail() {
           </p>
           <p className="tag mt-2 text-faint">Set in Cinzel &amp; Geist · Next.js</p>
           <p className="tag mt-2 max-w-[13rem] normal-case tracking-normal text-faint">A fan tribute to The Legend of Zelda&rsquo;s 40th anniversary. Not affiliated with or endorsed by Nintendo.</p>
+          <p className="tag mt-2 max-w-[13rem] normal-case tracking-normal text-faint">The chat&rsquo;s Pok&eacute;mon team is a fan tribute. Pok&eacute;mon &copy; Nintendo, Creatures, GAME FREAK. Not affiliated with or endorsed by Nintendo or The Pok&eacute;mon Company.</p>
         </footer>
       </div>
     </aside>
@@ -241,6 +242,7 @@ export function Console({ swordSoundSrc }: { swordSoundSrc: string | null }) {
               </p>
               <p className="tag text-faint">Set in Cinzel &amp; Geist · Next.js</p>
               <p className="tag w-full normal-case tracking-normal text-faint">A fan tribute to The Legend of Zelda&rsquo;s 40th anniversary. Not affiliated with or endorsed by Nintendo.</p>
+              <p className="tag w-full normal-case tracking-normal text-faint">The chat&rsquo;s Pok&eacute;mon team is a fan tribute. Pok&eacute;mon &copy; Nintendo, Creatures, GAME FREAK. Not affiliated with or endorsed by Nintendo or The Pok&eacute;mon Company.</p>
             </footer>
           </main>
         </div>

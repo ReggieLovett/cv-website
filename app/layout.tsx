@@ -4,7 +4,7 @@ import './zelda-theme.css';
 import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
-import { Cinzel } from 'next/font/google';
+import { Cinzel, Pixelify_Sans } from 'next/font/google';
 import { profile, contactInfo } from '@/data/portfolio';
 import { PortfolioCompanion } from '@/components/portfolio-companion';
 import { SoundEffects } from '@/components/sound-effects';
@@ -24,6 +24,18 @@ const cinzel = Cinzel({
   subsets: ['latin'],
   weight: ['500', '600', '700'],
   variable: '--font-display',
+  display: 'swap',
+});
+
+/**
+ * Pixelify Sans — the Pokémon companion's handheld-game type: nameplates,
+ * battle text and chat labels beside the Gen 5 pixel sprites. Labels only;
+ * reading text stays in Geist. Self-hosted the same way as Cinzel.
+ */
+const pixelify = Pixelify_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-pixel',
   display: 'swap',
 });
 
@@ -106,7 +118,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${GeistSans.variable} ${GeistMono.variable} ${cinzel.variable}`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${cinzel.variable} ${pixelify.variable}`}
       // The pre-paint script below mutates the documentElement's class and
       // data-entrance before React hydrates it, so hydration must not try to
       // reconcile attributes it no longer owns.
