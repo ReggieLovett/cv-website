@@ -214,8 +214,44 @@
   box-shadow: 0 0 0 1px rgb(var(--space) / 0.6);
 }
 
-.mega[data-change='crowned'] .keyStone { background: radial-gradient(circle at 35% 35%, #fff 0 14%, #ffd75c 40%, #c98a14 100%); }
-.mega[data-change='gigantamax'] .keyStone { background: radial-gradient(circle at 35% 35%, #ffd0da 0 14%, #ff4d70 45%, #a8102f 100%); }
+/* A form change's stone glows in that change's colour (--glow). */
+.mega[data-change] .keyStone {
+  background: radial-gradient(circle at 35% 35%, #fff 0 14%, rgb(var(--glow, 255 214 92)) 45%, rgb(var(--glow, 255 214 92) / 0.55) 100%);
+}
+
+/* The PC Box: everyone not in the party, as a grid of icons. */
+.box {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  margin: 0 3px;
+}
+
+.boxSlot {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: rgb(var(--space) / 0.5);
+  cursor: pointer;
+  transition: border-color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out);
+}
+
+.boxSlot img {
+  width: 48px;
+  max-width: none;
+  height: 48px;
+  image-rendering: pixelated;
+}
+
+.boxSlot:focus-visible {
+  outline: 2px solid rgb(var(--signal));
+  outline-offset: -2px;
+}
+
+.boxSlot:disabled { opacity: 0.35; cursor: default; }
 
 .formTag {
   align-self: flex-start;
@@ -269,6 +305,7 @@
   }
 
   .action:hover:not(:disabled) { background: rgb(var(--signal) / 0.08); }
+  .boxSlot:hover:not(:disabled) { border-color: rgb(var(--signal)); background: rgb(var(--signal) / 0.08); }
   .move:hover:not(:disabled) { background: rgb(var(--type) / 0.26); }
 }
 

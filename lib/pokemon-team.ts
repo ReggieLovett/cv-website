@@ -33,15 +33,15 @@ export type Motion = 'lunge' | 'dash' | 'cast' | 'stomp' | 'boost' | 'vanish' | 
  * flare balls; Swords Dance sweeps swords across the user.
  */
 export type Fx =
-  | 'arrow' | 'aura' | 'charge' | 'claw' | 'cloak' | 'clones' | 'drain' | 'dust' | 'eruption' | 'fangs'
+  | 'arrow' | 'aura' | 'bolt' | 'charge' | 'claw' | 'cloak' | 'clones' | 'drain' | 'dust' | 'eruption' | 'fangs'
   | 'feathers' | 'flames' | 'flash' | 'hearts' | 'impact' | 'leaves' | 'moon' | 'orb' | 'quake'
-  | 'rings-in' | 'rings-out' | 'ripple' | 'rise' | 'shield' | 'slash' | 'sneak' | 'sparkles' | 'speed'
+  | 'rings-in' | 'rings-out' | 'ripple' | 'rise' | 'rocks' | 'shield' | 'slash' | 'sneak' | 'sparkles' | 'speed'
   | 'spiral' | 'splinters' | 'stars' | 'stream' | 'sword' | 'swords' | 'volley' | 'vortex' | 'wreath';
 
 export const FX: readonly Fx[] = [
-  'arrow', 'aura', 'charge', 'claw', 'cloak', 'clones', 'drain', 'dust', 'eruption', 'fangs',
+  'arrow', 'aura', 'bolt', 'charge', 'claw', 'cloak', 'clones', 'drain', 'dust', 'eruption', 'fangs',
   'feathers', 'flames', 'flash', 'hearts', 'impact', 'leaves', 'moon', 'orb', 'quake',
-  'rings-in', 'rings-out', 'ripple', 'rise', 'shield', 'slash', 'sneak', 'sparkles', 'speed',
+  'rings-in', 'rings-out', 'ripple', 'rise', 'rocks', 'shield', 'slash', 'sneak', 'sparkles', 'speed',
   'spiral', 'splinters', 'stars', 'stream', 'sword', 'swords', 'volley', 'vortex', 'wreath',
 ];
 
@@ -107,6 +107,54 @@ export const MOVES = {
   'Iron Head': { type: 'steel', category: 'physical', motion: 'dash', fx: ['cloak', 'impact'], color: '222 228 242' },
   'Behemoth Blade': { type: 'steel', category: 'physical', motion: 'dash', fx: ['sword', 'slash', 'impact'], color: '255 214 92' },
   'G-Max Smite': { type: 'fairy', category: 'physical', motion: 'cast', fx: ['flash', 'sparkles', 'impact'], tint: '255 120 200' },
+  /* -------------------------------------------- PC Box moves */
+  'Waterfall': { type: 'water', category: 'physical', motion: 'dash', fx: ['cloak', 'impact'] },
+  'Ice Punch': { type: 'ice', category: 'physical', motion: 'lunge', fx: ['impact', 'splinters'] },
+  'Superpower': { type: 'fighting', category: 'physical', motion: 'lunge', fx: ['impact', 'dust'] },
+  'Dragon Ascent': { type: 'flying', category: 'physical', motion: 'dive', fx: ['cloak', 'speed', 'impact'], color: '120 230 140' },
+  'Bolt Strike': { type: 'electric', category: 'physical', motion: 'dash', fx: ['cloak', 'bolt', 'impact'], tint: BLACK },
+  'Fusion Bolt': { type: 'electric', category: 'physical', motion: 'dive', fx: ['cloak', 'bolt', 'impact'] },
+  'Hone Claws': { type: 'dark', category: 'status', motion: 'boost', fx: ['claw', 'rise'], color: '190 160 255', after: ["{name}'s Attack rose!", "{name}'s accuracy rose!"] },
+  'Blue Flare': { type: 'fire', category: 'special', motion: 'cast', fx: ['charge', 'spiral', 'impact'], color: '110 170 255', tint: '0 0 40' },
+  'Fusion Flare': { type: 'fire', category: 'special', motion: 'cast', fx: ['charge', 'orb', 'flames'], tint: '57 0 0' },
+  'Dragon Pulse': { type: 'dragon', category: 'special', motion: 'cast', fx: ['rings-out'], color: '130 90 255' },
+  'Flamethrower': { type: 'fire', category: 'special', motion: 'cast', fx: ['stream', 'flames'] },
+  'Precipice Blades': { type: 'ground', category: 'physical', motion: 'stomp', fx: ['quake', 'eruption'], color: '232 110 56', tint: '60 10 0' },
+  'Stone Edge': { type: 'rock', category: 'physical', motion: 'cast', fx: ['eruption', 'splinters'] },
+  'Bulk Up': { type: 'fighting', category: 'status', motion: 'boost', fx: ['aura', 'rise'], color: '232 80 64', after: ["{name}'s Attack rose!", "{name}'s Defense rose!"] },
+  'Origin Pulse': { type: 'water', category: 'special', motion: 'cast', fx: ['charge', 'rings-out', 'volley'], color: '80 160 255', tint: '0 0 110' },
+  'Water Spout': { type: 'water', category: 'special', motion: 'cast', fx: ['eruption', 'volley'] },
+  'Ice Beam': { type: 'ice', category: 'special', motion: 'cast', fx: ['charge', 'stream', 'splinters'], color: '170 230 255' },
+  'Thunder': { type: 'electric', category: 'special', motion: 'cast', fx: ['bolt', 'impact'], tint: BLACK },
+  'Meteor Mash': { type: 'steel', category: 'physical', motion: 'lunge', fx: ['impact', 'sparkles'], color: '170 200 255' },
+  'Zen Headbutt': { type: 'psychic', category: 'physical', motion: 'dash', fx: ['cloak', 'rings-out', 'impact'] },
+  'Bullet Punch': { type: 'steel', category: 'physical', motion: 'vanish', fx: ['speed', 'impact'], color: '222 228 242' },
+  'Agility': { type: 'psychic', category: 'status', motion: 'boost', fx: ['speed', 'rise'], after: ["{name}'s Speed sharply rose!"] },
+  'Rock Slide': { type: 'rock', category: 'physical', motion: 'cast', fx: ['rocks', 'impact'] },
+  'Belly Drum': { type: 'normal', category: 'status', motion: 'boost', fx: ['aura', 'rise'], color: '255 96 72', after: ['{name} cut its own HP and maximized its Attack!'] },
+  'Outrage': { type: 'dragon', category: 'physical', motion: 'dash', fx: ['cloak', 'impact', 'dust'], color: '255 96 96', tint: '70 0 0' },
+  'Close Combat': { type: 'fighting', category: 'physical', motion: 'lunge', fx: ['dust', 'impact'] },
+  'Liquidation': { type: 'water', category: 'physical', motion: 'dash', fx: ['cloak', 'impact', 'splinters'] },
+  'Crunch': { type: 'dark', category: 'physical', motion: 'lunge', fx: ['fangs'], color: '190 160 255' },
+  'Ice Fang': { type: 'ice', category: 'physical', motion: 'lunge', fx: ['fangs', 'splinters'], color: '170 230 255' },
+  'Torch Song': { type: 'fire', category: 'special', motion: 'cast', fx: ['rings-out', 'flames'], after: ["{name}'s Sp. Atk rose!"] },
+  'Will-O-Wisp': { type: 'fire', category: 'status', motion: 'cast', fx: ['volley'], color: '120 160 255', tint: '20 0 40', after: ['The target was burned!'] },
+  'Collision Course': { type: 'fighting', category: 'physical', motion: 'dash', fx: ['cloak', 'impact', 'flash'], color: '255 120 60' },
+  'First Impression': { type: 'bug', category: 'physical', motion: 'vanish', fx: ['impact'] },
+  'Leech Life': { type: 'bug', category: 'physical', motion: 'lunge', fx: ['fangs', 'drain'] },
+  'Wild Charge': { type: 'electric', category: 'physical', motion: 'dash', fx: ['cloak', 'bolt', 'impact'] },
+  'Body Press': { type: 'fighting', category: 'physical', motion: 'stomp', fx: ['quake', 'impact'] },
+  'Gigaton Hammer': { type: 'steel', category: 'physical', motion: 'stomp', fx: ['quake', 'impact', 'sparkles'], color: '214 220 235' },
+  'Knock Off': { type: 'dark', category: 'physical', motion: 'lunge', fx: ['slash', 'impact'], color: '190 160 255' },
+  'Freeze-Dry': { type: 'ice', category: 'special', motion: 'cast', fx: ['charge', 'volley', 'splinters'], color: '170 230 255' },
+  'Psycho Cut': { type: 'psychic', category: 'physical', motion: 'lunge', fx: ['slash'] },
+  'Scald': { type: 'water', category: 'special', motion: 'cast', fx: ['stream'] },
+  'Recover': { type: 'normal', category: 'status', motion: 'boost', fx: ['rings-in', 'sparkles'], color: '160 255 200', after: ['{name} regained health!'] },
+  'Dark Void': { type: 'dark', category: 'status', motion: 'cast', fx: ['rings-out', 'sneak'], color: '150 90 200', tint: BLACK, after: ['The target fell asleep!'] },
+  'Sludge Bomb': { type: 'poison', category: 'special', motion: 'cast', fx: ['orb', 'splinters'] },
+  'Nasty Plot': { type: 'dark', category: 'status', motion: 'boost', fx: ['aura', 'rise'], color: '150 90 200', after: ["{name}'s Sp. Atk sharply rose!"] },
+  'Mist Ball': { type: 'psychic', category: 'special', motion: 'cast', fx: ['charge', 'orb'], color: '255 200 230' },
+  'Draco Meteor': { type: 'dragon', category: 'special', motion: 'cast', fx: ['rocks', 'impact'], color: '150 110 255', tint: '20 0 40' },
 } satisfies Record<string, Move>;
 
 export type MoveName = keyof typeof MOVES;
@@ -121,8 +169,16 @@ export const SPEEDS: Record<Locomotion, number> = { walk: 70, run: 150, hop: 100
 export type FormChange = {
   /** The POKEDEX key of the changed form. */
   into: string;
-  /** stance: Aegislash's automatic Stance Change. crowned: Zacian's Rusted Sword. gigantamax: lasts `turns` moves. */
-  kind: 'stance' | 'crowned' | 'gigantamax';
+  /**
+   * stance: Aegislash's automatic Stance Change. crowned: Zacian's Rusted Sword.
+   * gigantamax: lasts `turns` moves. primal: Groudon and Kyogre's Primal
+   * Reversion. zen: Darmanitan's Zen Mode.
+   */
+  kind: 'stance' | 'crowned' | 'gigantamax' | 'primal' | 'zen';
+  /** The colour of the change's light (RGB). */
+  glow?: string;
+  /** entry: happens by itself as the Pokémon is sent out, as Primal Reversion does in the games. */
+  auto?: 'entry';
   /** Short label for the nameplate. */
   tag: string;
   /** Label for the button that triggers it; stance changes happen on their own. */
@@ -150,6 +206,8 @@ export type Species = {
   moves?: MoveName[];
   /** The POKEDEX key of this species' Mega Evolution. */
   mega?: string;
+  /** The line before a Mega Evolution, when it is not the Key Stone ({trainer}, {name}). */
+  megaCharge?: string;
   form?: FormChange;
   /** Nameplate label for a changed form ("Blade Forme"). */
   tag?: string;
@@ -190,7 +248,7 @@ export const POKEDEX = {
   'hatterene': {
     name: 'Hatterene', weight: 5.1, types: ['psychic', 'fairy'], moves: ['Psychic', 'Dazzling Gleam', 'Draining Kiss', 'Calm Mind'], locomotion: 'float',
     form: {
-      into: 'hatterene-gmax', kind: 'gigantamax', tag: 'Gigantamax', action: 'Gigantamax', short: 'G-Max',
+      into: 'hatterene-gmax', kind: 'gigantamax', tag: 'Gigantamax', action: 'Gigantamax', short: 'G-Max', glow: '232 32 72',
       charge: '{name} is Gigantamaxing!', done: '{name} Gigantamaxed!', revert: '{name} returned to normal!',
       swap: { 'Dazzling Gleam': 'G-Max Smite' }, turns: 3,
     },
@@ -202,21 +260,77 @@ export const POKEDEX = {
     name: 'Zacian', weight: 110, types: ['fairy'], moves: ['Play Rough', 'Sacred Sword', 'Iron Head', 'Swords Dance'], locomotion: 'run',
     entry: { ability: 'Intrepid Sword', text: ["{name}'s Attack rose!"] },
     form: {
-      into: 'zacian-crowned', kind: 'crowned', tag: 'Crowned Sword', action: 'Crowned Sword', short: 'Crown',
+      into: 'zacian-crowned', kind: 'crowned', tag: 'Crowned Sword', action: 'Crowned Sword', short: 'Crown', glow: '255 214 92',
       charge: 'The Rusted Sword is shining!', done: '{name} became the Crowned Sword!', swap: { 'Iron Head': 'Behemoth Blade' },
     },
   },
   'zacian-crowned': { name: 'Zacian', weight: 355, types: ['fairy', 'steel'], tag: 'Crowned Sword', locomotion: 'run' },
+  /* ------------------------------------------------ the PC Box */
+  'sceptile': { name: 'Sceptile', weight: 52.2, types: ['grass'], moves: ['Leaf Blade', 'Dragon Claw', 'Earthquake', 'Swords Dance'], mega: 'sceptile-mega', locomotion: 'hop' },
+  'sceptile-mega': { name: 'Mega Sceptile', weight: 55.2, types: ['grass', 'dragon'], still: true, locomotion: 'hop' },
+  'swampert': { name: 'Swampert', weight: 81.9, types: ['water', 'ground'], moves: ['Waterfall', 'Earthquake', 'Ice Punch', 'Superpower'], mega: 'swampert-mega', locomotion: 'walk' },
+  'swampert-mega': { name: 'Mega Swampert', weight: 102, types: ['water', 'ground'], still: true, locomotion: 'walk' },
+  'rayquaza': {
+    name: 'Rayquaza', weight: 206.5, types: ['dragon', 'flying'], moves: ['Dragon Ascent', 'Dragon Claw', 'Extreme Speed', 'Dragon Dance'], locomotion: 'fly',
+    mega: 'rayquaza-mega', megaCharge: "{trainer}'s fervent wish has reached {name}!",
+  },
+  'rayquaza-mega': { name: 'Mega Rayquaza', weight: 392, types: ['dragon', 'flying'], locomotion: 'fly' },
+  'zekrom': { name: 'Zekrom', weight: 345, types: ['dragon', 'electric'], moves: ['Bolt Strike', 'Fusion Bolt', 'Dragon Claw', 'Hone Claws'], locomotion: 'fly' },
+  'reshiram': { name: 'Reshiram', weight: 330, types: ['dragon', 'fire'], moves: ['Blue Flare', 'Fusion Flare', 'Dragon Pulse', 'Flamethrower'], locomotion: 'fly' },
+  'groudon': {
+    name: 'Groudon', weight: 950, types: ['ground'], moves: ['Precipice Blades', 'Fire Punch', 'Stone Edge', 'Bulk Up'], locomotion: 'walk',
+    form: {
+      into: 'groudon-primal', kind: 'primal', tag: 'Primal', action: 'Primal Reversion', short: 'Primal', glow: '255 92 40', auto: 'entry',
+      charge: "{name}'s Primal Reversion!", done: 'It reverted to its primal form!',
+    },
+  },
+  'groudon-primal': { name: 'Primal Groudon', weight: 999.7, types: ['ground', 'fire'], tag: 'Primal', locomotion: 'walk' },
+  'kyogre': {
+    name: 'Kyogre', weight: 352, types: ['water'], moves: ['Origin Pulse', 'Water Spout', 'Ice Beam', 'Thunder'], locomotion: 'float',
+    form: {
+      into: 'kyogre-primal', kind: 'primal', tag: 'Primal', action: 'Primal Reversion', short: 'Primal', glow: '64 140 255', auto: 'entry',
+      charge: "{name}'s Primal Reversion!", done: 'It reverted to its primal form!',
+    },
+  },
+  'kyogre-primal': { name: 'Primal Kyogre', weight: 430, types: ['water'], tag: 'Primal', locomotion: 'float' },
+  'metagross': { name: 'Metagross', weight: 550, types: ['steel', 'psychic'], moves: ['Meteor Mash', 'Zen Headbutt', 'Bullet Punch', 'Agility'], mega: 'metagross-mega', locomotion: 'float' },
+  'metagross-mega': { name: 'Mega Metagross', weight: 942.9, types: ['steel', 'psychic'], still: true, locomotion: 'float' },
+  'darmanitan': {
+    name: 'Darmanitan', weight: 92.9, types: ['fire'], moves: ['Flare Blitz', 'Superpower', 'Rock Slide', 'Belly Drum'], locomotion: 'walk',
+    form: {
+      into: 'darmanitan-zen', kind: 'zen', tag: 'Zen Mode', action: 'Zen Mode', short: 'Zen', glow: '120 180 255', ability: 'Zen Mode',
+      charge: 'Zen Mode triggered!', done: '{name} entered Zen Mode!', revert: 'Zen Mode ended!', turns: 3,
+    },
+  },
+  'darmanitan-zen': { name: 'Darmanitan', weight: 92.9, types: ['fire', 'psychic'], tag: 'Zen Mode', locomotion: 'walk' },
+  'haxorus': { name: 'Haxorus', weight: 105.5, types: ['dragon'], moves: ['Outrage', 'Earthquake', 'Close Combat', 'Dragon Dance'], locomotion: 'walk' },
+  'feraligatr': { name: 'Feraligatr', weight: 88.8, types: ['water'], moves: ['Liquidation', 'Crunch', 'Ice Fang', 'Dragon Dance'], locomotion: 'walk' },
+  'articuno': { name: 'Articuno', weight: 55.4, types: ['ice', 'flying'], moves: ['Freeze-Dry', 'Ice Beam', 'Hurricane', 'Roost'], locomotion: 'fly' },
+  'gallade': { name: 'Gallade', weight: 52, types: ['psychic', 'fighting'], moves: ['Sacred Sword', 'Psycho Cut', 'Leaf Blade', 'Swords Dance'], mega: 'gallade-mega', locomotion: 'run' },
+  'gallade-mega': { name: 'Mega Gallade', weight: 56.4, types: ['psychic', 'fighting'], still: true, locomotion: 'run' },
+  'milotic': { name: 'Milotic', weight: 162, types: ['water'], moves: ['Scald', 'Ice Beam', 'Dragon Pulse', 'Recover'], locomotion: 'float' },
+  'darkrai': { name: 'Darkrai', weight: 50.5, types: ['dark'], moves: ['Dark Void', 'Dark Pulse', 'Sludge Bomb', 'Nasty Plot'], locomotion: 'float' },
+  'latias': { name: 'Latias', weight: 40, types: ['dragon', 'psychic'], moves: ['Mist Ball', 'Draco Meteor', 'Calm Mind', 'Recover'], mega: 'latias-mega', locomotion: 'fly' },
+  'latias-mega': { name: 'Mega Latias', weight: 52, types: ['dragon', 'psychic'], locomotion: 'fly' },
+  'skeledirge': { name: 'Skeledirge', weight: 326.5, types: ['fire', 'ghost'], moves: ['Torch Song', 'Shadow Ball', 'Hyper Voice', 'Will-O-Wisp'], still: true, locomotion: 'walk' },
+  'koraidon': { name: 'Koraidon', weight: 303, types: ['fighting', 'dragon'], moves: ['Collision Course', 'Flare Blitz', 'Dragon Claw', 'Swords Dance'], still: true, locomotion: 'run' },
+  'slitherwing': { name: 'Slither Wing', weight: 92, types: ['bug', 'fighting'], moves: ['First Impression', 'Close Combat', 'Leech Life', 'Wild Charge'], still: true, locomotion: 'walk' },
+  'corviknight': { name: 'Corviknight', weight: 75, types: ['flying', 'steel'], moves: ['Brave Bird', 'Body Press', 'Iron Head', 'Bulk Up'], locomotion: 'fly' },
+  'tinkaton': { name: 'Tinkaton', weight: 112.8, types: ['fairy', 'steel'], moves: ['Gigaton Hammer', 'Play Rough', 'Knock Off', 'Swords Dance'], still: true, locomotion: 'walk' },
 } satisfies Record<string, Species>;
 
 export type SpeciesId = keyof typeof POKEDEX;
 export type TeamSlot = { species: SpeciesId; shiny?: boolean };
 
+/** How many Pokémon travel in the party; the rest of a roster waits in the PC Box. */
+export const PARTY_SIZE = 6;
+
 /**
- * Six per persona, lead first. The Zelda team is a placeholder until its real
- * line-up is chosen: Gen 6–9 Pokémon with Gen 5-style animated sprites, cast
- * as Link's sword and shield, Sheik, Zelda's magic, the Great Deku Tree, a
- * Loftwing and the Hero.
+ * Each persona's roster. The first six are the starting party, lead first;
+ * the rest wait in the PC Box, from where any can be sent out (the one it
+ * replaces goes back to the Box). The Zelda roster is Gen 6–9 only: its party
+ * is a placeholder cast as Link's sword and shield, Sheik, Zelda's magic, the
+ * Great Deku Tree, a Loftwing and the Hero.
  */
 export const TEAMS: Record<ChatPersona, TeamSlot[]> = {
   portfolio: [
@@ -226,6 +340,23 @@ export const TEAMS: Record<ChatPersona, TeamSlot[]> = {
     { species: 'garchomp' },
     { species: 'dragonite' },
     { species: 'decidueye' },
+    // PC Box
+    { species: 'rayquaza' },
+    { species: 'groudon' },
+    { species: 'kyogre' },
+    { species: 'zekrom' },
+    { species: 'reshiram' },
+    { species: 'latias' },
+    { species: 'darkrai' },
+    { species: 'articuno' },
+    { species: 'sceptile' },
+    { species: 'swampert' },
+    { species: 'metagross' },
+    { species: 'gallade' },
+    { species: 'haxorus' },
+    { species: 'darmanitan' },
+    { species: 'feraligatr' },
+    { species: 'milotic' },
   ],
   zelda: [
     { species: 'aegislash' },
@@ -234,6 +365,12 @@ export const TEAMS: Record<ChatPersona, TeamSlot[]> = {
     { species: 'trevenant' },
     { species: 'talonflame' },
     { species: 'zacian' },
+    // PC Box
+    { species: 'koraidon' },
+    { species: 'skeledirge' },
+    { species: 'tinkaton' },
+    { species: 'corviknight' },
+    { species: 'slitherwing' },
   ],
 };
 
@@ -280,8 +417,11 @@ export type FormState = 'base' | 'mega' | 'form';
 
 /** One team member with its data resolved in its current form. */
 export type ActivePokemon = {
+  /** Its index in the persona's roster (party and PC Box together). */
   slot: number;
   species: SpeciesId;
+  /** The roster entry's species, whatever form it is in now. */
+  baseSpecies: SpeciesId;
   name: string;
   baseName: string;
   types: PokemonType[];
@@ -289,6 +429,8 @@ export type ActivePokemon = {
   state: FormState;
   mega: boolean;
   canMega: boolean;
+  /** The line before its Mega Evolution ("Reggie's fervent wish has reached Rayquaza!"). */
+  megaCharge: string;
   /** The species' other form, if it has one. */
   formChange: FormChange | null;
   /** True when that form can be triggered by hand now (not stance, not already in it). */
@@ -365,6 +507,7 @@ export function resolveMember(team: TeamSlot[], slot: number, requested: FormSta
   return {
     slot: index,
     species: formId,
+    baseSpecies: species,
     name: form.name,
     baseName: base.name,
     types: form.types,
@@ -372,6 +515,7 @@ export function resolveMember(team: TeamSlot[], slot: number, requested: FormSta
     state,
     mega: state === 'mega',
     canMega: Boolean(base.mega) && state === 'base',
+    megaCharge: base.megaCharge ? formText(base.megaCharge, base.name) : battleText.megaReacting(base.name),
     formChange,
     canChange: Boolean(formChange && formChange.kind !== 'stance') && state === 'base',
     tag: state === 'mega' ? 'Mega' : state === 'form' ? form.tag ?? formChange?.tag ?? null : null,
@@ -402,9 +546,9 @@ export function landingFor(weight: number, locomotion: Locomotion): Landing {
   return weight >= 30 ? 'thud' : 'none';
 }
 
-/** Fills {name} in a form change's battle text. */
+/** Fills {name} (the Pokémon) and {trainer} in battle text. */
 export function formText(template: string, name: string): string {
-  return template.split('{name}').join(name);
+  return template.split('{name}').join(name).split('{trainer}').join(TRAINER);
 }
 
 /**
@@ -420,7 +564,8 @@ export function stanceFor(pokemon: Pick<ActivePokemon, 'formChange' | 'state'>, 
 
 /* ------------------------------------------------------------ behaviour */
 
-export type AutoAction = 'attack' | 'combo' | 'walk' | 'switch' | 'mega' | 'form';
+/** box: send out a Pokémon from the PC Box in place of the one out now. */
+export type AutoAction = 'attack' | 'combo' | 'walk' | 'switch' | 'box' | 'mega' | 'form';
 
 /** Milliseconds for each staged performance, shared by the hook and the stylesheets. */
 export const DURATIONS = {
@@ -458,7 +603,7 @@ export function nextAutoDelay(random: () => number = Math.random): number {
  * change only when one is possible.
  */
 export function pickAutoAction(
-  { canMega, canChange, teamSize }: { canMega: boolean; canChange?: boolean; teamSize: number },
+  { canMega, canChange, teamSize, boxSize = 0 }: { canMega: boolean; canChange?: boolean; teamSize: number; boxSize?: number },
   previous: AutoAction | null,
   random: () => number = Math.random,
 ): AutoAction {
@@ -467,6 +612,7 @@ export function pickAutoAction(
     ['combo', previous === 'combo' ? 0 : 2],
     ['walk', previous === 'walk' ? 0 : 3],
     ['switch', previous === 'switch' || teamSize < 2 ? 0 : 2],
+    ['box', previous === 'box' || boxSize < 1 ? 0 : 2],
     ['mega', canMega ? 2 : 0],
     ['form', canChange ? 2 : 0],
   ];

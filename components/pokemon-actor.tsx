@@ -30,6 +30,7 @@ export function PokemonActor({ pokemon, stage, still, facing = 'left', className
     '--type': type,
     '--fx': move?.color ?? type,
     '--tint': move?.tint,
+    '--glow': pokemon.formChange?.glow,
     '--walk-ms': stage.kind === 'walk' ? `${stage.duration}ms` : undefined,
   } as CSSProperties;
   const change = 'change' in stage ? stage.change : pokemon.formChange?.kind;

@@ -13,7 +13,7 @@ require.extensions['.ts'] = (module, filename) => {
   module._compile(compiled.outputText, filename);
 };
 const {
-  MOVES, FX, MOTIONS, POKEDEX, TEAMS, TYPE_COLORS, DURATIONS, SPEEDS,
+  MOVES, FX, MOTIONS, POKEDEX, TEAMS, TYPE_COLORS, TYPE_INK, DURATIONS, SPEEDS, PARTY_SIZE, contrast,
   resolveMember, teamSprites, spriteUrl, speciesForms, battleText, formText, stanceFor, landingFor,
   nextAutoDelay, pickAutoAction, pickMove, pickNextSlot, planWander, wanderMinX,
 } = require('../lib/pokemon-team.ts');
@@ -31,8 +31,8 @@ function sequence(...values) {
 const randoms = [0, 0.13, 0.27, 0.5, 0.74, 0.9, 0.999999];
 const slotOf = (persona, species) => TEAMS[persona].findIndex((slot) => slot.species === species);
 
-test('the portfolio team is the requested six, with Garchomp and Dragonite able to Mega Evolve', () => {
-  assert.deepEqual(TEAMS.portfolio, [
+test('the portfolio party is the requested six, with Garchomp and Dragonite able to Mega Evolve', () => {
+  assert.deepEqual(TEAMS.portfolio.slice(0, PARTY_SIZE), [
     { species: 'lugia', shiny: true },
     { species: 'samurott-hisui' },
     { species: 'ursaluna-bloodmoon' },
@@ -40,14 +40,34 @@ test('the portfolio team is the requested six, with Garchomp and Dragonite able 
     { species: 'dragonite' },
     { species: 'decidueye' },
   ]);
-  const megas = TEAMS.portfolio.filter(({ species }) => POKEDEX[species].mega).map(({ species }) => POKEDEX[POKEDEX[species].mega].name);
+  const megas = TEAMS.portfolio.slice(0, PARTY_SIZE).filter(({ species }) => POKEDEX[species].mega).map(({ species }) => POKEDEX[POKEDEX[species].mega].name);
   assert.deepEqual(megas, ['Mega Garchomp', 'Mega Dragonite']);
 });
 
-test('every persona fields six distinct Pokémon, each with four valid moves', () => {
+test('the requested Pokémon wait in the PC Boxes, Gen 6–9 picks with the Zelda team', () => {
+  const box = (persona) => TEAMS[persona].slice(PARTY_SIZE).map(({ species }) => species);
+  assert.deepEqual(box('portfolio').sort(), [
+    'articuno', 'darkrai', 'darmanitan', 'feraligatr', 'gallade', 'groudon', 'haxorus', 'kyogre',
+    'latias', 'metagross', 'milotic', 'rayquaza', 'reshiram', 'sceptile', 'swampert', 'zekrom',
+  ]);
+  assert.deepEqual(box('zelda').sort(), ['corviknight', 'koraidon', 'skeledirge', 'slitherwing', 'tinkaton']);
+  for (const species of ['sceptile', 'swampert', 'rayquaza', 'metagross', 'gallade', 'latias']) assert.ok(POKEDEX[species].mega, `${species} Mega Evolves`);
+  for (const species of ['groudon', 'kyogre']) {
+    assert.equal(POKEDEX[species].form.kind, 'primal');
+    assert.equal(POKEDEX[species].form.auto, 'entry', 'Primal Reversion happens on entry');
+  }
+  assert.equal(POKEDEX.darmanitan.form.kind, 'zen');
+  assert.equal(POKEDEX.darmanitan.form.ability, 'Zen Mode');
+  assert.equal(resolveMember(TEAMS.portfolio, slotOf('portfolio', 'rayquaza')).megaCharge, "Reggie's fervent wish has reached Rayquaza!");
+  assert.equal(resolveMember(TEAMS.portfolio, slotOf('portfolio', 'garchomp')).megaCharge, "Garchomp is reacting to Reggie's Key Stone!");
+  assert.equal(resolveMember(TEAMS.portfolio, slotOf('portfolio', 'groudon'), 'form').name, 'Primal Groudon');
+  assert.deepEqual(resolveMember(TEAMS.portfolio, slotOf('portfolio', 'groudon'), 'form').types, ['ground', 'fire']);
+});
+
+test('every roster has a full party and distinct Pokémon, each with four valid moves', () => {
   for (const [persona, team] of Object.entries(TEAMS)) {
-    assert.equal(team.length, 6, persona);
-    assert.equal(new Set(team.map(({ species }) => species)).size, 6, `${persona} repeats a species`);
+    assert.ok(team.length >= PARTY_SIZE, persona);
+    assert.equal(new Set(team.map(({ species }) => species)).size, team.length, `${persona} repeats a species`);
     for (const { species } of team) {
       const entry = POKEDEX[species];
       assert.ok(entry, `${species} is missing from the POKEDEX`);
@@ -143,7 +163,7 @@ test('members resolve to animated sprites where they exist, and stills everywher
   // A form the species does not have is ignored; out-of-range slots clamp.
   assert.equal(resolveMember(TEAMS.portfolio, 1, 'mega').state, 'base');
   assert.equal(resolveMember(TEAMS.portfolio, 3, 'form').state, 'base');
-  assert.equal(resolveMember(TEAMS.portfolio, 99).slot, 5);
+  assert.equal(resolveMember(TEAMS.portfolio, 99).slot, TEAMS.portfolio.length - 1);
   assert.equal(resolveMember(TEAMS.portfolio, -3).slot, 0);
   assert.equal(spriteUrl('garchomp', true), '/sprites/pokemon/gen5ani-shiny/garchomp.gif');
 });
@@ -183,6 +203,8 @@ test('form changes: Crowned Sword, Gigantamax and Stance Change behave as in the
 test('automatic actions vary, and transformations only happen when they can', () => {
   for (const value of randoms) {
     const random = () => value;
+    assert.notEqual(pickAutoAction({ canMega: false, teamSize: 6 }, null, random), 'box', 'no Box, no Box swap');
+    assert.notEqual(pickAutoAction({ canMega: false, teamSize: 6, boxSize: 5 }, 'box', random), 'box');
     assert.notEqual(pickAutoAction({ canMega: false, teamSize: 6 }, null, random), 'mega');
     assert.notEqual(pickAutoAction({ canMega: false, canChange: false, teamSize: 6 }, null, random), 'form');
     assert.notEqual(pickAutoAction({ canMega: true, teamSize: 6 }, 'walk', random), 'walk');
@@ -193,8 +215,8 @@ test('automatic actions vary, and transformations only happen when they can', ()
     assert.ok(delay >= 3_000 && delay <= 7_000, `delay ${delay}`);
   }
   const seen = new Set();
-  for (let step = 0; step < 100; step += 1) seen.add(pickAutoAction({ canMega: true, canChange: true, teamSize: 6 }, null, () => step / 100));
-  assert.deepEqual([...seen].sort(), ['attack', 'combo', 'form', 'mega', 'switch', 'walk']);
+  for (let step = 0; step < 100; step += 1) seen.add(pickAutoAction({ canMega: true, canChange: true, teamSize: 6, boxSize: 3 }, null, () => step / 100));
+  assert.deepEqual([...seen].sort(), ['attack', 'box', 'combo', 'form', 'mega', 'switch', 'walk']);
 });
 
 test('moves and switches never repeat the current choice', () => {
@@ -284,11 +306,11 @@ test('Gen 5 touches: weight-based landings, ability banners and follow-up text',
   assert.equal(zacian.entry.ability, 'Intrepid Sword');
   assert.equal(formText(zacian.entry.text[0], 'Zacian'), "Zacian's Attack rose!");
 
-  // Every status move reports its result; damaging moves do not.
+  // Every status move reports its result.
   for (const [name, move] of Object.entries(MOVES)) {
     if (move.category === 'status') assert.ok(move.after?.length, `${name} has follow-up text`);
-    else assert.equal(move.after, undefined, `${name} is a damaging move`);
   }
+  assert.equal(formText(MOVES['Torch Song'].after[0], 'Skeledirge'), "Skeledirge's Sp. Atk rose!");
   assert.deepEqual(MOVES['Dragon Dance'].after.map((line) => formText(line, 'Dragonite')), ["Dragonite's Attack rose!", "Dragonite's Speed rose!"]);
   assert.equal(formText(MOVES['Swords Dance'].after[0], 'Garchomp'), "Garchomp's Attack sharply rose!");
 
@@ -296,4 +318,10 @@ test('Gen 5 touches: weight-based landings, ability banners and follow-up text',
   assert.match(actorCss, /\.band\[data-band='head'\][^}]*animation-name: bandHead/);
   assert.match(actorCss, /\.band\[data-band='body'\][^}]*animation-name: bandBody/);
   assert.match(actorCss, /steps\(1, end\)/);
+});
+
+test('type chips are readable on every type colour', () => {
+  for (const [type, colour] of Object.entries(TYPE_COLORS)) {
+    assert.ok(contrast(colour, TYPE_INK[type]) >= 4.5, `${type} chip text reaches 4.5:1`);
+  }
 });

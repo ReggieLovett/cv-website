@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore, type CSSPropert
 import { ArrowUpRight, MessageCircle, Sparkles } from 'lucide-react';
 import { CHAT_PERSONAS } from '@/lib/chat-persona';
 import { getZeldaServerSnapshot, isZeldaOn, subscribeToZelda } from '@/lib/zelda';
-import { TEAMS, teamSprites } from '@/lib/pokemon-team';
+import { teamSprites, type TeamSlot } from '@/lib/pokemon-team';
 import { PokemonActor, PokeBallGlyph } from './pokemon-actor';
 import { PokemonTeamControls } from './pokemon-team-controls';
 import { usePokemonTeam } from './use-pokemon-team';
@@ -51,14 +51,20 @@ export function PortfolioCompanion() {
     actorWidth: ACTOR_WIDTH,
     onMoment: advanceComment,
   });
-  const { pokemon, stage, text, x, direction } = team;
+  const { pokemon, party, stage, text, x, direction } = team;
   const onMenu = useCallback((menu: boolean) => setHeld((current) => ({ ...current, menu })), []);
+  // Who is in the party, as a stable key: forms change often, the line-up rarely.
+  const lineup = party.map((member) => `${member.baseSpecies}${member.shiny ? ':shiny' : ''}`).join(',');
 
-  // Party stills are tiny and needed by the menus; every animated sprite,
-  // Mega and form included, loads once the page is idle, so a switch or a
-  // transformation never waits on the network.
+  // The party's sprites, Mega and form ones included, load once the page is
+  // idle, so a switch or a transformation never waits on the network. PC Box
+  // Pokémon load when they are sent out, rather than the whole roster up front.
   useEffect(() => {
-    const files = teamSprites({ [persona]: TEAMS[persona] }).map(({ file }) => `/sprites/pokemon/${file}`);
+    const slots = lineup.split(',').map((entry) => {
+      const [species, shiny] = entry.split(':');
+      return { species: species as TeamSlot['species'], shiny: shiny === 'shiny' };
+    });
+    const files = teamSprites({ party: slots }).map(({ file }) => `/sprites/pokemon/${file}`);
     const load = (sources: string[]) => sources.forEach((src) => { new Image().src = src; });
     load(files.filter((src) => src.endsWith('.png')));
     if (still) return;
@@ -66,7 +72,7 @@ export function PortfolioCompanion() {
     const cancel = window.cancelIdleCallback ?? window.clearTimeout;
     const handle = idle(() => load(files.filter((src) => src.endsWith('.gif'))));
     return () => cancel(handle);
-  }, [persona, still]);
+  }, [lineup, still]);
 
   const style = {
     '--x': `${x}px`,

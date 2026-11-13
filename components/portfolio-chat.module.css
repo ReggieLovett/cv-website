@@ -180,6 +180,7 @@
 .megaTag[data-tag='crowned'] { background: linear-gradient(90deg, #ffe08a, #f5b829); }
 .megaTag[data-tag='gigantamax'] { background: linear-gradient(90deg, #ff6b8b, #e8204a); color: rgb(255 255 255); }
 .megaTag[data-tag='stance'] { background: linear-gradient(90deg, #e4e6ef, #a9adc4); }
+.megaTag:is([data-tag='primal'], [data-tag='zen']) { background: rgb(var(--glow)); color: rgb(20 20 24); }
 
 .types {
   display: flex;
@@ -372,8 +373,10 @@
   box-shadow: 0 0 0 1px rgb(var(--space) / 0.6);
 }
 
-.megaButton[data-change='crowned'] .keyStone { background: radial-gradient(circle at 35% 35%, #fff 0 14%, #ffd75c 40%, #c98a14 100%); }
-.megaButton[data-change='gigantamax'] .keyStone { background: radial-gradient(circle at 35% 35%, #ffd0da 0 14%, #ff4d70 45%, #a8102f 100%); }
+/* A form change's stone glows in that change's colour (--glow). */
+.megaButton[data-change] .keyStone {
+  background: radial-gradient(circle at 35% 35%, #fff 0 14%, rgb(var(--glow, 255 214 92)) 45%, rgb(var(--glow, 255 214 92) / 0.55) 100%);
+}
 
 /* Phones: the dialog spans the screen, so a narrower field and smaller balls. */
 @media (max-width: 420px) {

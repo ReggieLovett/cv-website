@@ -25,7 +25,7 @@ export function PokemonTeamControls({ team, paused, disabled, onPause, onExpande
   const expandedRef = useRef(false);
   const expandedChangeRef = useRef(onExpandedChange);
   const id = useId();
-  const { pokemon, party } = team;
+  const { pokemon, party, box } = team;
 
   useEffect(() => { expandedChangeRef.current = onExpandedChange; }, [onExpandedChange]);
 
@@ -143,6 +143,7 @@ export function PokemonTeamControls({ team, paused, disabled, onPause, onExpande
             type="button"
             className={`${styles.action} ${styles.mega}`}
             data-change={pokemon.formChange.kind}
+            style={pokemon.formChange.glow ? ({ '--glow': pokemon.formChange.glow } as CSSProperties) : undefined}
             disabled={disabled || !pokemon.canChange}
             onClick={() => choose(team.changeForm)}
           >
@@ -179,6 +180,29 @@ export function PokemonTeamControls({ team, paused, disabled, onPause, onExpande
             );
           })}
         </div>
+
+        {box.length ? (
+          <>
+            <p className={styles.subheading}>PC Box</p>
+            <div role="group" aria-label="PC Box" className={styles.box}>
+              {box.map((member) => (
+                <button
+                  key={member.slot}
+                  type="button"
+                  className={styles.boxSlot}
+                  disabled={disabled}
+                  title={`Send out ${member.name}`}
+                  aria-label={`Send out ${member.name} from the PC Box`}
+                  onClick={() => choose(() => team.switchTo(member.slot))}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- native-size pixel icon */}
+                  <img src={member.still} alt="" width={48} height={48} draggable={false} />
+                </button>
+              ))}
+            </div>
+            <p className={styles.note}>Sending one out puts {pokemon.name} in the Box.</p>
+          </>
+        ) : null}
 
         <div className={styles.separator} role="separator" />
         <button type="button" className={styles.action} disabled={disabled} aria-pressed={paused} onClick={() => choose(onPause)}>

@@ -94,7 +94,7 @@ function BattleScene({ team, still }: { team: TeamState; still: boolean }) {
   const { pokemon, party, stage, text } = team;
   const busy = stage.kind !== 'idle' && stage.kind !== 'walk';
   return (
-    <div className={styles.scene} style={typeVars(pokemon.types[0])}>
+    <div className={styles.scene} style={{ ...typeVars(pokemon.types[0]), '--glow': pokemon.formChange?.glow } as CSSProperties}>
       <div className={styles.status}>
         <p className={styles.nameplate}>
           <span className={styles.pokemonName}>{pokemon.name}</span>
