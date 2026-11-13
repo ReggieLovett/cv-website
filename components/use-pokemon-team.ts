@@ -3,23 +3,32 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ChatPersona } from '@/lib/chat-persona';
 import {
-  battleText, DURATIONS, nextAutoDelay, pickAutoAction, pickMove, pickNextSlot, planWander, resolveMember, TEAMS, wanderMinX,
-  type ActivePokemon, type AutoAction, type MoveName, type ResolvedMove,
+  battleText, DURATIONS, formText, nextAutoDelay, pickAutoAction, pickMove, pickNextSlot, planWander,
+  resolveMember, SPEEDS, stanceFor, TEAMS, wanderMinX,
+  type ActivePokemon, type AutoAction, type FormChange, type FormState, type MoveName, type ResolvedMove,
 } from '@/lib/pokemon-team';
 
 /**
  * What the sprite is doing. The companion and the chat header both render the
- * active Pokémon from this, so a switch or Mega Evolution plays in both.
+ * active Pokémon from this, so a switch or transformation plays in both.
  */
 export type TeamStage =
   | { kind: 'idle' }
   | { kind: 'walk'; duration: number }
-  | { kind: 'attack'; move: ResolvedMove }
+  | { kind: 'attack'; move: ResolvedMove; id: number }
   | { kind: 'recall' }
   | { kind: 'throw' }
   | { kind: 'release' }
   | { kind: 'mega-charge' }
-  | { kind: 'mega-reveal' };
+  | { kind: 'mega-reveal' }
+  | { kind: 'form-charge'; change: FormChange['kind'] }
+  | { kind: 'form-reveal'; change: FormChange['kind'] }
+  | { kind: 'form-revert'; change: FormChange['kind'] }
+  /** An ability activating: Gen 5 shows its name in a banner (Stance Change, Intrepid Sword). */
+  | { kind: 'stance'; ability?: string }
+  | { kind: 'ability'; ability: string }
+  /** A shiny Pokémon sparkles as it is sent out. */
+  | { kind: 'shiny' };
 
 export type TeamState = {
   pokemon: ActivePokemon;
@@ -31,13 +40,17 @@ export type TeamState = {
   attack: (name?: MoveName) => void;
   switchTo: (slot: number) => void;
   megaEvolve: () => void;
+  changeForm: () => void;
   reset: () => void;
 };
 
 type Snapshot = {
   persona: ChatPersona;
   slot: number;
-  megaSlots: readonly number[];
+  /** Each slot's current form; missing means base. */
+  forms: Readonly<Record<number, FormState>>;
+  /** Moves used in a time-limited form (Gigantamax). */
+  turns: Readonly<Record<number, number>>;
   stage: TeamStage;
   text: string | null;
   x: number;
@@ -46,7 +59,7 @@ type Snapshot = {
   settled: number;
 };
 
-type Step = { stage: TeamStage; duration: number; text?: string; apply?: Partial<Snapshot> };
+type Step = { stage: TeamStage; duration: number; text?: string; apply?: (snapshot: Snapshot) => Partial<Snapshot> };
 
 type Options = {
   persona: ChatPersona;
@@ -60,27 +73,31 @@ type Options = {
 };
 
 const IDLE: TeamStage = { kind: 'idle' };
+/** Numbers each planned move, so a repeated move still restarts its animation. */
+let moveCount = 0;
 
 function fresh(persona: ChatPersona): Snapshot {
-  return { persona, slot: 0, megaSlots: [], stage: IDLE, text: null, x: 0, direction: 'left', settled: 0 };
+  return { persona, slot: 0, forms: {}, turns: {}, stage: IDLE, text: null, x: 0, direction: 'left', settled: 0 };
 }
 
 function viewportWidth() {
   return document.documentElement.clientWidth || window.innerWidth;
 }
 
+const setForm = (slot: number, state: FormState) => (snapshot: Snapshot): Partial<Snapshot> => ({
+  forms: { ...snapshot.forms, [slot]: state },
+  turns: { ...snapshot.turns, [slot]: 0 },
+});
+
 export function usePokemonTeam({ persona, auto, instant, actorWidth, onMoment }: Options): TeamState {
   const [raw, setRaw] = useState<Snapshot>(() => fresh(persona));
   // A theme change brings out the other persona's team from the start.
   const state = raw.persona === persona ? raw : fresh(persona);
   const team = TEAMS[persona];
-  const { slot, megaSlots, stage, text, x, direction, settled } = state;
+  const { slot, forms, turns, stage, text, x, direction, settled } = state;
 
-  const pokemon = useMemo(() => resolveMember(team, slot, megaSlots.includes(slot)), [team, slot, megaSlots]);
-  const party = useMemo(
-    () => team.map((_, index) => resolveMember(team, index, megaSlots.includes(index))),
-    [team, megaSlots],
-  );
+  const pokemon = useMemo(() => resolveMember(team, slot, forms[slot]), [team, slot, forms]);
+  const party = useMemo(() => team.map((_, index) => resolveMember(team, index, forms[index])), [team, forms]);
 
   /** Merges a change into this persona's snapshot, starting fresh if the persona changed. */
   const patch = useCallback((change: Partial<Snapshot> | ((current: Snapshot) => Partial<Snapshot>)) => {
@@ -91,9 +108,9 @@ export function usePokemonTeam({ persona, auto, instant, actorWidth, onMoment }:
   }, [persona]);
 
   // Timer callbacks outlive the render that scheduled them; they read these.
-  const live = useRef({ pokemon, slot, x, megaSlots, teamSize: team.length });
+  const live = useRef({ pokemon, slot, x, forms, turns, teamSize: team.length });
   useEffect(() => {
-    live.current = { pokemon, slot, x, megaSlots, teamSize: team.length };
+    live.current = { pokemon, slot, x, forms, turns, teamSize: team.length };
   });
   const busy = useRef(false);
   const token = useRef(0);
@@ -130,60 +147,141 @@ export function usePokemonTeam({ persona, auto, instant, actorWidth, onMoment }:
         onMomentRef.current?.();
         return;
       }
-      patch({ ...step.apply, stage: step.stage, ...(step.text ? { text: step.text } : {}) });
+      patch((snapshot) => ({ ...step.apply?.(snapshot), stage: step.stage, ...(step.text ? { text: step.text } : {}) }));
       timers.current.step = setTimeout(() => next(index + 1), step.duration);
     };
     next(0);
   }, [fadeText, patch, stop]);
 
   /** Applies a change at once, with its line of battle text. */
-  const settle = useCallback((line: string, apply: Partial<Snapshot> = {}) => {
+  const settle = useCallback((line: string, apply?: (snapshot: Snapshot) => Partial<Snapshot>) => {
     stop();
-    patch({ ...apply, stage: IDLE, text: line });
+    patch((snapshot) => ({ ...apply?.(snapshot), stage: IDLE, text: line }));
     fadeText(DURATIONS.text);
   }, [fadeText, patch, stop]);
 
-  const attack = useCallback((name?: MoveName) => {
-    const current = live.current.pokemon;
-    const move = name
+  /**
+   * The steps for one move: a Stance Change first when Aegislash needs one,
+   * then the move, then the end of a time-limited form once its turns run out.
+   */
+  const moveSteps = useCallback((member: ActivePokemon, move: ResolvedMove, used: number): Step[] => {
+    const steps: Step[] = [];
+    const change = member.formChange;
+    const stance = stanceFor(member, move);
+    if (change && stance) {
+      steps.push({
+        stage: { kind: 'stance', ability: change.ability },
+        duration: DURATIONS.stance,
+        text: formText(stance === 'form' ? change.done : change.revert ?? change.done, member.baseName),
+        apply: setForm(member.slot, stance),
+      });
+    }
+    const resolved = stance ? resolveMember(team, member.slot, stance) : member;
+    const swapped = resolved.moves.find((candidate) => candidate.name === move.name) ?? move;
+    steps.push({
+      stage: { kind: 'attack', move: swapped, id: (moveCount += 1) },
+      duration: swapped.motion === 'boost' ? DURATIONS.boost : DURATIONS.attack,
+      text: battleText.used(resolved.name, swapped.name),
+      apply: (snapshot) => (member.state === 'form' && change?.turns
+        ? { turns: { ...snapshot.turns, [member.slot]: (snapshot.turns[member.slot] ?? 0) + 1 } }
+        : {}),
+    });
+    // Gen 5 follows a status move with its result, one message at a time.
+    for (const line of swapped.after ?? []) {
+      steps.push({ stage: IDLE, duration: DURATIONS.after, text: formText(line, resolved.name) });
+    }
+    if (member.state === 'form' && change?.turns && used + 1 >= change.turns) {
+      steps.push({
+        stage: { kind: 'form-revert', change: change.kind },
+        duration: DURATIONS.formReveal,
+        text: formText(change.revert ?? '', member.baseName),
+        apply: setForm(member.slot, 'base'),
+      });
+    }
+    return steps;
+  }, [team]);
+
+  const attack = useCallback((name?: MoveName, combo = false) => {
+    const { pokemon: current, turns: used } = live.current;
+    const first = name
       ? current.moves.find((candidate) => candidate.name === name) ?? null
       : pickMove(current.moves, previousMove.current);
-    if (!move) return;
-    previousMove.current = move.name;
-    const line = battleText.used(current.name, move.name);
-    if (instant) { settle(line); return; }
-    run([{ stage: { kind: 'attack', move }, duration: move.kind === 'boost' ? DURATIONS.boost : DURATIONS.attack, text: line }]);
-  }, [instant, run, settle]);
+    if (!first) return;
+    previousMove.current = first.name;
+    if (instant) {
+      const stance = stanceFor(current, first);
+      settle(battleText.used(current.name, first.name), stance ? setForm(current.slot, stance) : undefined);
+      return;
+    }
+    const steps = moveSteps(current, first, used[current.slot] ?? 0);
+    // A combo follows with a second, different move, unless the form just ended.
+    if (combo && !steps.some((step) => step.stage.kind === 'form-revert')) {
+      const second = pickMove(current.moves.filter((move) => move.name !== first.name), null);
+      if (second) {
+        const after = stanceFor(current, first) ?? current.state;
+        const member = resolveMember(team, current.slot, after);
+        steps.push({ stage: IDLE, duration: 260 }, ...moveSteps(member, second, (used[current.slot] ?? 0) + 1));
+        previousMove.current = second.name;
+      }
+    }
+    run(steps);
+  }, [instant, moveSteps, run, settle, team]);
 
   const switchTo = useCallback((target: number) => {
-    const { pokemon: from, slot: current, teamSize, megaSlots: megas } = live.current;
+    const { pokemon: from, slot: current, teamSize, forms: states } = live.current;
     if (target === current || target < 0 || target >= teamSize) return;
-    const to = resolveMember(team, target, megas.includes(target));
-    if (instant) { settle(battleText.go(to.name), { slot: target }); return; }
-    run([
+    const to = resolveMember(team, target, states[target]);
+    // A recalled Pokémon returns to its base form, so its transformation can play again.
+    const leave = (snapshot: Snapshot): Partial<Snapshot> => ({ ...setForm(current, 'base')(snapshot), slot: target });
+    if (instant) { settle(battleText.go(to.name), leave); return; }
+    // A recalled form reverts, so the one coming out is always in its base form.
+    const entering = resolveMember(team, target);
+    const steps: Step[] = [
       { stage: { kind: 'recall' }, duration: DURATIONS.recall, text: battleText.recall(from.name) },
-      { stage: { kind: 'throw' }, duration: DURATIONS.throw, text: battleText.go(to.name), apply: { slot: target } },
+      { stage: { kind: 'throw' }, duration: DURATIONS.throw, text: battleText.go(to.name), apply: leave },
       { stage: { kind: 'release' }, duration: DURATIONS.release },
-    ]);
+    ];
+    if (entering.shiny) steps.push({ stage: { kind: 'shiny' }, duration: DURATIONS.shiny });
+    if (entering.entry) {
+      const { ability, text: lines } = entering.entry;
+      lines.forEach((line, index) => steps.push({
+        stage: index === 0 ? { kind: 'ability', ability } : IDLE,
+        duration: index === 0 ? DURATIONS.ability : DURATIONS.after,
+        text: formText(line, entering.name),
+      }));
+    }
+    run(steps);
   }, [instant, run, settle, team]);
 
   const megaEvolve = useCallback(() => {
-    const { pokemon: current, megaSlots: megas } = live.current;
+    const current = live.current.pokemon;
     if (!current.canMega) return;
-    const evolved = resolveMember(team, current.slot, true);
-    const apply = { megaSlots: megas.includes(current.slot) ? megas : [...megas, current.slot] };
+    const evolved = resolveMember(team, current.slot, 'mega');
     const line = battleText.megaEvolved(current.name, evolved.name);
-    if (instant) { settle(line, apply); return; }
+    if (instant) { settle(line, setForm(current.slot, 'mega')); return; }
     run([
       { stage: { kind: 'mega-charge' }, duration: DURATIONS.megaCharge, text: battleText.megaReacting(current.name) },
-      { stage: { kind: 'mega-reveal' }, duration: DURATIONS.megaReveal, text: line, apply },
+      { stage: { kind: 'mega-reveal' }, duration: DURATIONS.megaReveal, text: line, apply: setForm(current.slot, 'mega') },
     ]);
   }, [instant, run, settle, team]);
 
+  const changeForm = useCallback(() => {
+    const current = live.current.pokemon;
+    const change = current.formChange;
+    if (!current.canChange || !change) return;
+    const line = formText(change.done, current.baseName);
+    if (instant) { settle(line, setForm(current.slot, 'form')); return; }
+    run([
+      { stage: { kind: 'form-charge', change: change.kind }, duration: DURATIONS.formCharge, text: formText(change.charge, current.baseName) },
+      { stage: { kind: 'form-reveal', change: change.kind }, duration: DURATIONS.formReveal, text: line, apply: setForm(current.slot, 'form') },
+    ]);
+  }, [instant, run, settle]);
+
   const walk = useCallback(() => {
-    const plan = planWander(live.current.x, viewportWidth(), actorWidth);
-    if (plan.x === live.current.x) return;
-    run([{ stage: { kind: 'walk', duration: plan.duration }, duration: plan.duration, apply: { x: plan.x, direction: plan.direction } }]);
+    const { x: from, pokemon: current } = live.current;
+    const plan = planWander(from, viewportWidth(), actorWidth, Math.random, SPEEDS[current.locomotion]);
+    if (plan.x === from) return;
+    run([{ stage: { kind: 'walk', duration: plan.duration }, duration: plan.duration, apply: () => ({ x: plan.x, direction: plan.direction }) }]);
   }, [actorWidth, run]);
 
   const reset = useCallback(() => {
@@ -207,21 +305,23 @@ export function usePokemonTeam({ persona, auto, instant, actorWidth, onMoment }:
     const schedule = () => {
       pending.auto = setTimeout(() => {
         if (document.hidden || busy.current) { schedule(); return; }
+        const current = live.current.pokemon;
         const action = pickAutoAction(
-          { canMega: live.current.pokemon.canMega, teamSize: live.current.teamSize },
+          { canMega: current.canMega, canChange: current.canChange, teamSize: live.current.teamSize },
           previousAction.current,
         );
         previousAction.current = action;
-        if (action === 'attack') attack();
+        if (action === 'attack' || action === 'combo') attack(undefined, action === 'combo');
         else if (action === 'walk') walk();
         else if (action === 'switch') switchTo(pickNextSlot(live.current.teamSize, live.current.slot));
-        else megaEvolve();
+        else if (action === 'mega') megaEvolve();
+        else changeForm();
       }, nextAutoDelay());
     };
     schedule();
     return () => clearTimeout(pending.auto);
     // `settled` restarts the rest after every finished action.
-  }, [auto, settled, attack, walk, switchTo, megaEvolve]);
+  }, [auto, settled, attack, walk, switchTo, megaEvolve, changeForm]);
 
   // A narrower window pulls a wandering actor back inside it.
   useEffect(() => {
@@ -243,5 +343,7 @@ export function usePokemonTeam({ persona, auto, instant, actorWidth, onMoment }:
     };
   }, []);
 
-  return { pokemon, party, stage, text, x, direction, attack, switchTo, megaEvolve, reset };
+  const requestMove = useCallback((name?: MoveName) => attack(name), [attack]);
+
+  return { pokemon, party, stage, text, x, direction, attack: requestMove, switchTo, megaEvolve, changeForm, reset };
 }

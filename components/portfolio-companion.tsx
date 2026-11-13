@@ -2,9 +2,10 @@
 
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
-import { ArrowUpRight, MessageCircle } from 'lucide-react';
+import { ArrowUpRight, MessageCircle, Sparkles } from 'lucide-react';
 import { CHAT_PERSONAS } from '@/lib/chat-persona';
 import { getZeldaServerSnapshot, isZeldaOn, subscribeToZelda } from '@/lib/zelda';
+import { TEAMS, teamSprites } from '@/lib/pokemon-team';
 import { PokemonActor, PokeBallGlyph } from './pokemon-actor';
 import { PokemonTeamControls } from './pokemon-team-controls';
 import { usePokemonTeam } from './use-pokemon-team';
@@ -50,20 +51,22 @@ export function PortfolioCompanion() {
     actorWidth: ACTOR_WIDTH,
     onMoment: advanceComment,
   });
-  const { pokemon, party, stage, text, x, direction } = team;
+  const { pokemon, stage, text, x, direction } = team;
   const onMenu = useCallback((menu: boolean) => setHeld((current) => ({ ...current, menu })), []);
 
-  // Party stills are tiny and needed by the menus; animated sprites load once
-  // the page is idle, so a switch never waits on the network.
+  // Party stills are tiny and needed by the menus; every animated sprite,
+  // Mega and form included, loads once the page is idle, so a switch or a
+  // transformation never waits on the network.
   useEffect(() => {
+    const files = teamSprites({ [persona]: TEAMS[persona] }).map(({ file }) => `/sprites/pokemon/${file}`);
     const load = (sources: string[]) => sources.forEach((src) => { new Image().src = src; });
-    load(party.map((member) => member.still));
+    load(files.filter((src) => src.endsWith('.png')));
     if (still) return;
     const idle = window.requestIdleCallback ?? ((callback: () => void) => window.setTimeout(callback, 1200));
     const cancel = window.cancelIdleCallback ?? window.clearTimeout;
-    const handle = idle(() => load(party.map((member) => member.sprite)));
+    const handle = idle(() => load(files.filter((src) => src.endsWith('.gif'))));
     return () => cancel(handle);
-  }, [party, still]);
+  }, [persona, still]);
 
   const style = {
     '--x': `${x}px`,
@@ -106,7 +109,10 @@ export function PortfolioCompanion() {
           </span>
           <PokemonActor pokemon={pokemon} stage={stage} still={still} facing={direction} />
           <span className={styles.caption}>
-            <span className={styles.nameplate}>{pokemon.name}{pokemon.shiny ? ' ★' : ''}</span>
+            <span className={styles.nameplate}>
+              {pokemon.name}
+              {pokemon.shiny ? <Sparkles className={styles.shiny} size={10} strokeWidth={2} aria-hidden="true" /> : null}
+            </span>
             <span className={styles.ask}>{profile.caption} <ArrowUpRight size={11} aria-hidden="true" /></span>
           </span>
         </button>

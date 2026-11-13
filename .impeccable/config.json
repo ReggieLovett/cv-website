@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "components/pokemon-moves.module.css"
+        ],
+        "createdAt": "2026-11-13T06:22:40.530Z",
+        "reason": "Claude triage: not a card; .fx[data-fx='sword'] i:nth-child(2) is the sword-swing arc trail, a one-sided border on a circle used on purpose to draw a curved crescent in a move animation"
+      }
+    ]
+  }
+}

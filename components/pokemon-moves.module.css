@@ -1,0 +1,1233 @@
+/* The pieces moves are drawn with (lib/pokemon-team.ts Fx). Each move lists
+   its pieces; components/pokemon-actor.tsx renders one .fx per piece, holding
+   six <i> particles. Recipes follow Pokémon Showdown's battle animations
+   (play.pokemonshowdown.com/src/battle-animations-moves.ts), redrawn in CSS.
+
+   From the actor (pokemon-actor.module.css):
+     --fx     the move's effect colour (RGB)    --d       the move's length
+     --hit    how far left the hit lands        --hit-at  when it lands (0–1)
+   The mouth is at (50% - 24px, 42%); the target at (50% - --hit, 45%).
+   Attacks travel left; a right-facing actor mirrors the whole layer. */
+
+.fx {
+  --launch: calc(var(--d) * 0.28);
+  --flight: calc(var(--d) * (var(--hit-at) - 0.28));
+  --strike: calc(var(--d) * var(--hit-at));
+  --linger: calc(var(--d) * 0.4);
+  --from-x: calc(50% - 24px);
+  --at-x: calc(50% - var(--hit));
+  --fly: calc(24px - var(--hit));
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fx > i,
+.fx > img {
+  position: absolute;
+  display: block;
+  opacity: 0;
+}
+
+/* Shared shapes. */
+.fx[data-fx='swords'] > i,
+.fx[data-fx='sword'] > i:nth-child(1) {
+  clip-path: polygon(50% 0, 100% 14%, 100% 76%, 74% 78%, 74% 100%, 26% 100%, 26% 78%, 0 76%, 0 14%);
+}
+
+.fx[data-fx='sparkles'] > i,
+.fx[data-fx='stars'] > i:nth-child(-n+3) {
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+
+/* ------------------------------------------------------------ the field */
+
+/* Showdown darkens or colours the battlefield for many moves. */
+.tint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 460px;
+  height: 300px;
+  margin: -150px 0 0 -260px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(var(--tint) / 0.5), rgb(var(--tint) / 0.26) 55%, rgb(var(--tint) / 0));
+  opacity: 0;
+  pointer-events: none;
+  animation: tint var(--d) var(--ease-in-out) both;
+}
+
+@keyframes tint {
+  0% { opacity: 0; }
+  20%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ------------------------------------------------------- gathering power */
+
+.fx[data-fx='charge'] > i { top: 42%; left: var(--from-x); }
+
+.fx[data-fx='charge'] > i:nth-child(1) {
+  width: 24px;
+  height: 24px;
+  margin: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 26%, rgb(var(--fx)) 56%, rgb(var(--fx) / 0) 72%);
+  box-shadow: 0 0 14px rgb(var(--fx) / 0.8);
+  animation: charge var(--d) var(--ease-out) both;
+}
+
+.fx[data-fx='charge'] > i:nth-child(n+2) {
+  width: 5px;
+  height: 5px;
+  margin: -2.5px;
+  border-radius: 50%;
+  background: rgb(var(--fx));
+  box-shadow: 0 0 6px rgb(var(--fx));
+  animation: gather calc(var(--d) * 0.26) var(--ease-in-out) both;
+}
+
+.fx[data-fx='charge'] > i:nth-child(2) { --gx: -26px; --gy: -22px; }
+.fx[data-fx='charge'] > i:nth-child(3) { --gx: 24px; --gy: -26px; animation-delay: 40ms; }
+.fx[data-fx='charge'] > i:nth-child(4) { --gx: -22px; --gy: 24px; animation-delay: 80ms; }
+.fx[data-fx='charge'] > i:nth-child(5) { --gx: 28px; --gy: 20px; animation-delay: 120ms; }
+.fx[data-fx='charge'] > i:nth-child(6) { --gx: 0px; --gy: -34px; animation-delay: 60ms; }
+
+@keyframes charge {
+  0% { opacity: 0; transform: scale(0.2); }
+  18% { opacity: 1; transform: scale(0.9); }
+  26% { transform: scale(1.3); }
+  30% { opacity: 1; transform: scale(1); }
+  34%, 100% { opacity: 0; transform: scale(0.4); }
+}
+
+@keyframes gather {
+  0% { opacity: 0; transform: translate(var(--gx), var(--gy)); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translate(0, 0); }
+}
+
+/* -------------------------------------------------------------- ranged */
+
+/* Aeroblast: a trail of wisps swelling along the path, as in Showdown. */
+.fx[data-fx='spiral'] > i {
+  top: 42%;
+  width: 28px;
+  height: 28px;
+  margin: -14px;
+  border: 2px solid rgb(var(--fx) / 0.9);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 255 255 / 0.55), rgb(var(--fx) / 0.12) 70%, rgb(var(--fx) / 0));
+  animation: wisp calc(var(--d) * 0.42) linear both;
+}
+
+.fx[data-fx='spiral'] > i:nth-child(1) { left: var(--from-x); animation-delay: calc(var(--d) * 0.28); }
+.fx[data-fx='spiral'] > i:nth-child(2) { left: calc(50% - 24px - (var(--hit) - 24px) * 0.2); animation-delay: calc(var(--d) * 0.31); }
+.fx[data-fx='spiral'] > i:nth-child(3) { left: calc(50% - 24px - (var(--hit) - 24px) * 0.4); animation-delay: calc(var(--d) * 0.34); }
+.fx[data-fx='spiral'] > i:nth-child(4) { left: calc(50% - 24px - (var(--hit) - 24px) * 0.6); animation-delay: calc(var(--d) * 0.37); }
+.fx[data-fx='spiral'] > i:nth-child(5) { left: calc(50% - 24px - (var(--hit) - 24px) * 0.8); animation-delay: calc(var(--d) * 0.4); }
+.fx[data-fx='spiral'] > i:nth-child(6) { left: var(--at-x); animation-delay: calc(var(--d) * 0.43); }
+
+@keyframes wisp {
+  0% { opacity: 0.95; transform: scale(0.5) rotate(0deg); }
+  100% { opacity: 0; transform: scale(2.6) rotate(180deg); }
+}
+
+/* Volley: a spread of small orbs bursting on the target (Aeroblast, Blood Moon). */
+.fx[data-fx='volley'] > i {
+  --ty: 0px;
+  top: 42%;
+  left: var(--from-x);
+  width: 12px;
+  height: 12px;
+  margin: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 30%, rgb(var(--fx)) 62%, rgb(var(--fx) / 0) 74%);
+  box-shadow: 0 0 8px rgb(var(--fx) / 0.8);
+  animation: volley var(--flight) linear var(--launch) both;
+}
+
+.fx[data-fx='volley'] > i:nth-child(1) { --dy: 18px; }
+.fx[data-fx='volley'] > i:nth-child(2) { --dy: -20px; animation-delay: calc(var(--launch) + 40ms); }
+.fx[data-fx='volley'] > i:nth-child(3) { --dy: 4px; animation-delay: calc(var(--launch) + 80ms); }
+.fx[data-fx='volley'] > i:nth-child(4) { --dy: -8px; animation-delay: calc(var(--launch) + 120ms); }
+.fx[data-fx='volley'] > i:nth-child(5) { --dy: 12px; animation-delay: calc(var(--launch) + 160ms); }
+.fx[data-fx='volley'] > i:nth-child(6) { --dy: -2px; animation-delay: calc(var(--launch) + 200ms); }
+
+/* Under a moon (Blood Moon) the volley rains down from it instead. */
+.fx[data-fx='moon'] ~ .fx[data-fx='volley'] > i {
+  --ty: 70px;
+  --fly: calc(0px - var(--hit));
+  top: -24%;
+  left: 50%;
+}
+
+@keyframes volley {
+  0% { opacity: 0.9; transform: translate(0, 0) scale(0.5); }
+  82% { opacity: 0.9; transform: translate(var(--fly), calc(var(--ty) + var(--dy))) scale(1); }
+  100% { opacity: 0; transform: translate(var(--fly), calc(var(--ty) + var(--dy))) scale(2.4); }
+}
+
+/* Orb: one dark sphere launched at the target (Shadow Ball). */
+.fx[data-fx='orb'] > i:nth-child(-n+2) {
+  top: 42%;
+  left: var(--from-x);
+  width: 30px;
+  height: 30px;
+  margin: -15px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 38%, #fff 0 16%, rgb(var(--fx)) 50%, rgb(var(--fx) / 0.45) 72%, rgb(var(--fx) / 0) 76%);
+  box-shadow: 0 0 16px rgb(var(--fx) / 0.85);
+  animation: orb var(--flight) cubic-bezier(0.4, 0, 0.8, 0.6) var(--launch) both;
+}
+
+/* A fainter wisp trailing the orb. */
+.fx[data-fx='orb'] > i:nth-child(2) {
+  filter: blur(3px);
+  scale: 0.8;
+  animation-delay: calc(var(--launch) + 50ms);
+}
+
+.fx[data-fx='orb'] > i:nth-child(3) {
+  top: 42%;
+  left: var(--at-x);
+  width: 52px;
+  height: 52px;
+  margin: -26px;
+  border: 3px solid rgb(var(--fx));
+  border-radius: 50%;
+  animation: ring var(--linger) var(--ease-out) var(--strike) both;
+}
+
+@keyframes orb {
+  0% { opacity: 1; transform: translateX(0) scale(0.7); }
+  90% { opacity: 1; transform: translateX(var(--fly)) scale(1.15); }
+  100% { opacity: 0; transform: translateX(var(--fly)) scale(2.2); }
+}
+
+/* Spirit Shackle: a shadow arrow that pins the target's shadow in place. */
+.fx[data-fx='arrow'] > i:nth-child(-n+2) {
+  top: 44%;
+  left: var(--from-x);
+  width: 52px;
+  height: 9px;
+  margin-top: -4.5px;
+  background: linear-gradient(to right, #fff, rgb(var(--fx)) 35%, rgb(var(--fx) / 0));
+  clip-path: polygon(0 50%, 22% 0, 22% 32%, 100% 32%, 100% 68%, 22% 68%, 22% 100%);
+  filter: drop-shadow(0 0 4px rgb(var(--fx)));
+  animation: shoot var(--flight) cubic-bezier(0.5, 0, 0.75, 0) var(--launch) both;
+}
+
+.fx[data-fx='arrow'] > i:nth-child(2) { filter: blur(2px); animation-delay: calc(var(--launch) + 50ms); }
+
+.fx[data-fx='arrow'] > i:nth-child(3) {
+  bottom: 0;
+  left: var(--at-x);
+  width: 6px;
+  height: 92px;
+  margin-left: -3px;
+  border-radius: 3px;
+  background: linear-gradient(rgb(var(--fx) / 0), rgb(var(--fx)) 70%, #fff);
+  filter: drop-shadow(0 0 5px rgb(var(--fx)));
+  transform-origin: 50% 100%;
+  animation: stake var(--linger) var(--ease-out) var(--strike) both;
+}
+
+.fx[data-fx='arrow'] > i:nth-child(4) {
+  bottom: -2px;
+  left: var(--at-x);
+  width: 74px;
+  height: 12px;
+  margin-left: -37px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(30 0 40 / 0.85), rgb(var(--fx) / 0.5) 70%, rgb(var(--fx) / 0));
+  animation: pop var(--linger) var(--ease-out) var(--strike) both;
+}
+
+@keyframes shoot {
+  0% { opacity: 0; transform: translateX(10px); }
+  10% { opacity: 1; }
+  92% { opacity: 1; transform: translateX(var(--fly)); }
+  100% { opacity: 0; transform: translateX(var(--fly)); }
+}
+
+@keyframes stake {
+  0% { opacity: 0; transform: scaleY(0); }
+  25% { opacity: 1; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(1); }
+}
+
+/* Water Shuriken: three spinning water stars. */
+.fx[data-fx='stars'] > i:nth-child(-n+3) {
+  top: 44%;
+  left: var(--from-x);
+  width: 20px;
+  height: 20px;
+  margin: -10px;
+  background: radial-gradient(circle, #fff 0 18%, rgb(var(--fx)) 42%);
+  filter: drop-shadow(0 0 4px rgb(var(--fx)));
+  animation: shuriken var(--flight) linear var(--launch) both;
+}
+
+.fx[data-fx='stars'] > i:nth-child(1) { --dy: -14px; }
+.fx[data-fx='stars'] > i:nth-child(2) { --dy: 0px; animation-delay: calc(var(--launch) + 80ms); }
+.fx[data-fx='stars'] > i:nth-child(3) { --dy: 14px; animation-delay: calc(var(--launch) + 160ms); }
+
+.fx[data-fx='stars'] > i:nth-child(4) {
+  top: 44%;
+  left: var(--at-x);
+  width: 46px;
+  height: 46px;
+  margin: -23px;
+  border: 3px solid rgb(var(--fx));
+  border-radius: 50%;
+  animation: ring var(--linger) var(--ease-out) calc(var(--strike) + 120ms) both;
+}
+
+@keyframes shuriken {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  90% { opacity: 1; transform: translate(var(--fly), var(--dy)) rotate(-900deg); }
+  100% { opacity: 0; transform: translate(var(--fly), var(--dy)) rotate(-990deg) scale(1.6); }
+}
+
+/* Hearts float across to the target (Draining Kiss). */
+.fx[data-fx='hearts'] > i:nth-child(-n+3) {
+  top: 38%;
+  left: var(--from-x);
+  animation: heart var(--flight) var(--ease-in-out) var(--launch) both;
+}
+
+.fx[data-fx='hearts'] > i::before {
+  display: block;
+  color: rgb(var(--fx));
+  font-size: 18px;
+  line-height: 1;
+  text-shadow: 0 0 6px rgb(var(--fx) / 0.8);
+  content: '♥';
+}
+
+.fx[data-fx='hearts'] > i:nth-child(1) { --dy: -18px; --hx: -18px; }
+.fx[data-fx='hearts'] > i:nth-child(2) { --dy: 6px; --hx: 4px; animation-delay: calc(var(--launch) + 90ms); }
+.fx[data-fx='hearts'] > i:nth-child(3) { --dy: -4px; --hx: 22px; animation-delay: calc(var(--launch) + 180ms); }
+
+/* Out of a Play Rough scuffle, the hearts pop up from the dust instead. */
+.fx[data-fx='dust'] ~ .fx[data-fx='hearts'] > i:nth-child(-n+3) {
+  left: var(--at-x);
+  animation: heartPop calc(var(--d) * 0.45) var(--ease-out) calc(var(--strike) + 80ms) both;
+}
+
+@keyframes heart {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  15% { opacity: 1; }
+  85% { opacity: 1; transform: translate(var(--fly), var(--dy)) scale(1.1); }
+  100% { opacity: 0; transform: translate(var(--fly), var(--dy)) scale(1.6); }
+}
+
+@keyframes heartPop {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--hx), -42px) scale(1.2); }
+}
+
+/* Drain: energy flows back from the target to the user (Horn Leech, Draining Kiss). */
+.fx[data-fx='drain'] > i:nth-child(-n+4) {
+  --back: calc(var(--hit) - 10px);
+  top: 45%;
+  left: var(--at-x);
+  width: 9px;
+  height: 9px;
+  margin: -4.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 25%, rgb(var(--fx)) 60%, rgb(var(--fx) / 0) 72%);
+  box-shadow: 0 0 6px rgb(var(--fx));
+  animation: drain calc(var(--d) * 0.26) var(--ease-in-out) var(--strike) both;
+}
+
+.fx[data-fx='drain'] > i:nth-child(1) { --dy: -14px; }
+.fx[data-fx='drain'] > i:nth-child(2) { --dy: 10px; animation-delay: calc(var(--strike) + 40ms); }
+.fx[data-fx='drain'] > i:nth-child(3) { --dy: -4px; animation-delay: calc(var(--strike) + 80ms); }
+.fx[data-fx='drain'] > i:nth-child(4) { --dy: 16px; animation-delay: calc(var(--strike) + 120ms); }
+
+@keyframes drain {
+  0% { opacity: 0; transform: translate(0, var(--dy)) scale(0.6); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--back), 0) scale(1); }
+}
+
+/* Hydro Pump: a thick, flowing jet of water that sprays on impact. */
+.fx[data-fx='stream'] > i:nth-child(1) {
+  top: 42%;
+  right: calc(50% + 20px);
+  width: calc(var(--hit) - 10px);
+  height: 18px;
+  margin-top: -9px;
+  border-radius: 9px;
+  background: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.8) 0 6px, rgb(var(--fx)) 6px 22px);
+  box-shadow: 0 0 14px rgb(var(--fx) / 0.7);
+  transform-origin: right center;
+  animation: jet var(--d) var(--ease-out) both, flow 240ms linear infinite;
+}
+
+.fx[data-fx='stream'] > i:nth-child(n+2) {
+  top: 42%;
+  left: var(--at-x);
+  width: 7px;
+  height: 7px;
+  margin: -3.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 30%, rgb(var(--fx)) 70%);
+  animation: spray calc(var(--d) * 0.2) var(--ease-out) calc(var(--d) * 0.36) 2 both;
+}
+
+.fx[data-fx='stream'] > i:nth-child(2) { --sx: -26px; --sy: -24px; }
+.fx[data-fx='stream'] > i:nth-child(3) { --sx: -30px; --sy: 8px; animation-delay: calc(var(--d) * 0.4); }
+.fx[data-fx='stream'] > i:nth-child(4) { --sx: -16px; --sy: -34px; animation-delay: calc(var(--d) * 0.44); }
+.fx[data-fx='stream'] > i:nth-child(5) { --sx: -20px; --sy: 22px; animation-delay: calc(var(--d) * 0.38); }
+.fx[data-fx='stream'] > i:nth-child(6) { --sx: -34px; --sy: -6px; animation-delay: calc(var(--d) * 0.42); }
+
+@keyframes jet {
+  0%, 22% { opacity: 0; transform: scaleX(0); }
+  36% { opacity: 1; transform: scaleX(1); }
+  76% { opacity: 1; transform: scaleX(1) scaleY(0.85); }
+  100% { opacity: 0; transform: scaleX(1) scaleY(0.15); }
+}
+
+@keyframes flow {
+  to { background-position: -22px 0; }
+}
+
+@keyframes spray {
+  0% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--sx), var(--sy)); }
+}
+
+/* --------------------------------------------------------- waves & rings */
+
+/* Rings rolling out toward the page (Hyper Voice, Dark Pulse). */
+.fx[data-fx='rings-out'] > i:nth-child(-n+3) {
+  top: 42%;
+  left: var(--from-x);
+  width: 56px;
+  height: 56px;
+  margin: -28px;
+  border: 3px solid rgb(var(--fx));
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgb(var(--fx) / 0.6), inset 0 0 8px rgb(var(--fx) / 0.4);
+  animation: ringOut calc(var(--d) * 0.6) var(--ease-out) calc(var(--d) * 0.12) both;
+}
+
+.fx[data-fx='rings-out'] > i:nth-child(2) { animation-delay: calc(var(--d) * 0.24); }
+.fx[data-fx='rings-out'] > i:nth-child(3) { animation-delay: calc(var(--d) * 0.36); }
+
+@keyframes ringOut {
+  0% { opacity: 0; transform: translateX(0) scale(0.3); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(calc(var(--fly) * 0.6)) scale(3.6); }
+}
+
+/* Rings drawn inward to focus the mind (Calm Mind). */
+.fx[data-fx='rings-in'] > i:nth-child(-n+3) {
+  top: 46%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  margin: -30px;
+  border: 3px solid rgb(var(--fx));
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgb(var(--fx) / 0.6);
+  animation: ringIn calc(var(--d) * 0.45) var(--ease-in-out) both;
+}
+
+.fx[data-fx='rings-in'] > i:nth-child(2) { animation-delay: calc(var(--d) * 0.15); }
+.fx[data-fx='rings-in'] > i:nth-child(3) { animation-delay: calc(var(--d) * 0.3); }
+
+@keyframes ringIn {
+  0% { opacity: 0; transform: scale(3); }
+  30% { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(0.3); }
+}
+
+/* Psychic: warping pink ripples over the target. */
+.fx[data-fx='ripple'] > i:nth-child(-n+3) {
+  top: 45%;
+  left: var(--at-x);
+  width: 70px;
+  height: 70px;
+  margin: -35px;
+  border: 3px solid rgb(var(--fx) / 0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgb(var(--fx) / 0.6);
+  animation: ripple calc(var(--d) * 0.5) var(--ease-in-out) calc(var(--d) * 0.2) both;
+}
+
+.fx[data-fx='ripple'] > i:nth-child(2) { animation-delay: calc(var(--d) * 0.32); }
+.fx[data-fx='ripple'] > i:nth-child(3) { animation-delay: calc(var(--d) * 0.44); }
+
+.fx[data-fx='ripple'] > i:nth-child(4) {
+  top: 45%;
+  left: var(--at-x);
+  width: 96px;
+  height: 96px;
+  margin: -48px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(var(--fx) / 0.5), rgb(170 68 255 / 0.3) 60%, rgb(var(--fx) / 0));
+  animation: psywave calc(var(--d) * 0.7) linear calc(var(--d) * 0.18) both;
+}
+
+@keyframes ripple {
+  0% { opacity: 0; transform: scale(0.4, 0.3); }
+  30% { opacity: 1; }
+  60% { transform: scale(1.4, 1.1) rotate(20deg); }
+  100% { opacity: 0; transform: scale(2.2, 1.5) rotate(40deg); }
+}
+
+@keyframes psywave {
+  0% { opacity: 0; filter: hue-rotate(0deg); transform: scale(0.8); }
+  25% { opacity: 0.85; }
+  75% { opacity: 0.85; filter: hue-rotate(80deg); transform: scale(1.1); }
+  100% { opacity: 0; filter: hue-rotate(140deg); transform: scale(1.2); }
+}
+
+/* Hurricane: a spinning funnel of wind over the target. */
+.fx[data-fx='vortex'] > i {
+  left: var(--at-x);
+  height: 12px;
+  border: 2px solid rgb(var(--fx) / 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgb(var(--fx) / 0.5);
+  animation:
+    twister calc(var(--d) * 0.12) linear infinite,
+    vortex calc(var(--d) * 0.72) var(--ease-out) calc(var(--d) * 0.14) both;
+}
+
+.fx[data-fx='vortex'] > i:nth-child(1) { bottom: 2px; width: 22px; margin-left: -11px; }
+.fx[data-fx='vortex'] > i:nth-child(2) { bottom: 16px; width: 36px; margin-left: -18px; animation-delay: -40ms, calc(var(--d) * 0.16); }
+.fx[data-fx='vortex'] > i:nth-child(3) { bottom: 30px; width: 50px; margin-left: -25px; animation-delay: -80ms, calc(var(--d) * 0.18); }
+.fx[data-fx='vortex'] > i:nth-child(4) { bottom: 44px; width: 64px; margin-left: -32px; animation-delay: -20ms, calc(var(--d) * 0.2); }
+.fx[data-fx='vortex'] > i:nth-child(5) { bottom: 58px; width: 78px; margin-left: -39px; animation-delay: -60ms, calc(var(--d) * 0.22); }
+.fx[data-fx='vortex'] > i:nth-child(6) { bottom: 72px; width: 92px; margin-left: -46px; animation-delay: -100ms, calc(var(--d) * 0.24); }
+
+@keyframes twister {
+  0%, 100% { transform: scaleX(1) translateX(0); }
+  50% { transform: scaleX(0.55) translateX(4px); }
+}
+
+@keyframes vortex {
+  0% { opacity: 0; }
+  20%, 75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* --------------------------------------------------------- close combat */
+
+.fx[data-fx='slash'] > i:nth-child(-n+2),
+.fx[data-fx='claw'] > i:nth-child(-n+3) {
+  top: 44%;
+  left: var(--at-x);
+  width: 96px;
+  height: 5px;
+  margin: -2.5px 0 0 -48px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgb(255 255 255 / 0), #fff 40%, rgb(var(--fx)) 70%, rgb(var(--fx) / 0));
+  box-shadow: 0 0 10px rgb(var(--fx) / 0.85);
+  rotate: -36deg;
+  animation: swipe var(--linger) var(--ease-out) var(--strike) both;
+}
+
+.fx[data-fx='slash'] > i:nth-child(2) { rotate: 36deg; animation-delay: calc(var(--strike) + 110ms); }
+
+/* Dragon Claw: three raking marks. */
+.fx[data-fx='claw'] > i:nth-child(n) { rotate: -58deg; width: 70px; margin-left: -35px; }
+.fx[data-fx='claw'] > i:nth-child(1) { translate: -14px 0; }
+.fx[data-fx='claw'] > i:nth-child(2) { animation-delay: calc(var(--strike) + 50ms); }
+.fx[data-fx='claw'] > i:nth-child(3) { translate: 14px 0; animation-delay: calc(var(--strike) + 100ms); }
+
+@keyframes swipe {
+  0% { opacity: 0; transform: scaleX(0); }
+  25% { opacity: 1; transform: scaleX(1); }
+  60% { opacity: 1; transform: scaleX(1.05); }
+  100% { opacity: 0; transform: scaleX(1.1) translateY(4px); }
+}
+
+/* Fire Fang: jaws snap shut on the target. */
+.fx[data-fx='fangs'] > i:nth-child(-n+2) {
+  top: 45%;
+  left: var(--at-x);
+  width: 56px;
+  height: 22px;
+  margin-left: -28px;
+  filter: drop-shadow(0 0 4px rgb(var(--fx)));
+  animation: biteTop var(--linger) var(--ease-out) calc(var(--strike) - 60ms) both;
+}
+
+.fx[data-fx='fangs'] > i:nth-child(1) {
+  margin-top: -30px;
+  background: linear-gradient(#fff 30%, rgb(var(--fx)));
+  clip-path: polygon(0 0, 100% 0, 83% 100%, 67% 0, 50% 100%, 33% 0, 17% 100%);
+}
+
+.fx[data-fx='fangs'] > i:nth-child(2) {
+  margin-top: 8px;
+  background: linear-gradient(rgb(var(--fx)), #fff 70%);
+  clip-path: polygon(0 100%, 17% 0, 33% 100%, 50% 0, 67% 100%, 83% 0, 100% 100%);
+  animation-name: biteBottom;
+}
+
+@keyframes biteTop {
+  0% { opacity: 0; transform: translateY(-16px); }
+  30% { opacity: 1; transform: translateY(-16px); }
+  50% { opacity: 1; transform: translateY(8px); }
+  100% { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes biteBottom {
+  0% { opacity: 0; transform: translateY(16px); }
+  30% { opacity: 1; transform: translateY(16px); }
+  50% { opacity: 1; transform: translateY(-8px); }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+
+/* Impact: a star of light and a ring where the blow lands. */
+.fx[data-fx='impact'] > i { top: 45%; left: var(--at-x); }
+
+.fx[data-fx='impact'] > i:nth-child(-n+4) {
+  width: 5px;
+  height: 54px;
+  margin: -27px 0 0 -2.5px;
+  border-radius: 3px;
+  background: linear-gradient(rgb(var(--fx) / 0), #fff 40%, rgb(var(--fx)) 60%, rgb(var(--fx) / 0));
+  box-shadow: 0 0 8px rgb(var(--fx) / 0.7);
+  animation: spike var(--linger) var(--ease-out) var(--strike) both;
+}
+
+.fx[data-fx='impact'] > i:nth-child(2) { rotate: 45deg; }
+.fx[data-fx='impact'] > i:nth-child(3) { rotate: 90deg; }
+.fx[data-fx='impact'] > i:nth-child(4) { rotate: 135deg; }
+
+.fx[data-fx='impact'] > i:nth-child(5) {
+  width: 44px;
+  height: 44px;
+  margin: -22px;
+  border: 3px solid rgb(var(--fx));
+  border-radius: 50%;
+  animation: ring var(--linger) var(--ease-out) var(--strike) both;
+}
+
+.fx[data-fx='impact'] > i:nth-child(6) {
+  width: 34px;
+  height: 34px;
+  margin: -17px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 25%, rgb(var(--fx)) 50%, rgb(var(--fx) / 0) 70%);
+  animation: pop var(--linger) var(--ease-out) var(--strike) both;
+}
+
+@keyframes spike {
+  0% { opacity: 0; transform: scaleY(0); }
+  20% { opacity: 1; transform: scaleY(1.25); }
+  50% { opacity: 1; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(0.4); }
+}
+
+@keyframes ring {
+  0% { opacity: 0; transform: scale(0.3); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+
+@keyframes pop {
+  0% { opacity: 0; transform: scale(0.2); }
+  20% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+
+/* Flames lick up from the hit (Fire Fang, Fire Punch, Flare Blitz). */
+.fx[data-fx='flames'] > i:nth-child(-n+4) {
+  top: 34%;
+  left: var(--at-x);
+  width: 16px;
+  height: 26px;
+  margin-left: -8px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(ellipse at 50% 75%, rgb(255 246 200) 0 18%, rgb(255 170 40) 45%, rgb(232 64 24) 70%, rgb(232 64 24 / 0) 74%);
+  filter: drop-shadow(0 0 5px rgb(255 120 30));
+  transform-origin: 50% 100%;
+  animation: flame calc(var(--d) * 0.45) var(--ease-out) var(--strike) both;
+}
+
+.fx[data-fx='flames'] > i:nth-child(1) { --fo: -18px; }
+.fx[data-fx='flames'] > i:nth-child(2) { --fo: -6px; animation-delay: calc(var(--strike) + 40ms); }
+.fx[data-fx='flames'] > i:nth-child(3) { --fo: 8px; animation-delay: calc(var(--strike) + 80ms); }
+.fx[data-fx='flames'] > i:nth-child(4) { --fo: 20px; animation-delay: calc(var(--strike) + 120ms); }
+
+@keyframes flame {
+  0% { opacity: 0; transform: translate(var(--fo), 6px) scale(0.3); }
+  25% { opacity: 1; transform: translate(var(--fo), 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--fo), -26px) scale(0.5); }
+}
+
+/* Splinters of shell scatter and settle around the target (Ceaseless Edge, Razor Shell). */
+.fx[data-fx='splinters'] > i:nth-child(-n+5) {
+  top: 44%;
+  left: var(--at-x);
+  width: 10px;
+  height: 5px;
+  margin: -2.5px 0 0 -5px;
+  background: linear-gradient(90deg, #fff, rgb(var(--fx)));
+  clip-path: polygon(0 50%, 100% 0, 80% 100%);
+  filter: drop-shadow(0 0 3px rgb(var(--fx)));
+  animation: splinter calc(var(--d) * 0.5) var(--ease-out) calc(var(--strike) + 80ms) both;
+}
+
+.fx[data-fx='splinters'] > i:nth-child(1) { --sx: -30px; --sy: 40px; }
+.fx[data-fx='splinters'] > i:nth-child(2) { --sx: 22px; --sy: 44px; animation-delay: calc(var(--strike) + 110ms); }
+.fx[data-fx='splinters'] > i:nth-child(3) { --sx: -12px; --sy: 46px; animation-delay: calc(var(--strike) + 140ms); }
+.fx[data-fx='splinters'] > i:nth-child(4) { --sx: 34px; --sy: 38px; animation-delay: calc(var(--strike) + 90ms); }
+.fx[data-fx='splinters'] > i:nth-child(5) { --sx: 4px; --sy: 48px; animation-delay: calc(var(--strike) + 160ms); }
+
+@keyframes splinter {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  15% { opacity: 1; }
+  55% { opacity: 1; transform: translate(var(--sx), calc(var(--sy) * 0.4 - 12px)) rotate(200deg); }
+  85% { opacity: 1; transform: translate(var(--sx), var(--sy)) rotate(300deg); }
+  100% { opacity: 0; transform: translate(var(--sx), var(--sy)) rotate(300deg); }
+}
+
+/* Sacred Sword, Behemoth Blade: a great glowing blade swings down. */
+.fx[data-fx='sword'] > i:nth-child(1) {
+  top: 44%;
+  left: var(--at-x);
+  width: 13px;
+  height: 96px;
+  margin: -84px 0 0 -6.5px;
+  background: linear-gradient(#fff, rgb(var(--fx)) 70%, rgb(var(--fx) / 0.7));
+  filter: drop-shadow(0 0 8px rgb(var(--fx)));
+  transform-origin: 50% 88%;
+  animation: swing calc(var(--d) * 0.5) var(--ease-out) calc(var(--strike) - var(--d) * 0.12) both;
+}
+
+.fx[data-fx='sword'] > i:nth-child(2) {
+  top: 44%;
+  left: var(--at-x);
+  width: 116px;
+  height: 116px;
+  margin: -58px;
+  border-top: 4px solid rgb(var(--fx));
+  border-radius: 50%;
+  filter: blur(1px) drop-shadow(0 0 6px rgb(var(--fx)));
+  animation: arc calc(var(--d) * 0.4) var(--ease-out) var(--strike) both;
+}
+
+@keyframes swing {
+  0% { opacity: 0; transform: rotate(-70deg) scale(0.6); }
+  25% { opacity: 1; transform: rotate(-60deg) scale(1); }
+  50% { opacity: 1; transform: rotate(50deg); }
+  100% { opacity: 0; transform: rotate(60deg); }
+}
+
+@keyframes arc {
+  0% { opacity: 0; transform: rotate(-80deg); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(40deg); }
+}
+
+/* Play Rough: a scuffle of dust, with hearts and stars popping out. */
+.fx[data-fx='dust'] > i:nth-child(-n+4) {
+  top: 42%;
+  left: var(--at-x);
+  width: 34px;
+  height: 30px;
+  margin: -15px 0 0 -17px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(240 225 230 / 0.95), rgb(200 170 180 / 0.7) 60%, rgb(200 170 180 / 0));
+  animation: puff calc(var(--d) * 0.5) var(--ease-out) calc(var(--strike) - 60ms) both;
+}
+
+.fx[data-fx='dust'] > i:nth-child(1) { --px: -16px; --py: -6px; }
+.fx[data-fx='dust'] > i:nth-child(2) { --px: 14px; --py: -10px; animation-delay: calc(var(--strike) - 10ms); }
+.fx[data-fx='dust'] > i:nth-child(3) { --px: -4px; --py: 10px; animation-delay: calc(var(--strike) + 40ms); }
+.fx[data-fx='dust'] > i:nth-child(4) { --px: 18px; --py: 8px; animation-delay: calc(var(--strike) + 90ms); }
+
+.fx[data-fx='dust'] > i:nth-child(n+5) {
+  top: 40%;
+  left: var(--at-x);
+  color: rgb(var(--fx));
+  font-size: 14px;
+  line-height: 1;
+  animation: pop calc(var(--d) * 0.3) var(--ease-out) calc(var(--strike) + 120ms) both;
+}
+
+.fx[data-fx='dust'] > i:nth-child(n+5)::before { content: '✦'; }
+.fx[data-fx='dust'] > i:nth-child(5) { translate: -24px -18px; }
+.fx[data-fx='dust'] > i:nth-child(6) { translate: 20px -24px; animation-delay: calc(var(--strike) + 220ms); }
+
+@keyframes puff {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.3); }
+  25% { opacity: 1; transform: translate(var(--px), var(--py)) scale(1); }
+  60% { transform: translate(calc(var(--px) * 1.2), calc(var(--py) * 1.2)) scale(1.15); }
+  100% { opacity: 0; transform: translate(calc(var(--px) * 1.4), calc(var(--py) * 1.4)) scale(1.3); }
+}
+
+/* -------------------------------------------------------------- charges */
+
+/* An elemental cloak that rides with the user's charge (Aqua Jet, Flare Blitz, Brave Bird). */
+.fx[data-fx='cloak'] > i:nth-child(1) {
+  bottom: 4px;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  margin-left: -48px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(var(--fx) / 0) 38%, rgb(var(--fx) / 0.6) 68%, rgb(var(--fx) / 0));
+  filter: blur(1px);
+  animation: cloakDash var(--d) var(--ease-out) both;
+}
+
+[data-motion='dive'] .fx[data-fx='cloak'] > i:nth-child(1) { animation-name: cloakDive; }
+
+@keyframes cloakDash {
+  0% { opacity: 0; transform: none; }
+  10% { opacity: 1; }
+  14% { transform: translateX(8px); }
+  30%, 52% { opacity: 1; transform: translateX(-64px) scaleX(1.25); }
+  82% { opacity: 0.6; transform: none; }
+  100% { opacity: 0; transform: none; }
+}
+
+@keyframes cloakDive {
+  0% { opacity: 0; transform: none; }
+  12% { opacity: 1; }
+  24% { transform: translate(12px, -46px); }
+  44%, 56% { opacity: 1; transform: translate(-70px, 0) scaleX(1.2); }
+  82% { opacity: 0.4; transform: none; }
+  100% { opacity: 0; transform: none; }
+}
+
+/* Speed lines streaming behind a charge. */
+.fx[data-fx='speed'] > i:nth-child(-n+4) {
+  left: 52%;
+  width: 70px;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(to right, rgb(var(--fx)), rgb(var(--fx) / 0));
+  animation: speedLine var(--d) var(--ease-out) both;
+}
+
+.fx[data-fx='speed'] > i:nth-child(1) { top: 26%; }
+.fx[data-fx='speed'] > i:nth-child(2) { top: 40%; width: 90px; animation-delay: 30ms; }
+.fx[data-fx='speed'] > i:nth-child(3) { top: 54%; animation-delay: 60ms; }
+.fx[data-fx='speed'] > i:nth-child(4) { top: 68%; width: 54px; animation-delay: 90ms; }
+
+/* Extreme Speed: the user is gone, and white streaks cut across to the target. */
+[data-motion='vanish'] .fx[data-fx='speed'] > i:nth-child(-n+4) {
+  left: auto;
+  right: 46%;
+  transform-origin: right center;
+  animation-name: streak;
+}
+
+@keyframes speedLine {
+  0%, 16% { opacity: 0; transform: translateX(0); }
+  28% { opacity: 1; transform: translateX(-56px); }
+  54% { opacity: 0.8; transform: translateX(-66px); }
+  68%, 100% { opacity: 0; transform: translateX(-66px); }
+}
+
+@keyframes streak {
+  0%, 8% { opacity: 0; transform: scaleX(0.1); }
+  16% { opacity: 1; transform: scaleX(2.2); }
+  30%, 100% { opacity: 0; transform: translateX(calc(40px - var(--hit))) scaleX(0.4); }
+}
+
+/* Shadow Sneak: the user's shadow stretches along the ground and strikes. */
+.fx[data-fx='sneak'] > i:nth-child(1) {
+  right: 50%;
+  bottom: -2px;
+  width: var(--hit);
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(to left, rgb(20 10 30 / 0.85), rgb(var(--fx) / 0.7) 70%, rgb(var(--fx) / 0));
+  transform-origin: right center;
+  animation: sneak calc(var(--d) * 0.6) var(--ease-out) calc(var(--d) * 0.1) both;
+}
+
+.fx[data-fx='sneak'] > i:nth-child(2) {
+  bottom: 0;
+  left: var(--at-x);
+  width: 20px;
+  height: 54px;
+  margin-left: -10px;
+  border-radius: 50% 50% 4px 4px;
+  background: linear-gradient(rgb(var(--fx) / 0), rgb(30 10 40 / 0.9));
+  transform-origin: 50% 100%;
+  animation: stake var(--linger) var(--ease-out) calc(var(--strike) - 60ms) both;
+}
+
+@keyframes sneak {
+  0% { opacity: 0; transform: scaleX(0); }
+  20% { opacity: 1; }
+  60% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1); }
+}
+
+/* ---------------------------------------------------------------- ground */
+
+/* Earthquake: shock rings roll out along the ground and debris flies. */
+.fx[data-fx='quake'] > i:nth-child(-n+3) {
+  bottom: 0;
+  left: 50%;
+  width: 84px;
+  height: 16px;
+  margin-left: -42px;
+  border: 3px solid rgb(var(--fx));
+  border-radius: 50%;
+  animation: shock calc(var(--d) * 0.6) var(--ease-out) var(--strike) both;
+}
+
+.fx[data-fx='quake'] > i:nth-child(2) { animation-delay: calc(var(--strike) + 140ms); }
+.fx[data-fx='quake'] > i:nth-child(3) { animation-delay: calc(var(--strike) + 280ms); }
+
+.fx[data-fx='quake'] > i:nth-child(n+4) {
+  bottom: 6px;
+  width: 7px;
+  height: 7px;
+  background: rgb(var(--fx));
+  box-shadow: 0 0 0 1px rgb(var(--space) / 0.4);
+  animation: debris calc(var(--d) * 0.5) var(--ease-out) var(--strike) both;
+}
+
+.fx[data-fx='quake'] > i:nth-child(4) { left: 16%; --debris-x: -24px; }
+.fx[data-fx='quake'] > i:nth-child(5) { left: 78%; --debris-x: 22px; animation-delay: calc(var(--strike) + 60ms); }
+.fx[data-fx='quake'] > i:nth-child(6) { left: 40%; --debris-x: -10px; animation-delay: calc(var(--strike) + 120ms); }
+
+@keyframes shock {
+  0% { opacity: 0; transform: scale(0.4); }
+  10% { opacity: 1; }
+  100% { opacity: 0; transform: scale(4, 2.6); }
+}
+
+@keyframes debris {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  8% { opacity: 1; }
+  50% { opacity: 1; transform: translate(calc(var(--debris-x) * 0.6), -36px) rotate(140deg); }
+  100% { opacity: 0; transform: translate(var(--debris-x), 0) rotate(260deg); }
+}
+
+/* Earth Power: the ground under the target bursts open in columns of fire. */
+.fx[data-fx='eruption'] > i:nth-child(-n+3) {
+  bottom: 0;
+  left: var(--at-x);
+  width: 16px;
+  height: 84px;
+  margin-left: -8px;
+  border-radius: 8px 8px 2px 2px;
+  background: linear-gradient(rgb(255 200 80 / 0), rgb(255 140 40 / 0.9) 50%, rgb(var(--fx)));
+  filter: drop-shadow(0 0 6px rgb(255 120 30));
+  transform-origin: 50% 100%;
+  animation: erupt calc(var(--d) * 0.4) var(--ease-out) calc(var(--d) * 0.3) both;
+}
+
+.fx[data-fx='eruption'] > i:nth-child(1) { translate: -26px 0; height: 64px; }
+.fx[data-fx='eruption'] > i:nth-child(2) { animation-delay: calc(var(--d) * 0.4); }
+.fx[data-fx='eruption'] > i:nth-child(3) { translate: 24px 0; height: 70px; animation-delay: calc(var(--d) * 0.5); }
+
+.fx[data-fx='eruption'] > i:nth-child(n+4) {
+  bottom: 4px;
+  left: var(--at-x);
+  width: 9px;
+  height: 8px;
+  border-radius: 2px;
+  background: rgb(var(--fx));
+  box-shadow: 0 0 0 1px rgb(var(--space) / 0.4);
+  animation: debris calc(var(--d) * 0.45) var(--ease-out) calc(var(--d) * 0.36) both;
+}
+
+.fx[data-fx='eruption'] > i:nth-child(4) { --debris-x: -34px; }
+.fx[data-fx='eruption'] > i:nth-child(5) { --debris-x: 30px; animation-delay: calc(var(--d) * 0.46); }
+.fx[data-fx='eruption'] > i:nth-child(6) { --debris-x: -8px; animation-delay: calc(var(--d) * 0.54); }
+
+@keyframes erupt {
+  0% { opacity: 0; transform: scaleY(0); }
+  30% { opacity: 1; transform: scaleY(1.1); }
+  100% { opacity: 0; transform: scaleY(0.6); }
+}
+
+/* -------------------------------------------------------- status moves */
+
+/* Stat-raising chevrons rise around the user. */
+.fx[data-fx='rise'] > i:nth-child(-n+4) {
+  bottom: 12px;
+  width: 12px;
+  height: 9px;
+  background: rgb(var(--fx));
+  clip-path: polygon(50% 0, 100% 70%, 100% 100%, 50% 30%, 0 100%, 0 70%);
+  filter: drop-shadow(0 0 3px rgb(var(--fx)));
+  animation: rise calc(var(--d) * 0.6) var(--ease-out) both;
+}
+
+.fx[data-fx='rise'] > i:nth-child(1) { left: 26%; }
+.fx[data-fx='rise'] > i:nth-child(2) { left: 64%; animation-delay: calc(var(--d) * 0.12); }
+.fx[data-fx='rise'] > i:nth-child(3) { left: 40%; animation-delay: calc(var(--d) * 0.24); }
+.fx[data-fx='rise'] > i:nth-child(4) { left: 54%; animation-delay: calc(var(--d) * 0.36); }
+
+@keyframes rise {
+  0% { opacity: 0; transform: translateY(0); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-64px); }
+}
+
+/* Swords Dance: swords sweep back and forth across the user. */
+.fx[data-fx='swords'] > i {
+  top: 30%;
+  left: 50%;
+  width: 9px;
+  height: 46px;
+  margin: -23px 0 0 -4.5px;
+  background: linear-gradient(#fff, rgb(var(--fx)) 70%, rgb(150 110 60));
+  filter: drop-shadow(0 0 4px rgb(var(--fx)));
+  animation: sweepLeft calc(var(--d) * 0.3) var(--ease-in-out) both;
+}
+
+.fx[data-fx='swords'] > i:nth-child(even) { animation-name: sweepRight; }
+.fx[data-fx='swords'] > i:nth-child(3),
+.fx[data-fx='swords'] > i:nth-child(4) { animation-delay: calc(var(--d) * 0.25); }
+.fx[data-fx='swords'] > i:nth-child(5),
+.fx[data-fx='swords'] > i:nth-child(6) { animation-delay: calc(var(--d) * 0.5); }
+
+@keyframes sweepLeft {
+  0% { opacity: 1; transform: translate(50px, 0) rotate(24deg) scale(0.6); }
+  50% { transform: translate(0, -18px) rotate(0deg) scale(0.9); }
+  100% { opacity: 0.3; transform: translate(-50px, 0) rotate(-24deg) scale(1); }
+}
+
+@keyframes sweepRight {
+  0% { opacity: 1; transform: translate(-50px, 0) rotate(-24deg) scale(0.6); }
+  50% { transform: translate(0, -18px) rotate(0deg) scale(0.9); }
+  100% { opacity: 0.3; transform: translate(50px, 0) rotate(24deg) scale(1); }
+}
+
+/* A moon rises over the user: pale for Moonlight, red for Blood Moon. */
+.fx[data-fx='moon'] > i:nth-child(1) {
+  top: -32%;
+  left: 50%;
+  width: 46px;
+  height: 46px;
+  margin-left: -23px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 62% 56%, rgb(0 0 0 / 0.14) 0 9%, rgb(0 0 0 / 0) 10%),
+    radial-gradient(circle at 38% 70%, rgb(0 0 0 / 0.1) 0 7%, rgb(0 0 0 / 0) 8%),
+    radial-gradient(circle at 34% 34%, #fff 0 10%, rgb(var(--fx)) 52%, rgb(var(--fx) / 0.85) 70%);
+  box-shadow: 0 0 24px 6px rgb(var(--fx) / 0.55);
+  animation: moonRise var(--d) var(--ease-out) both;
+}
+
+.fx[data-fx='moon'] > i:nth-child(2) {
+  top: 0;
+  left: 50%;
+  width: 70px;
+  height: 92px;
+  margin-left: -35px;
+  background: linear-gradient(rgb(var(--fx) / 0.5), rgb(var(--fx) / 0));
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  animation: moonbeam var(--d) var(--ease-out) both;
+}
+
+@keyframes moonRise {
+  0% { opacity: 0; transform: translateY(50px) scale(0.6); }
+  25% { opacity: 0.95; transform: none; }
+  80% { opacity: 0.95; transform: none; }
+  100% { opacity: 0; transform: none; }
+}
+
+@keyframes moonbeam {
+  0%, 20% { opacity: 0; }
+  40%, 75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Twinkling sparkles around the user (Moonlight, Roost, Dazzling Gleam). */
+.fx[data-fx='sparkles'] > i {
+  width: 12px;
+  height: 12px;
+  margin: -6px;
+  background: #fff;
+  filter: drop-shadow(0 0 4px rgb(var(--fx)));
+  animation: twinkle calc(var(--d) * 0.4) var(--ease-in-out) both;
+}
+
+.fx[data-fx='sparkles'] > i:nth-child(1) { top: 18%; left: 28%; animation-delay: calc(var(--d) * 0.15); }
+.fx[data-fx='sparkles'] > i:nth-child(2) { top: 6%; left: 62%; animation-delay: calc(var(--d) * 0.23); }
+.fx[data-fx='sparkles'] > i:nth-child(3) { top: 40%; left: 82%; animation-delay: calc(var(--d) * 0.31); }
+.fx[data-fx='sparkles'] > i:nth-child(4) { top: 62%; left: 18%; animation-delay: calc(var(--d) * 0.39); }
+.fx[data-fx='sparkles'] > i:nth-child(5) { top: 28%; left: 48%; animation-delay: calc(var(--d) * 0.47); }
+.fx[data-fx='sparkles'] > i:nth-child(6) { top: 70%; left: 72%; animation-delay: calc(var(--d) * 0.55); }
+
+@keyframes twinkle {
+  0% { opacity: 0; transform: scale(0) rotate(0deg); }
+  40% { opacity: 1; transform: scale(1.2) rotate(45deg); }
+  100% { opacity: 0; transform: scale(0.3) rotate(90deg); }
+}
+
+/* Dazzling Gleam: a blinding flash of fairy light. */
+.fx[data-fx='flash'] > i:nth-child(1) {
+  top: 45%;
+  left: 50%;
+  width: 300px;
+  height: 300px;
+  margin: -150px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 255 255 / 0.95), rgb(var(--fx) / 0.55) 45%, rgb(var(--fx) / 0));
+  animation: gleam calc(var(--d) * 0.6) var(--ease-out) calc(var(--d) * 0.2) both;
+}
+
+@keyframes gleam {
+  0% { opacity: 0; transform: scale(0.1); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.2); }
+}
+
+/* King's Shield: a steel shield snaps up in front of Aegislash. */
+.fx[data-fx='shield'] > i:nth-child(1) {
+  top: 46%;
+  left: calc(50% - 46px);
+  width: 56px;
+  height: 66px;
+  margin: -33px 0 0 -28px;
+  background: linear-gradient(135deg, rgb(255 255 255 / 0.85), rgb(var(--fx) / 0.75) 40%, rgb(var(--fx) / 0.4) 70%, rgb(255 255 255 / 0.6));
+  clip-path: polygon(50% 0, 100% 24%, 100% 76%, 50% 100%, 0 76%, 0 24%);
+  filter: drop-shadow(0 0 8px rgb(var(--fx)));
+  animation: shield var(--d) var(--ease-out) both;
+}
+
+@keyframes shield {
+  0% { opacity: 0; transform: scale(0.2, 0.6); }
+  25% { opacity: 0.95; transform: scale(1.08); }
+  35%, 80% { opacity: 0.9; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+
+/* Double Team: afterimages of the sprite flicker to either side. */
+.fx[data-fx='clones'] > img {
+  bottom: 4px;
+  left: 50%;
+  max-width: none;
+  image-rendering: pixelated;
+  translate: -50% 0;
+  animation: cloneLeft calc(var(--d) * 0.8) var(--ease-in-out) both;
+}
+
+.fx[data-fx='clones'] > img:nth-child(2) { animation-name: cloneRight; }
+
+@keyframes cloneLeft {
+  0% { opacity: 0; transform: translateX(0); }
+  20% { opacity: 0.55; }
+  40% { transform: translateX(-42px); }
+  60% { transform: translateX(-20px); }
+  80% { opacity: 0.5; transform: translateX(-48px); }
+  100% { opacity: 0; transform: translateX(0); }
+}
+
+@keyframes cloneRight {
+  0% { opacity: 0; transform: translateX(0); }
+  20% { opacity: 0.55; }
+  40% { transform: translateX(42px); }
+  60% { transform: translateX(20px); }
+  80% { opacity: 0.5; transform: translateX(48px); }
+  100% { opacity: 0; transform: translateX(0); }
+}
+
+/* Roost: feathers drift down as the user rests. */
+.fx[data-fx='feathers'] > i:nth-child(-n+5) {
+  top: -10%;
+  width: 7px;
+  height: 18px;
+  border-radius: 50% 50% 50% 50% / 80% 80% 20% 20%;
+  background: linear-gradient(#fff, rgb(var(--fx) / 0.8));
+  box-shadow: 0 0 3px rgb(var(--fx) / 0.6);
+  animation: feather calc(var(--d) * 0.8) linear both;
+}
+
+.fx[data-fx='feathers'] > i:nth-child(1) { left: 24%; }
+.fx[data-fx='feathers'] > i:nth-child(2) { left: 40%; animation-delay: calc(var(--d) * 0.1); }
+.fx[data-fx='feathers'] > i:nth-child(3) { left: 58%; animation-delay: calc(var(--d) * 0.05); }
+.fx[data-fx='feathers'] > i:nth-child(4) { left: 72%; animation-delay: calc(var(--d) * 0.15); }
+.fx[data-fx='feathers'] > i:nth-child(5) { left: 32%; animation-delay: calc(var(--d) * 0.2); }
+
+@keyframes feather {
+  0% { opacity: 0; transform: translate(0, 0) rotate(-30deg); }
+  15% { opacity: 1; }
+  35% { transform: translate(10px, 28px) rotate(25deg); }
+  65% { transform: translate(-8px, 58px) rotate(-25deg); }
+  100% { opacity: 0; transform: translate(6px, 88px) rotate(20deg); }
+}
+
+/* Leaves scatter from the target (Leaf Blade, Wood Hammer, Forest's Curse). */
+.fx[data-fx='leaves'] > i:nth-child(-n+5) {
+  top: 44%;
+  left: var(--at-x);
+  width: 12px;
+  height: 7px;
+  margin: -3.5px 0 0 -6px;
+  border-radius: 0 100% 0 100%;
+  background: linear-gradient(135deg, rgb(170 236 120), rgb(var(--fx)) 60%, rgb(60 130 40));
+  animation: leaf calc(var(--d) * 0.5) var(--ease-out) var(--strike) both;
+}
+
+.fx[data-fx='leaves'] > i:nth-child(1) { --lx: -30px; --ly: -26px; }
+.fx[data-fx='leaves'] > i:nth-child(2) { --lx: 24px; --ly: -30px; animation-delay: calc(var(--strike) + 30ms); }
+.fx[data-fx='leaves'] > i:nth-child(3) { --lx: -36px; --ly: 8px; animation-delay: calc(var(--strike) + 60ms); }
+.fx[data-fx='leaves'] > i:nth-child(4) { --lx: 30px; --ly: 10px; animation-delay: calc(var(--strike) + 90ms); }
+.fx[data-fx='leaves'] > i:nth-child(5) { --lx: 0px; --ly: -40px; animation-delay: calc(var(--strike) + 120ms); }
+
+@keyframes leaf {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.5); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--lx), var(--ly)) rotate(320deg) scale(1); }
+}
+
+/* Forest's Curse: a wreath of the forest closes around the target. */
+.fx[data-fx='wreath'] > i:nth-child(1) {
+  top: 45%;
+  left: var(--at-x);
+  width: 76px;
+  height: 76px;
+  margin: -38px;
+  border: 5px dotted rgb(var(--fx));
+  border-radius: 50%;
+  filter: drop-shadow(0 0 5px rgb(var(--fx)));
+  animation: wreath calc(var(--d) * 0.6) var(--ease-out) calc(var(--d) * 0.3) both;
+}
+
+@keyframes wreath {
+  0% { opacity: 0; transform: scale(1.6) rotate(0deg); }
+  30% { opacity: 1; transform: scale(1) rotate(90deg); }
+  80% { opacity: 1; transform: scale(1) rotate(200deg); }
+  100% { opacity: 0; transform: scale(0.8) rotate(240deg); }
+}
+
+/* Dragon Dance: dragon-fire wisps spiral up around the user. */
+.fx[data-fx='aura'] > i:nth-child(-n+5) {
+  bottom: 6px;
+  left: 50%;
+  width: 18px;
+  height: 30px;
+  margin-left: -9px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(ellipse at 50% 75%, rgb(255 255 255 / 0.9) 0 15%, rgb(var(--fx)) 45%, rgb(var(--fx) / 0) 72%);
+  filter: drop-shadow(0 0 6px rgb(var(--fx)));
+  animation: auraRise calc(var(--d) * 0.55) var(--ease-out) both;
+}
+
+.fx[data-fx='aura'] > i:nth-child(1) { --ax: -34px; }
+.fx[data-fx='aura'] > i:nth-child(2) { --ax: 30px; animation-delay: calc(var(--d) * 0.1); }
+.fx[data-fx='aura'] > i:nth-child(3) { --ax: -14px; animation-delay: calc(var(--d) * 0.2); }
+.fx[data-fx='aura'] > i:nth-child(4) { --ax: 18px; animation-delay: calc(var(--d) * 0.3); }
+.fx[data-fx='aura'] > i:nth-child(5) { --ax: 0px; animation-delay: calc(var(--d) * 0.4); }
+
+@keyframes auraRise {
+  0% { opacity: 0; transform: translate(var(--ax), 0) scale(0.5); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(var(--ax) * -0.6), -70px) scale(1.1); }
+}

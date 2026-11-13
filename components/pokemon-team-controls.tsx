@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useId, useRef, type CSSProperties } from 'react';
-import { Check, MoreHorizontal, Pause, Play, RotateCcw } from 'lucide-react';
-import { TYPE_COLORS } from '@/lib/pokemon-team';
+import { Check, MoreHorizontal, Pause, Play, RotateCcw, Sparkles } from 'lucide-react';
+import { TYPE_COLORS, TYPE_INK } from '@/lib/pokemon-team';
 import { PokeBallGlyph } from './pokemon-actor';
 import type { TeamState } from './use-pokemon-team';
 import styles from './pokemon-team-controls.module.css';
@@ -15,7 +15,7 @@ type Props = {
   onExpandedChange: (open: boolean) => void;
 };
 
-const typeStyle = (type: keyof typeof TYPE_COLORS) => ({ '--type': TYPE_COLORS[type] }) as CSSProperties;
+const typeStyle = (type: keyof typeof TYPE_COLORS) => ({ '--type': TYPE_COLORS[type], '--type-ink': TYPE_INK[type] }) as CSSProperties;
 
 /** The companion's menu: Fight (four moves), Mega Evolution, the party, pause and reset. */
 export function PokemonTeamControls({ team, paused, disabled, onPause, onExpandedChange }: Props) {
@@ -103,8 +103,9 @@ export function PokemonTeamControls({ team, paused, disabled, onPause, onExpande
         <p className={styles.current} style={typeStyle(pokemon.types[0])}>
           <span className={styles.name}>
             {pokemon.name}
-            {pokemon.shiny ? <span className={styles.shiny} title="Shiny">★<span className="sr-only"> shiny</span></span> : null}
+            {pokemon.shiny ? <span className={styles.shiny} title="Shiny"><Sparkles size={12} strokeWidth={2} aria-hidden="true" /><span className="sr-only">Shiny</span></span> : null}
           </span>
+          {pokemon.tag ? <span className={styles.formTag}>{pokemon.tag}</span> : null}
           <span className={styles.types}>
             {pokemon.types.map((type) => <span key={type} className={styles.type} style={typeStyle(type)}>{type}</span>)}
           </span>
@@ -137,6 +138,21 @@ export function PokemonTeamControls({ team, paused, disabled, onPause, onExpande
             <span>{pokemon.canMega ? 'Mega Evolve' : 'Mega Evolved'}</span>
           </button>
         ) : null}
+        {pokemon.formChange?.action ? (
+          <button
+            type="button"
+            className={`${styles.action} ${styles.mega}`}
+            data-change={pokemon.formChange.kind}
+            disabled={disabled || !pokemon.canChange}
+            onClick={() => choose(team.changeForm)}
+          >
+            <span className={styles.keyStone} aria-hidden="true" />
+            <span>{pokemon.canChange ? pokemon.formChange.action : `${pokemon.formChange.tag} active`}</span>
+          </button>
+        ) : null}
+        {pokemon.formChange?.kind === 'stance' ? (
+          <p className={styles.note}>Stance Change: Blade Forme to attack, Shield Forme for King&rsquo;s Shield.</p>
+        ) : null}
 
         <div className={styles.separator} role="separator" />
         <p className={styles.subheading}>Party</p>
@@ -156,7 +172,8 @@ export function PokemonTeamControls({ team, paused, disabled, onPause, onExpande
                   {/* eslint-disable-next-line @next/next/no-img-element -- native-size pixel icon */}
                   <img src={member.still} alt="" width={48} height={48} draggable={false} />
                 </span>
-                <span>{member.name}{member.shiny ? ' ★' : ''}</span>
+                <span>{member.name}</span>
+                {member.shiny ? <span className={styles.shiny} title="Shiny"><Sparkles size={12} strokeWidth={2} aria-hidden="true" /><span className="sr-only">Shiny</span></span> : null}
                 {active ? <Check className={styles.selected} size={14} aria-hidden="true" /> : null}
               </button>
             );

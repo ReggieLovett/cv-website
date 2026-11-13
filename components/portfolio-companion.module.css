@@ -115,6 +115,15 @@
   white-space: nowrap;
 }
 
+.shiny {
+  display: inline-block;
+  margin-left: 3px;
+  vertical-align: -1px;
+  color: rgb(var(--shiny-ink, 240 196 40));
+}
+
+:global(html[data-theme='light']) .shiny { --shiny-ink: 168 118 0; }
+
 .ask {
   display: flex;
   align-items: center;

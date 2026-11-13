@@ -2,9 +2,9 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import type { CSSProperties, FormEvent, KeyboardEvent, ReactNode } from 'react';
-import { ArrowUp, ArrowUpRight, RotateCcw, Square, Trash2, X } from 'lucide-react';
+import { ArrowUp, ArrowUpRight, RotateCcw, Sparkles, Square, Trash2, X } from 'lucide-react';
 import { CHAT_PERSONAS, type ChatPersona } from '@/lib/chat-persona';
-import { TYPE_COLORS } from '@/lib/pokemon-team';
+import { TYPE_COLORS, TYPE_INK, type PokemonType } from '@/lib/pokemon-team';
 import { play } from '@/lib/sounds';
 import { PokemonActor, PokeBallGlyph } from './pokemon-actor';
 import type { TeamState } from './use-pokemon-team';
@@ -84,6 +84,8 @@ function MessageContent({ content, onNavigate, reveal = false }: { content: stri
   return <div className={styles.messageContent}>{parts}</div>;
 }
 
+const typeVars = (type: PokemonType) => ({ '--type': TYPE_COLORS[type], '--type-ink': TYPE_INK[type] }) as CSSProperties;
+
 /**
  * The header's battle scene: the active Pokémon on its platform, its nameplate
  * and types, the party's six Poké Balls, and Mega Evolution when it can.
@@ -92,22 +94,41 @@ function BattleScene({ team, still }: { team: TeamState; still: boolean }) {
   const { pokemon, party, stage, text } = team;
   const busy = stage.kind !== 'idle' && stage.kind !== 'walk';
   return (
-    <div className={styles.scene} style={{ '--type': TYPE_COLORS[pokemon.types[0]] } as CSSProperties}>
+    <div className={styles.scene} style={typeVars(pokemon.types[0])}>
       <div className={styles.status}>
         <p className={styles.nameplate}>
           <span className={styles.pokemonName}>{pokemon.name}</span>
-          {pokemon.shiny ? <span className={styles.shiny} title="Shiny">★<span className="sr-only"> shiny</span></span> : null}
-          {pokemon.mega ? <span className={styles.megaTag}>Mega</span> : null}
+          {pokemon.shiny ? (
+            <span className={styles.shiny} title="Shiny">
+              <Sparkles size={12} strokeWidth={2} aria-hidden="true" />
+              <span className="sr-only">Shiny</span>
+            </span>
+          ) : null}
+          {pokemon.tag ? <span className={styles.megaTag} data-tag={pokemon.state === 'mega' ? 'mega' : pokemon.formChange?.kind}>{pokemon.tag}</span> : null}
           {pokemon.canMega ? (
-            <button type="button" className={styles.megaButton} disabled={busy} onClick={team.megaEvolve} aria-label={`Mega Evolve ${pokemon.name}`}>
+            <button type="button" className={styles.megaButton} disabled={busy} onClick={team.megaEvolve} aria-label={`Mega Evolve ${pokemon.name}`} title="Mega Evolve">
               <span className={styles.keyStone} aria-hidden="true" />
-              Mega<span className={styles.megaVerb}> Evolve</span>
+              <span className={styles.changeLabel}>Mega</span>
+            </button>
+          ) : null}
+          {pokemon.canChange && pokemon.formChange ? (
+            <button
+              type="button"
+              className={styles.megaButton}
+              data-change={pokemon.formChange.kind}
+              disabled={busy}
+              onClick={team.changeForm}
+              aria-label={`${pokemon.formChange.action}: change ${pokemon.name}'s form`}
+              title={pokemon.formChange.action}
+            >
+              <span className={styles.keyStone} aria-hidden="true" />
+              <span className={styles.changeLabel}>{pokemon.formChange.short ?? pokemon.formChange.action}</span>
             </button>
           ) : null}
         </p>
         <p className={styles.types}>
           {pokemon.types.map((type) => (
-            <span key={type} className={styles.type} style={{ '--type': TYPE_COLORS[type] } as CSSProperties}>{type}</span>
+            <span key={type} className={styles.type} style={typeVars(type)}>{type}</span>
           ))}
         </p>
         <span className={styles.hp} aria-hidden="true"><span>HP</span><i /></span>
@@ -421,8 +442,9 @@ export default function PortfolioChat({ open, onClose, persona = 'portfolio', te
             )}
           </form>
           {draft.length >= 1_800 ? <p id={`${id}-limit`} className={styles.limit}>{draft.length.toLocaleString()} / 2,000 characters</p> : null}
-          <p className={styles.disclosure}>AI can make mistakes. Messages are sent to Groq.</p>
-          <p className={styles.disclosure}>Pokémon fan tribute. Not affiliated with or endorsed by Nintendo or The Pokémon Company.</p>
+          <p className={styles.disclosure}>
+            AI can make mistakes. Messages are sent to Groq. Pokémon fan tribute, not affiliated with or endorsed by Nintendo or The Pokémon Company.
+          </p>
         </div>
       </div>
     </dialog>
