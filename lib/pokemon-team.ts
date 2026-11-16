@@ -564,8 +564,8 @@ export function stanceFor(pokemon: Pick<ActivePokemon, 'formChange' | 'state'>, 
 
 /* ------------------------------------------------------------ behaviour */
 
-/** box: send out a Pokémon from the PC Box in place of the one out now. */
-export type AutoAction = 'attack' | 'combo' | 'walk' | 'switch' | 'box' | 'mega' | 'form';
+/** switch: send out any other Pokémon on the roster, party or PC Box alike. */
+export type AutoAction = 'attack' | 'combo' | 'walk' | 'switch' | 'mega' | 'form';
 
 /** Milliseconds for each staged performance, shared by the hook and the stylesheets. */
 export const DURATIONS = {
@@ -598,12 +598,12 @@ export function nextAutoDelay(random: () => number = Math.random): number {
 }
 
 /**
- * Moves and walks are the common case; switches and transformations are
- * rarer. Never the same non-attack action twice in a row, and Mega or a form
- * change only when one is possible.
+ * Moves, walks and switches are the common case; transformations are rarer.
+ * Never the same non-attack action twice in a row, and Mega or a form change
+ * only when one is possible. `rosterSize` counts the party and the PC Box.
  */
 export function pickAutoAction(
-  { canMega, canChange, teamSize, boxSize = 0 }: { canMega: boolean; canChange?: boolean; teamSize: number; boxSize?: number },
+  { canMega, canChange, rosterSize }: { canMega: boolean; canChange?: boolean; rosterSize: number },
   previous: AutoAction | null,
   random: () => number = Math.random,
 ): AutoAction {
@@ -611,8 +611,7 @@ export function pickAutoAction(
     ['attack', 4],
     ['combo', previous === 'combo' ? 0 : 2],
     ['walk', previous === 'walk' ? 0 : 3],
-    ['switch', previous === 'switch' || teamSize < 2 ? 0 : 2],
-    ['box', previous === 'box' || boxSize < 1 ? 0 : 2],
+    ['switch', previous === 'switch' || rosterSize < 2 ? 0 : 4],
     ['mega', canMega ? 2 : 0],
     ['form', canChange ? 2 : 0],
   ];
@@ -632,7 +631,7 @@ export function pickMove<T extends { name: string }>(moves: T[], previous: strin
   return pool[Math.floor(unit(random) * pool.length)];
 }
 
-/** A different team slot, chosen at random. */
+/** Any roster slot but the current one, each equally likely. */
 export function pickNextSlot(teamSize: number, current: number, random: () => number = Math.random): number {
   if (teamSize < 2) return 0;
   const offset = 1 + Math.floor(unit(random) * (teamSize - 1));

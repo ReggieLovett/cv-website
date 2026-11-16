@@ -42,6 +42,8 @@ export type TeamState = {
   direction: 'left' | 'right';
   attack: (name?: MoveName) => void;
   switchTo: (slot: number) => void;
+  /** Sends out a random Pokémon from the whole roster. */
+  switchRandom: () => void;
   megaEvolve: () => void;
   changeForm: () => void;
   reset: () => void;
@@ -286,6 +288,12 @@ export function usePokemonTeam({ persona, auto, instant, actorWidth, onMoment }:
     run(steps);
   }, [instant, run, settle, team]);
 
+  /** Sends out any other Pokémon on the roster, party or PC Box, each equally likely. */
+  const switchRandom = useCallback(() => {
+    const { slot: current, teamSize } = live.current;
+    if (teamSize > 1) switchTo(pickNextSlot(teamSize, current));
+  }, [switchTo]);
+
   const megaEvolve = useCallback(() => {
     const current = live.current.pokemon;
     if (!current.canMega) return;
@@ -338,17 +346,15 @@ export function usePokemonTeam({ persona, auto, instant, actorWidth, onMoment }:
     const schedule = () => {
       pending.auto = setTimeout(() => {
         if (document.hidden || busy.current) { schedule(); return; }
-        const { pokemon: current, partySlots: members, teamSize } = live.current;
-        const boxed = Array.from({ length: teamSize }, (_, index) => index).filter((index) => !members.includes(index));
+        const { pokemon: current, teamSize } = live.current;
         const action = pickAutoAction(
-          { canMega: current.canMega, canChange: current.canChange, teamSize: members.length, boxSize: boxed.length },
+          { canMega: current.canMega, canChange: current.canChange, rosterSize: teamSize },
           previousAction.current,
         );
         previousAction.current = action;
         if (action === 'attack' || action === 'combo') attack(undefined, action === 'combo');
         else if (action === 'walk') walk();
-        else if (action === 'switch') switchTo(members[pickNextSlot(members.length, Math.max(0, members.indexOf(current.slot)))]);
-        else if (action === 'box') switchTo(boxed[Math.floor(Math.random() * boxed.length)]);
+        else if (action === 'switch') switchRandom();
         else if (action === 'mega') megaEvolve();
         else changeForm();
       }, nextAutoDelay());
@@ -356,7 +362,7 @@ export function usePokemonTeam({ persona, auto, instant, actorWidth, onMoment }:
     schedule();
     return () => clearTimeout(pending.auto);
     // `settled` restarts the rest after every finished action.
-  }, [auto, settled, attack, walk, switchTo, megaEvolve, changeForm]);
+  }, [auto, settled, attack, walk, switchRandom, megaEvolve, changeForm]);
 
   // A narrower window pulls a wandering actor back inside it.
   useEffect(() => {
@@ -380,5 +386,5 @@ export function usePokemonTeam({ persona, auto, instant, actorWidth, onMoment }:
 
   const requestMove = useCallback((name?: MoveName) => attack(name), [attack]);
 
-  return { pokemon, party, box, stage, text, x, direction, attack: requestMove, switchTo, megaEvolve, changeForm, reset };
+  return { pokemon, party, box, stage, text, x, direction, attack: requestMove, switchTo, switchRandom, megaEvolve, changeForm, reset };
 }

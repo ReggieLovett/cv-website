@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useRef, type CSSProperties } from 'react';
-import { Check, MoreHorizontal, Pause, Play, RotateCcw, Sparkles } from 'lucide-react';
+import { Check, MoreHorizontal, Pause, Play, RotateCcw, Shuffle, Sparkles } from 'lucide-react';
 import { TYPE_COLORS, TYPE_INK } from '@/lib/pokemon-team';
 import { PokeBallGlyph } from './pokemon-actor';
 import type { TeamState } from './use-pokemon-team';
@@ -157,6 +157,16 @@ export function PokemonTeamControls({ team, paused, disabled, onPause, onExpande
 
         <div className={styles.separator} role="separator" />
         <p className={styles.subheading}>Party</p>
+        <button
+          type="button"
+          className={styles.action}
+          disabled={disabled || party.length + box.length < 2}
+          title="Send out any Pokémon from the party or the PC Box"
+          onClick={() => choose(team.switchRandom)}
+        >
+          <Shuffle size={15} aria-hidden="true" />
+          <span>Random Pokémon</span>
+        </button>
         <div role="group" aria-label="Party">
           {party.map((member) => {
             const active = member.slot === pokemon.slot;

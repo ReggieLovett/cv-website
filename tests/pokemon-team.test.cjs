@@ -203,20 +203,18 @@ test('form changes: Crowned Sword, Gigantamax and Stance Change behave as in the
 test('automatic actions vary, and transformations only happen when they can', () => {
   for (const value of randoms) {
     const random = () => value;
-    assert.notEqual(pickAutoAction({ canMega: false, teamSize: 6 }, null, random), 'box', 'no Box, no Box swap');
-    assert.notEqual(pickAutoAction({ canMega: false, teamSize: 6, boxSize: 5 }, 'box', random), 'box');
-    assert.notEqual(pickAutoAction({ canMega: false, teamSize: 6 }, null, random), 'mega');
-    assert.notEqual(pickAutoAction({ canMega: false, canChange: false, teamSize: 6 }, null, random), 'form');
-    assert.notEqual(pickAutoAction({ canMega: true, teamSize: 6 }, 'walk', random), 'walk');
-    assert.notEqual(pickAutoAction({ canMega: true, teamSize: 6 }, 'switch', random), 'switch');
-    assert.notEqual(pickAutoAction({ canMega: true, teamSize: 6 }, 'combo', random), 'combo');
-    assert.notEqual(pickAutoAction({ canMega: false, teamSize: 1 }, null, random), 'switch');
+    assert.notEqual(pickAutoAction({ canMega: false, rosterSize: 6 }, null, random), 'mega');
+    assert.notEqual(pickAutoAction({ canMega: false, canChange: false, rosterSize: 6 }, null, random), 'form');
+    assert.notEqual(pickAutoAction({ canMega: true, rosterSize: 6 }, 'walk', random), 'walk');
+    assert.notEqual(pickAutoAction({ canMega: true, rosterSize: 6 }, 'switch', random), 'switch');
+    assert.notEqual(pickAutoAction({ canMega: true, rosterSize: 6 }, 'combo', random), 'combo');
+    assert.notEqual(pickAutoAction({ canMega: false, rosterSize: 1 }, null, random), 'switch');
     const delay = nextAutoDelay(random);
     assert.ok(delay >= 3_000 && delay <= 7_000, `delay ${delay}`);
   }
   const seen = new Set();
-  for (let step = 0; step < 100; step += 1) seen.add(pickAutoAction({ canMega: true, canChange: true, teamSize: 6, boxSize: 3 }, null, () => step / 100));
-  assert.deepEqual([...seen].sort(), ['attack', 'box', 'combo', 'form', 'mega', 'switch', 'walk']);
+  for (let step = 0; step < 100; step += 1) seen.add(pickAutoAction({ canMega: true, canChange: true, rosterSize: 22 }, null, () => step / 100));
+  assert.deepEqual([...seen].sort(), ['attack', 'combo', 'form', 'mega', 'switch', 'walk']);
 });
 
 test('moves and switches never repeat the current choice', () => {
@@ -324,4 +322,22 @@ test('type chips are readable on every type colour', () => {
   for (const [type, colour] of Object.entries(TYPE_COLORS)) {
     assert.ok(contrast(colour, TYPE_INK[type]) >= 4.5, `${type} chip text reaches 4.5:1`);
   }
+});
+
+test('a random switch can bring out any Pokémon on the roster, Box included, never the one already out', () => {
+  const roster = TEAMS.portfolio.length;
+  const reached = new Set();
+  for (let step = 0; step < 1000; step += 1) {
+    const current = step % roster;
+    const next = pickNextSlot(roster, current, () => (step * 0.6180339887) % 1);
+    assert.notEqual(next, current);
+    assert.ok(next >= 0 && next < roster);
+    reached.add(next);
+  }
+  assert.equal(reached.size, roster, 'every roster slot comes up');
+  assert.ok([...reached].some((slot) => slot >= PARTY_SIZE), 'PC Box Pokémon come up');
+  // Equal chances: from any slot, each of the others is one offset of the same size.
+  const counts = new Array(roster).fill(0);
+  for (let index = 0; index < roster - 1; index += 1) counts[pickNextSlot(roster, 0, () => (index + 0.5) / (roster - 1))] += 1;
+  assert.deepEqual(counts.slice(1), new Array(roster - 1).fill(1));
 });
