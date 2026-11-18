@@ -1,0 +1,259 @@
+/* Projects: one full-width lead card, then a two-column grid of identical
+   cards. Card surface, hover and press come from the shared .card in
+   globals.css. Each list item is a size container, so a card lays itself out
+   by its own width: wide enough, and its story splits into two columns. */
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.grid > li {
+  display: flex;
+  min-width: 0;
+  container-type: inline-size;
+}
+
+@media (min-width: 640px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wide { grid-column: 1 / -1; }
+}
+
+@media (min-width: 1024px) {
+  .grid { gap: 2rem; }
+}
+
+.project {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ---- The screenshot well ---- */
+
+.media {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-bottom: 1px solid rgb(var(--line));
+  border-radius: calc(var(--r-card) - 1px) calc(var(--r-card) - 1px) 0 0;
+  background: rgb(var(--void));
+  cursor: zoom-in;
+}
+
+.media img {
+  transition: transform 480ms var(--ease-out);
+}
+
+.media:focus-visible {
+  outline: 2px solid rgb(var(--signal));
+  outline-offset: -2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .project:hover .media img { transform: scale(1.03); }
+}
+
+/* ---- The story ---- */
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.25rem 1.25rem 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .body { padding: 1.5rem; }
+}
+
+/* What I did, the stack and the link sit together, the link at the foot. */
+.details {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+/* Title on the left, its status chips on the right, sharing the title's
+   first baseline. On a narrow card the chips drop beneath the title. */
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.status {
+  display: flex;
+  flex: none;
+  gap: 0.375rem;
+}
+
+.title {
+  font-size: clamp(1.375rem, 1.8vw, 1.625rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.role {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+/* A teammate's name: an underline you can read as a link without it
+   shouting over the title. */
+.person {
+  color: rgb(var(--bone));
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--bone) / 0.3);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition:
+    color var(--dur-hover) var(--ease-out),
+    text-decoration-color var(--dur-hover) var(--ease-out);
+}
+
+.person:focus-visible {
+  outline: 2px solid rgb(var(--signal));
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .person:hover {
+    color: rgb(var(--signal));
+    text-decoration-color: currentColor;
+  }
+}
+
+/* When it was built, ruled like a line on a spec sheet. */
+.built {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.875rem;
+  margin-top: 1rem;
+  padding: 0.625rem 0;
+  border-top: 1px solid rgb(var(--line));
+  border-bottom: 1px solid rgb(var(--line));
+}
+
+.range {
+  color: rgb(var(--bone));
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.summary {
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.did {
+  margin-top: 1.25rem;
+}
+
+.did ul {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.625rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.did li {
+  position: relative;
+  padding-left: 1rem;
+  color: rgb(var(--bone));
+  font-size: 0.875rem;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+/* A small square in the accent, set on the first line's x-height. */
+.did li::before {
+  position: absolute;
+  top: 0.62em;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  background: rgb(var(--signal));
+  content: '';
+}
+
+.stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.75rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+/* On touch, each action is a full 44px target, not just its 28px well. */
+@media (pointer: coarse) {
+  .actions > * { min-height: 2.75rem; }
+}
+
+/* The shared .card lights every action well when the card is hovered. With
+   two actions in a row, only the primary answers the card; the source link
+   lights when it is the one under the pointer. */
+@media (hover: hover) and (pointer: fine) {
+  .project:hover .secondary:not(:hover) :global(.action__well) {
+    border-color: rgb(var(--bone) / 0.32);
+    background: rgb(var(--panel2) / 0.6);
+    color: inherit;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+/* A wide card: the screenshot runs the full width at 2:1, anchored to its
+   top so the product's own masthead shows, and the story splits into two
+   columns: who and when on the left, what I did on the right. */
+@container (min-width: 720px) {
+  .media { aspect-ratio: 2 / 1; }
+
+  .body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    column-gap: clamp(2rem, 5cqi, 3.5rem);
+    padding: clamp(1.5rem, 3.4cqi, 2.25rem);
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 4cqi, 2.375rem);
+    letter-spacing: -0.025em;
+  }
+
+  .did { margin-top: 0.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media img,
+  .project:hover .media img {
+    transform: none;
+    transition: none;
+  }
+}

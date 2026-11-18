@@ -779,6 +779,25 @@ export type WorkEntry = {
   /** Sets the plate proportion, so the grid reads as a composition. */
   ratio: string;
   href?: string;
+  /**
+   * When the system was built, from its git history or the record of the
+   * work. Dates are ISO: a day ('2026-10-27') or a month ('2026-03'). Where
+   * only a rough time is known, `label` is shown instead of a range.
+   */
+  built?: { from: string; to?: string; label?: string };
+  /** What I did on it: "Lead developer", "Project manager, Group 3". */
+  role?: string;
+  /**
+   * The people I built it with, from the repository's commit history. A
+   * `github` handle links their name to their profile.
+   */
+  team?: { name: string; github?: string }[];
+  /** The source repository on GitHub. */
+  repo?: string;
+  /** What I built, one line each. Facts only. */
+  highlights?: string[];
+  /** What it is made with. */
+  stack?: string[];
 };
 
 /**
@@ -786,32 +805,53 @@ export type WorkEntry = {
  */
 export const projects: WorkEntry[] = [
   {
-    id: 'flowstate',
+    id: 'source-sync',
     index: '01',
+    title: 'Source Sync',
+    client: 'Team project',
+    discipline: 'Product Design',
+    year: '2026',
+    summary:
+      'A RAG chatbot paired with a hallucination checker: every answer is verified claim by claim against its source document, with the exact quote as proof.',
+    image: '/project-source-sync.vercel.app.png',
+    alt: 'The Source Sync dashboard, with Chat, Hallucination checker, Hugging Face import, Batch check and History in the sidebar',
+    ratio: '16 / 10',
+    href: 'https://project-source-sync.vercel.app',
+    repo: 'https://github.com/ReggieLovett/project_SourceSync',
+    built: { from: '2026-10-27', to: '2026-11-16' },
+    role: 'Lead developer',
+    team: [{ name: 'devichann', github: 'devichann' }, { name: 'Charl' }],
+    highlights: [
+      'Built the RAG pipeline: PDF and DOCX parsing, chunking, and retrieval from ChromaDB locally or Pinecone when deployed.',
+      'Built the checker that splits each answer into claims, quotes the exact evidence and scores faithfulness, with a Healthcare Strictness Mode.',
+      'Added Hugging Face dataset import, parallel batch audits and CSV audit reports.',
+      'Designed the Source Sync brand and interface, and deployed it on Vercel with Pinecone.',
+    ],
+    stack: ['Next.js', 'TypeScript', 'Groq', 'Pinecone', 'ChromaDB', 'Hugging Face'],
+  },
+  {
+    id: 'flowstate',
+    index: '02',
     title: 'FlowState',
     client: 'Personal',
     discipline: 'Product Design',
     year: '2026',
     summary:
-      'A multi-user scheduling app for students and working professionals. It plans study sessions around every deadline and exam, then lets you drag them into place on a week calendar.',
+      'A multi-user scheduling app for students and working professionals: lectures, labs, meetings, deadlines and deep work in one week calendar.',
     image: '/flowstate-bay-zeta.vercel.app_schedule.png',
     alt: 'The FlowState week calendar with lectures, lab sessions, and deep work blocks',
     ratio: '16 / 10',
     href: 'https://flowstate-bay-zeta.vercel.app',
-  },
-  {
-    id: 'digital-twin',
-    index: '02',
-    title: 'Digital Twin',
-    client: 'ECA Final Project',
-    discipline: 'Product Design',
-    year: '2026',
-    summary:
-      'A team-built digital twin platform with realtime chat and Microsoft Teams integration. I led the build as project manager.',
-    image: '/group-3-digital-twin.vercel.app_chat.png',
-    alt: 'The Digital Twin platform chat interface',
-    ratio: '16 / 10',
-    href: 'https://group-3-digital-twin.vercel.app/artemis',
+    repo: 'https://github.com/ReggieLovett/FlowState',
+    built: { from: '2026-09-10', to: '2026-10-26' },
+    role: 'Solo build',
+    highlights: [
+      'A planner that books study time earliest deadline first, spaces revision before each exam, and says why each block got its slot.',
+      'Isagi, an AI scheduling assistant on Groq: one prompt becomes a set of changes you confirm, checked against your Google Calendar.',
+      'Separate accounts with every query scoped to its owner, a script that proves the isolation, and rate-limited sign-in.',
+      'XP, streaks and unlockable pixel-art avatars for every block you complete.',
+    ],
+    stack: ['Next.js', 'Auth.js', 'Prisma', 'PostgreSQL', 'Groq', 'Bootstrap'],
   },
   {
     id: 'healthcare',
@@ -821,15 +861,48 @@ export const projects: WorkEntry[] = [
     discipline: 'Product Design',
     year: '2026',
     summary:
-      'A complete appointment booking system for a healthcare centre, built as a duo with Rhys Christian Suyu.',
+      'An appointment booking system for a wellness and medical centre: patients book open time slots online, and staff run doctors and schedules from an admin panel.',
     image: '/hosbiz.infinityfree.me__i=1.png',
     alt: 'The HealthCare Wellness and Medical Center booking interface',
     ratio: '16 / 10',
     href: 'http://hosbiz.infinityfree.me/',
+    repo: 'https://github.com/ReggieLovett/php_medbooking_hci',
+    built: { from: '2026-06', label: 'Mid 2026' },
+    role: 'Co-developer',
+    team: [{ name: 'Rhys Christian Suyu', github: 'RhysSuyu' }],
+    highlights: [
+      'Patient sign-up and booking against live time-slot availability, so no slot can be double-booked.',
+      'An admin panel to manage appointments, add doctors and set when each one is available.',
+      'Patients can look up their bookings and cancel upcoming ones.',
+    ],
+    stack: ['PHP', 'MySQL'],
+  },
+  {
+    id: 'digital-twin',
+    index: '04',
+    title: 'Digital Twin',
+    client: 'ECA Final Project',
+    discipline: 'Product Design',
+    year: '2026',
+    summary:
+      'Artemis, an AI-powered voice for Group 3: visitors chat with it to learn about the team, its skills and its work.',
+    image: '/group-3-digital-twin.vercel.app_chat.png',
+    alt: 'The Digital Twin platform chat interface',
+    ratio: '16 / 10',
+    href: 'https://group-3-digital-twin.vercel.app/artemis',
+    repo: 'https://github.com/digital-twin-group3/digital-twin-group-3',
+    built: { from: '2026-03', to: '2026-05' },
+    role: 'Project manager, Group 3',
+    highlights: [
+      'Led the team build as project manager during the 10-week ECA full stack and agentic AI internship.',
+      'Set up the codebase and wrote its product requirements document and agent configuration.',
+      'Realtime chat and Microsoft Teams integration.',
+    ],
+    stack: ['Next.js', 'Neon', 'OpenRouter'],
   },
   {
     id: 'portfolio-2024',
-    index: '04',
+    index: '05',
     title: 'Portfolio, 2nd year',
     client: 'Personal',
     discipline: 'Web',
@@ -839,6 +912,9 @@ export const projects: WorkEntry[] = [
     alt: 'The 2024 version of the personal portfolio site',
     ratio: '16 / 10',
     href: 'https://l0v3tt.site',
+    built: { from: '2024', label: '2024' },
+    role: 'Solo build',
+    highlights: ['Built and deployed in my 2nd year to document my early projects and growth.'],
   },
 ];
 

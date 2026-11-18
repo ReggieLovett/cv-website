@@ -713,7 +713,8 @@
     padding: 0.25rem 0.55rem;
     border-radius: var(--r-sm);
     font-family: var(--font-geist-mono), ui-monospace, monospace;
-    font-size: 0.625rem;
+    /* 11px: the floor for text a reader is meant to read. */
+    font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -952,6 +953,12 @@
     border-radius: 9999px;
     background: rgb(var(--space));
     color: rgb(var(--bone));
+    /* Each letter of the ring sits in a full-size box turned to its angle;
+       those invisible corners reach past the stamp and, with the stamp on the
+       frame's edge, widened the page at tablet sizes. The margin leaves room
+       for the spring's overshoot when the stamp is let go. */
+    overflow: clip;
+    overflow-clip-margin: 0.75rem;
   }
 
   .portrait-frame {

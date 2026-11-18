@@ -219,7 +219,7 @@ export function Console({ swordSoundSrc }: { swordSoundSrc: string | null }) {
               id="projects"
               index="01"
               title="Projects"
-              note="The software that ships — product over process, links included."
+              note="The software that ships, newest first: when each was built, who with, what I did, and the code behind it."
               entries={projects}
             />
             <DesignGallery
